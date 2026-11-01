@@ -1,0 +1,197 @@
+"use client";
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { Sparkles, ArrowUpRight, ArrowUp } from "lucide-react";
+import type { Criteria } from "@/lib/domain";
+import type { Match } from "@/lib/discovery";
+import { ProductCard } from "./product";
+import { useScently, api } from "./shell";
+type Result = {
+  criteria: Criteria;
+  matches: Match[];
+  mode: string;
+  notice: string;
+  message: string;
+};
+const examples = [
+  "Find me a sweet winter fragrance.",
+  "I want a masculine vanilla fragrance.",
+  "Find a fragrance like Dior Sauvage but cheaper.",
+  "Recommend a fresh fragrance under $100.",
+  "I need something long-lasting for school.",
+  "Find me a fragrance with strong projection.",
+];
+export function Finder({ configured }: { configured: boolean }) {
+  const params = useSearchParams(),
+    { region } = useScently();
+  const [draft, setDraft] = useState(params.get("prompt") || ""),
+    [turns, setTurns] = useState<{ prompt: string; result: Result }[]>([]),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState("");
+  async function send(message = draft) {
+    if (!message.trim() || busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      const result = await api<Result>("/api/finder", {
+        message,
+        region,
+        previous: turns.at(-1)?.result.criteria,
+      });
+      setTurns((t) => [...t, { prompt: message, result }]);
+      setDraft("");
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="finder-page">
+      <header className="finder-header">
+        <Sparkles size={32} strokeWidth={1.2} />
+        <div className="eyebrow centered">
+          A LITTLE GUIDANCE. SOMETHING YOU.
+        </div>
+        <h1>
+          Let’s find <em>your fragrance.</em>
+        </h1>
+        <p>
+          Tell me what kind of fragrance you’re looking for. Describe the notes,
+          mood, budget, season, or performance you want.
+        </p>
+        <span className="mode-badge">
+          {configured
+            ? "AI-assisted finder · grounded in our catalog"
+            : "Rule-based finder · AI not connected"}
+        </span>
+      </header>
+      {!turns.length && (
+        <div className="example-prompts">
+          {examples.map((p) => (
+            <button key={p} disabled={busy} onClick={() => send(p)}>
+              {p}
+              <ArrowUpRight size={15} />
+            </button>
+          ))}
+        </div>
+      )}
+      <div aria-live="polite">
+        {turns.map((t, i) => (
+          <section className="chat-turn" key={i}>
+            <div className="user-message">{t.prompt}</div>
+            <p className="assistant-message">
+              <Sparkles size={20} />
+              {t.result.message}
+            </p>
+            <p className="info-line">{t.result.notice}</p>
+            {[true, false].map((exact) => {
+              const matches = t.result.matches.filter((m) => m.exact === exact);
+              return matches.length ? (
+                <div key={String(exact)}>
+                  <h2 className="match-heading">
+                    {exact
+                      ? "Matches your preferences"
+                      : "Near matches — preferences not fully verified"}
+                  </h2>
+                  <div className="match-grid">
+                    {matches.map((m) => (
+                      <article className="match-card" key={m.fragrance.id}>
+                        <ProductCard fragrance={m.fragrance} />
+                        <div className="match-evidence">
+                          <strong>Why it’s here</strong>
+                          <ul>
+                            {m.reasons.map((r) => (
+                              <li key={r}>{r}</li>
+                            ))}
+                          </ul>
+                          {m.gaps.length > 0 && (
+                            <>
+                              <strong>Keep in mind</strong>
+                              <ul className="gaps">
+                                {m.gaps.map((g) => (
+                                  <li key={g}>{g}</li>
+                                ))}
+                              </ul>
+                            </>
+                          )}
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              ) : null;
+            })}
+          </section>
+        ))}
+        {busy && (
+          <p role="status" className="assistant-message">
+            <Sparkles size={18} />
+            Looking through the catalog…
+          </p>
+        )}
+      </div>
+      {error && (
+        <p role="alert" className="error-message">
+          {error}
+        </p>
+      )}
+      <form
+        className="chat-composer"
+        onSubmit={(e) => {
+          e.preventDefault();
+          send();
+        }}
+      >
+        <label className="sr-only" htmlFor="finder-message">
+          Describe your ideal fragrance
+        </label>
+        <textarea
+          id="finder-message"
+          value={draft}
+          maxLength={1500}
+          minLength={2}
+          required
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder={
+            turns.length
+              ? "Refine your search: “Only winter fragrances”"
+              : "Something with vanilla, for cold evenings…"
+          }
+        />
+        <footer>
+          <span>
+            Shopping in{" "}
+            {region === "CA" ? "CAD · Canada" : "USD · United States"}. Session
+            preferences stay on this page.
+          </span>
+          <button
+            className="button primary"
+            aria-label="Find fragrances"
+            disabled={busy || draft.trim().length < 2}
+          >
+            <ArrowUp size={17} />
+            {busy ? "Finding…" : "Find my scent"}
+          </button>
+        </footer>
+      </form>
+      {turns.length > 0 && (
+        <button
+          className="plain-button"
+          onClick={() => {
+            setTurns([]);
+            setDraft("");
+            setError("");
+          }}
+        >
+          Start a new discovery
+        </button>
+      )}
+      <p className="quiet-note">
+        Fragrance is personal. Rankings use documented preferences and available
+        evidence, not invented match percentages. Verify current retailer totals
+        before purchasing.
+      </p>
+    </div>
+  );
+}
