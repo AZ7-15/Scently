@@ -1,8 +1,9 @@
-import Link from "next/link";
+import Link from "@/components/scently/site-link";
 import { notFound } from "next/navigation";
 import { brandConfig } from "@/lib/domain";
 import { setting } from "@/lib/server/security";
 import { curatedCatalog } from "@/data/catalog";
+import photos from "@/data/photo-sources.json";
 const pages: Record<
   string,
   { title: string; sections: { title: string; text: string }[] }
@@ -15,8 +16,8 @@ const pages: Record<
         text: "Scently brings fragrance notes, personal experiences, and transparent retailer information into one calm place. Start with a name, a note, or a feeling.",
       },
       {
-        title: "Small by intention",
-        text: "Our initial catalog is a small, manually curated collection. We favor attributable information over an overwhelming database. We do not copy Fragrantica content.",
+        title: "A growing catalog",
+        text: "Our starter catalog contains six manually checked fragrances. Catalog expansion is in progress. Each profile identifies its sources; a complete Fragrantica catalog has not been imported.",
       },
     ],
   },
@@ -29,7 +30,7 @@ const pages: Record<
       },
       {
         title: "Editorial guidance",
-        text: "Accord order, scent families and season picks are editorial interpretations of the disclosed composition. Accord bars show order, not measured percentages. Bottle illustrations are placeholders, not photographs of actual packaging.",
+        text: "Accord order, scent families and season picks are editorial interpretations of the disclosed composition. Accord bars show order, not measured percentages. Starter product photos come from the manufacturer pages credited below. Illustrated placeholders are used if a photo is unavailable.",
       },
       {
         title: "Community evidence",
@@ -87,7 +88,7 @@ const pages: Record<
       },
       {
         title: "Account controls",
-        text: "You can edit or delete your reviews, remove shelf items, and sign out. Contact the site operator for account data requests. Authentication is provided by ChatGPT; its own privacy terms also apply.",
+        text: "You can edit or delete your reviews, remove shelf items, and sign out. Contact the site operator for account data requests. Accounts store your email address and a salted password hash. Sessions use an HTTP-only cookie and expire after 30 days.",
       },
     ],
   },
@@ -170,6 +171,26 @@ export default async function Page({
                 <a href={f.sourceUrl} target="_blank" rel="noopener noreferrer">
                   {f.brand} · {f.name}
                 </a>
+              </li>
+            ))}
+          </ul>
+          <h2>Product photo sources</h2>
+          <p>
+            Product photographs belong to their respective rights holders.
+            Source attribution does not imply a brand partnership or a
+            commercial image license.
+          </p>
+          <ul>
+            {photos.map((photo) => (
+              <li key={photo.id}>
+                <a
+                  href={photo.source}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {curatedCatalog.find((f) => f.id === photo.id)?.name}
+                </a>{" "}
+                · checked {photo.checkedAt}
               </li>
             ))}
           </ul>

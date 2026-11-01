@@ -3,6 +3,18 @@ async function visit(page: Page, path: string) {
   await page.goto(path);
   await expect(page.locator('[data-app-ready="true"]')).toBeAttached();
 }
+async function register(page: Page, path: string) {
+  const response = await page.request.post("/api/auth", {
+    data: {
+      action: "register",
+      name: "Browser test",
+      email: `test-${crypto.randomUUID()}@example.com`,
+      password: "Browser-test-password-2026",
+    },
+  });
+  expect(response.status()).toBe(200);
+  await visit(page, path);
+}
 test("known search opens its profile and note pyramid", async ({ page }) => {
   await visit(page, "/fragrances?q=Dior%20Sauvage");
   await expect(page.getByRole("status")).toContainText("1 fragrances");
@@ -87,7 +99,7 @@ test("unauthenticated and non-admin writes fail", async ({ request, page }) => {
       })
     ).status(),
   ).toBe(401);
-  await visit(page, "/signin-with-chatgpt?return_to=/account");
+  await register(page, "/account");
   expect(
     (
       await page.request.post("/api/reviews", {
@@ -114,10 +126,7 @@ test("unauthenticated and non-admin writes fail", async ({ request, page }) => {
 test("authenticated shelf and review persist, then clean up", async ({
   page,
 }) => {
-  await visit(
-    page,
-    "/signin-with-chatgpt?return_to=/fragrances/dior-sauvage-eau-de-parfum",
-  );
+  await register(page, "/fragrances/dior-sauvage-eau-de-parfum");
   await page
     .getByRole("button", { name: "Save to my shelf", exact: true })
     .click();

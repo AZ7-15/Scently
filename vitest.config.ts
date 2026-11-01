@@ -4,10 +4,11 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL(".", import.meta.url)),
-      "cloudflare:workers": fileURLToPath(
-        new URL("./tests/support/cloudflare.ts", import.meta.url),
-      ),
     },
   },
-  test: { include: ["tests/**/*.test.ts"], environment: "node" },
+  test: {
+    include: ["tests/**/*.test.ts"],
+    environment: "node",
+    env: { SCENTLY_DB_PATH: ":memory:", ADMIN_USER_IDS: "test-admin" },
+  },
 });

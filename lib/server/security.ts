@@ -1,5 +1,5 @@
-import { env } from "cloudflare:workers";
-import { getChatGPTUser } from "@/app/chatgpt-auth";
+import { env } from "@/db/runtime";
+import { getSessionUser } from "@/lib/server/session";
 import { getDb } from "@/db";
 import { users, audit } from "@/db/schema";
 export class HttpError extends Error {
@@ -11,10 +11,10 @@ export class HttpError extends Error {
   }
 }
 export function setting(key: string): string | undefined {
-  return (env as unknown as Record<string, string>)[key] || process.env[key];
+  return process.env[key];
 }
 export async function identity() {
-  const u = await getChatGPTUser();
+  const u = await getSessionUser();
   return u
     ? {
         id: u.userId,
@@ -47,8 +47,16 @@ export async function requireAdmin() {
 }
 export function sameOrigin(request: Request) {
   const origin = request.headers.get("origin");
+  const url = new URL(request.url);
+  // Next's Node adapter may use its listen hostname in request.url. The HTTP
+  // Host identifies the visitor-facing origin; Render terminates TLS upstream.
+  const expected = new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ||
+      process.env.RENDER_EXTERNAL_URL ||
+      `${url.protocol}//${request.headers.get("host") || url.host}`,
+  ).origin;
   if (
-    (origin && origin !== new URL(request.url).origin) ||
+    (origin && origin !== expected) ||
     request.headers.get("sec-fetch-site") === "cross-site"
   )
     throw new HttpError(403, "Cross-site changes are not allowed.");
@@ -86,13 +94,11 @@ export async function logAction(
   action: string,
   entityId: string,
 ) {
-  await getDb()
-    .insert(audit)
-    .values({
-      id: crypto.randomUUID(),
-      userId,
-      action,
-      entityId,
-      createdAt: new Date().toISOString(),
-    });
+  await getDb().insert(audit).values({
+    id: crypto.randomUUID(),
+    userId,
+    action,
+    entityId,
+    createdAt: new Date().toISOString(),
+  });
 }

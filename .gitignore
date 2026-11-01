@@ -43,6 +43,7 @@ yarn-error.log*
 /work/
 /test-results/
 /playwright-report/
+/storage/
 
 # OS metadata
 .DS_Store

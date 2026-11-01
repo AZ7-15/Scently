@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/scently/site-link";
 export default function NotFound() {
   return (
     <main id="main" className="container page">

@@ -2,8 +2,8 @@ import { describe, it, expect, vi } from "vitest";
 const auth = vi.hoisted(() => ({
   user: null as null | { userId: string; fullName: string },
 }));
-vi.mock("@/app/chatgpt-auth", () => ({
-  getChatGPTUser: async () => auth.user,
+vi.mock("@/lib/server/session", () => ({
+  getSessionUser: async () => auth.user,
 }));
 import * as reviewApi from "../app/api/reviews/route";
 import { POST as collection } from "../app/api/collection/route";

@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import type { Fragrance, Review } from "@/lib/domain";
 import { api } from "./shell";
 type Props = {
@@ -19,7 +18,6 @@ export function Admin({
   usage,
   auditCount,
 }: Props) {
-  const router = useRouter();
   const [record, setRecord] = useState(JSON.stringify(catalog[0], null, 2)),
     [overwrite, setOverwrite] = useState(false),
     [offer, setOffer] = useState(""),
@@ -40,7 +38,11 @@ export function Admin({
     try {
       const r = await api("/api/admin", body);
       setMessage("Saved successfully.");
-      router.refresh();
+      if (
+        (body as { action?: string; commit?: boolean }).action !== "import" ||
+        (body as { commit?: boolean }).commit
+      )
+        window.location.reload();
       return r;
     } catch (e) {
       setError((e as Error).message);
@@ -386,9 +388,8 @@ export function Admin({
           entries.
         </p>
         <p>
-          Retailer feeds are not configured. ChatGPT sign-in is the active
-          identity provider; standalone email/password and Google OAuth require
-          a separate integration.
+          Retailer feeds are not configured. Accounts use email/password
+          sign-in.
         </p>
       </section>
     </>

@@ -1,0 +1,134 @@
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { z } from "zod";
+import { env } from "@/db/runtime";
+import {
+  createSession,
+  hashPassword,
+  safeReturnPath,
+  sessionCookie,
+  sessionLifetime,
+  tokenHash,
+  verifyPassword,
+} from "@/lib/server/session";
+import {
+  HttpError,
+  limited,
+  readBody,
+  sameOrigin,
+} from "@/lib/server/security";
+import { failure } from "@/lib/server/http";
+
+export async function POST(request: Request) {
+  try {
+    sameOrigin(request);
+    const json = request.headers
+      .get("content-type")
+      ?.includes("application/json");
+    const raw = json
+      ? await readBody(request)
+      : Object.fromEntries(await request.formData());
+    const body = z
+      .object({
+        action: z.enum(["register", "login", "logout"]),
+        email: z
+          .string()
+          .trim()
+          .email()
+          .max(254)
+          .transform((v) => v.toLowerCase())
+          .optional(),
+        password: z.string().min(1).max(128).optional(),
+        name: z.string().trim().min(2).max(60).optional(),
+        returnTo: z.string().max(2000).optional(),
+      })
+      .parse(raw);
+    if (body.action === "logout") {
+      const token = (await cookies()).get(sessionCookie)?.value;
+      if (token)
+        await env.DB.prepare("DELETE FROM sessions WHERE token_hash=?")
+          .bind(tokenHash(token))
+          .run();
+      const response = json
+        ? NextResponse.json({ ok: true })
+        : new NextResponse(null, {
+            status: 303,
+            headers: { Location: "/", "Cache-Control": "no-store" },
+          });
+      response.cookies.set(sessionCookie, "", {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        path: "/",
+        maxAge: 0,
+      });
+      return response;
+    }
+    if (!body.email || !body.password)
+      throw new HttpError(400, "Enter your email address and password.");
+    const ip =
+      process.env.RENDER === "true"
+        ? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+          "unknown"
+        : "local";
+    await limited("auth:ip:" + tokenHash(ip), 30, 900);
+    await limited("auth:email:" + tokenHash(body.email), 10, 900);
+    const credential = await env.DB.prepare(
+      "SELECT user_id,password_hash FROM credentials WHERE email=?",
+    )
+      .bind(body.email)
+      .first<{ user_id: string; password_hash: string }>();
+    let userId: string;
+    if (body.action === "register") {
+      if (!body.name || body.password.length < 12)
+        throw new HttpError(
+          400,
+          "Enter a display name and a password with at least 12 characters.",
+        );
+      if (credential)
+        throw new HttpError(
+          409,
+          "Unable to create this account. Try signing in instead.",
+        );
+      userId = crypto.randomUUID();
+      const hash = await hashPassword(body.password);
+      await env.DB.batch([
+        env.DB.prepare(
+          "INSERT INTO users (id,display_name,created_at) VALUES (?,?,?)",
+        ).bind(userId, body.name, new Date().toISOString()),
+        env.DB.prepare(
+          "INSERT INTO credentials (user_id,email,password_hash) VALUES (?,?,?)",
+        ).bind(userId, body.email, hash),
+      ]);
+    } else {
+      // Perform the same expensive derivation for an unknown account.
+      const valid = await verifyPassword(
+        body.password,
+        credential?.password_hash ||
+          "scrypt:00000000000000000000000000000000:" + "00".repeat(64),
+      );
+      if (!credential || !valid)
+        throw new HttpError(401, "Email or password is incorrect.");
+      userId = credential.user_id;
+    }
+    const previous = (await cookies()).get(sessionCookie)?.value;
+    if (previous)
+      await env.DB.prepare("DELETE FROM sessions WHERE token_hash=?")
+        .bind(tokenHash(previous))
+        .run();
+    const token = await createSession(userId);
+    const redirectTo = safeReturnPath(body.returnTo);
+    const response = NextResponse.json({ ok: true, redirectTo });
+    response.cookies.set(sessionCookie, token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: sessionLifetime,
+    });
+    response.headers.set("Cache-Control", "no-store");
+    return response;
+  } catch (e) {
+    return failure(e);
+  }
+}

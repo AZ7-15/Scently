@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from "@/components/scently/site-link";
 import { useEffect, useState } from "react";
 import { ArrowRight, Search } from "lucide-react";
 import type { Fragrance } from "@/lib/domain";

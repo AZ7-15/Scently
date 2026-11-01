@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from "@/components/scently/site-link";
 import type { Fragrance } from "@/lib/domain";
 import { sortedOffers, offerTotal } from "@/lib/discovery";
 import { useScently } from "./shell";

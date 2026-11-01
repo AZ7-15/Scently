@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from "@/components/scently/site-link";
 import { usePathname } from "next/navigation";
 import {
   createContext,
@@ -49,6 +49,13 @@ export async function api<T = unknown>(
     headers: { "Content-Type": "application/json" },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
+  if (!response.headers.get("content-type")?.includes("application/json")) {
+    throw new Error(
+      response.status === 401 || response.redirected
+        ? "Your session expired. Sign in again to continue."
+        : "The service did not respond correctly. Please try again.",
+    );
+  }
   const data = (await response.json()) as T & { error?: string };
   if (!response.ok)
     throw new Error(data.error || "Something went wrong. Please try again.");
@@ -56,18 +63,45 @@ export async function api<T = unknown>(
 }
 const subscribe = (callback: () => void) => {
   window.addEventListener("scently-storage", callback);
-  return () => window.removeEventListener("scently-storage", callback);
+  window.addEventListener("storage", callback);
+  return () => {
+    window.removeEventListener("scently-storage", callback);
+    window.removeEventListener("storage", callback);
+  };
 };
+const memoryStorage = new Map<string, string>();
+function readStored(key: string, fallback: string) {
+  try {
+    return localStorage.getItem(key) || memoryStorage.get(key) || fallback;
+  } catch {
+    return memoryStorage.get(key) || fallback;
+  }
+}
 function useStored(key: string, fallback: string) {
   return useSyncExternalStore(
     subscribe,
-    () => localStorage.getItem(key) || fallback,
+    () => readStored(key, fallback),
     () => fallback,
   );
 }
 function store(key: string, value: string) {
-  localStorage.setItem(key, value);
+  memoryStorage.set(key, value);
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    /* Keep this tab usable when storage is restricted. */
+  }
   window.dispatchEvent(new Event("scently-storage"));
+}
+function readCompared(raw: string): string[] {
+  try {
+    const value: unknown = JSON.parse(raw);
+    return Array.isArray(value)
+      ? value.filter((x): x is string => typeof x === "string").slice(0, 3)
+      : [];
+  } catch {
+    return [];
+  }
 }
 export function Shell({
   children,
@@ -84,20 +118,16 @@ export function Shell({
     [shelf, setShelf] = useState(initialShelf);
   const compareRaw = useStored("scently-compare", "[]"),
     region = useStored("scently-region", "CA");
-  let compare: string[] = [];
-  try {
-    const value = JSON.parse(compareRaw);
-    if (Array.isArray(value))
-      compare = value.filter((x) => typeof x === "string").slice(0, 3);
-  } catch {}
+  const compare = readCompared(compareRaw);
   function notify(message: string) {
     setNotice(message);
   }
   function toggleCompare(id: string) {
-    if (compare.includes(id))
-      store("scently-compare", JSON.stringify(compare.filter((x) => x !== id)));
-    else if (compare.length < 3) {
-      store("scently-compare", JSON.stringify([...compare, id]));
+    const current = readCompared(readStored("scently-compare", "[]"));
+    if (current.includes(id))
+      store("scently-compare", JSON.stringify(current.filter((x) => x !== id)));
+    else if (current.length < 3) {
+      store("scently-compare", JSON.stringify([...current, id]));
       notify("Added to your comparison.");
     } else notify("Compare up to three fragrances. Remove one to make room.");
   }
@@ -253,7 +283,7 @@ export function Shell({
           <Check size={17} />
           <span>{notice}</span>
           {!user && notice.startsWith("Sign in") && (
-            <a href="/signin-with-chatgpt?return_to=/account" target="_top">
+            <a href="/login?return_to=/account" target="_top">
               Sign in
             </a>
           )}

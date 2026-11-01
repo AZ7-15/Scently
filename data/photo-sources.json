@@ -1,0 +1,44 @@
+[
+  {
+    "id": "sauvage-edp",
+    "file": "sauvage-edp.jpg",
+    "source": "https://www.dior.com/en_us/beauty/products/sauvage-eau-de-parfum-C099700027.html",
+    "image": "https://www.dior.com/dw/image/v2/BGXS_PRD/on/demandware.static/-/Sites-master_dior/default/dwbd49572f/Y0785220/Y0785220_C099700027_E01_ZHC.jpg?sw=900",
+    "checkedAt": "2026-11-01"
+  },
+  {
+    "id": "santal-33",
+    "file": "santal-33.jpg",
+    "source": "https://www.lelabofragrances.com/santal-33-147.html",
+    "image": "https://lelabo.ips.photos/lelabo-java/images/skus/050PS33100__PRODUCT_01--IMG_1200--SANTAL33-200129705.jpg",
+    "checkedAt": "2026-11-01"
+  },
+  {
+    "id": "tobacco-vanille",
+    "file": "tobacco-vanille.png",
+    "source": "https://www.tomfordbeauty.com/products/tobacco-vanille-eau-de-parfum",
+    "image": "https://www.tomfordbeauty.com/cdn/shop/files/tf_sku_T0CA01_2000x2000_0.png?v=1793064310&width=900",
+    "checkedAt": "2026-11-01"
+  },
+  {
+    "id": "wood-sage-sea-salt",
+    "file": "wood-sage-sea-salt.png",
+    "source": "https://www.jomalone.com/product/25946/32241/colognes/wood-sage-sea-salt-cologne",
+    "image": "https://www.jomalone.com/media/export/cms/products/1000x1000/jo_sku_L41501_1000x1000_0.png",
+    "checkedAt": "2026-11-01"
+  },
+  {
+    "id": "jazz-club",
+    "file": "jazz-club.jpg",
+    "source": "https://www.maisonmargiela-fragrances.eu/en_GB/fragrances/discover/replica-memories/replica-jazz-club/MM008.html",
+    "image": "https://www.maisonmargiela-fragrances.eu/dw/image/v2/BDCR_PRD/on/demandware.static/-/Sites-margiela-master-catalog/default/dwf1c5d525/images/products/MM008/1MM_dmi_e-retail_pdp_replica-edt-jazz-club_alwayson_fullpage_3605521932105-ATF-2.jpg?sw=900",
+    "checkedAt": "2026-11-01"
+  },
+  {
+    "id": "another-13",
+    "file": "another-13.jpg",
+    "source": "https://www.lelabofragrances.com/another-13-463.html",
+    "image": "https://lelabo.ips.photos/lelabo-java/images/skus/050PA13100__PRODUCT_01--IMG_1200--ANOTHER13--122019503.jpg",
+    "checkedAt": "2026-11-01"
+  }
+]

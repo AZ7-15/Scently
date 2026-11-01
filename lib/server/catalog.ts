@@ -1,4 +1,4 @@
-import { env } from "cloudflare:workers";
+import { env } from "@/db/runtime";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import * as s from "@/db/schema";
@@ -22,6 +22,12 @@ export async function ensureCatalog() {
           .bind(f.id)
           .first();
         if (!exists) await saveFragrance(f, false);
+        else if (f.imageUrl)
+          await env.DB.prepare(
+            "UPDATE fragrances SET image_url=? WHERE id=? AND image_url IS NULL",
+          )
+            .bind(f.imageUrl, f.id)
+            .run();
       }
     })().catch((e) => {
       seedPromise = undefined;

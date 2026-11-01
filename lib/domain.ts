@@ -88,7 +88,10 @@ export interface Review {
 export const httpsUrl = z
   .string()
   .url()
-  .refine((s) => new URL(s).protocol === "https:", "Use an HTTPS URL");
+  .refine(
+    (s) => URL.canParse(s) && new URL(s).protocol === "https:",
+    "Use an HTTPS URL",
+  );
 export const reviewSchema = z.object({
   fragranceId: z.string().min(1).max(100),
   rating: z.number().int().min(1).max(5),
@@ -114,7 +117,13 @@ export const fragranceSchema = z.object({
     .regex(/^#[0-9a-fA-F]{6}$/)
     .default("#b39b70"),
   shape: z.enum(["square", "round", "tall"]).default("square"),
-  imageUrl: httpsUrl.nullable().default(null),
+  imageUrl: z
+    .union([
+      httpsUrl,
+      z.string().regex(/^\/images\/products\/[a-z0-9-]+\.(jpg|jpeg|png|webp)$/),
+    ])
+    .nullable()
+    .default(null),
   accords: z.array(z.string().trim().min(1).max(50)).max(8),
   notes: z
     .array(
@@ -190,5 +199,8 @@ export const slugify = (s: string) =>
 export const brandConfig = {
   name: "Scently",
   tagline: "Discover your next signature scent.",
-  origin: "https://scently-fragrance-discovery.mzgzaz.chatgpt.site",
+  origin:
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.RENDER_EXTERNAL_URL ||
+    "http://localhost:5173",
 };

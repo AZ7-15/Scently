@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/scently/site-link";
 import { ThumbsUp, Flag, Star } from "lucide-react";
 import {
   projections,
@@ -369,13 +369,10 @@ export function ReviewSection({
               </p>
               <a
                 className="button primary"
-                href={
-                  "/signin-with-chatgpt?return_to=" +
-                  encodeURIComponent("/reviews")
-                }
+                href={"/login?return_to=" + encodeURIComponent("/reviews")}
                 target="_top"
               >
-                Sign in with ChatGPT
+                Sign in
               </a>
             </>
           )}

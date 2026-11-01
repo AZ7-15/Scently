@@ -1,4 +1,4 @@
-import { env } from "cloudflare:workers";
+import { env } from "@/db/runtime";
 import { offerSchema, slugify, type Offer } from "@/lib/domain";
 /** Authorized feeds implement this interface. No scraping adapter is enabled. */
 export interface RetailerAdapter {

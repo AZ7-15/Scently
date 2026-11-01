@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/scently/site-link";
 import { notFound } from "next/navigation";
 import {
   Clock,
@@ -15,6 +15,7 @@ import { identity } from "@/lib/server/security";
 import { Bottle, ProductGrid } from "@/components/scently/product";
 import { DetailActions, Prices } from "@/components/scently/detail";
 import { ReviewSection } from "@/components/scently/reviews";
+import photos from "@/data/photo-sources.json";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
@@ -60,7 +61,25 @@ export default async function Page({
         <div className={"detail-image tone-" + f.family}>
           <Bottle fragrance={f} large />
           <span className="image-caption">
-            {f.imageUrl ? "" : "Illustrated placeholder · not actual packaging"}
+            {f.imageUrl ? (
+              photos.some(
+                (photo) =>
+                  photo.id === f.id &&
+                  f.imageUrl === "/images/products/" + photo.file,
+              ) ? (
+                <a
+                  href={photos.find((photo) => photo.id === f.id)!.source}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Product photo · manufacturer source
+                </a>
+              ) : (
+                "Product photo"
+              )
+            ) : (
+              "Illustrated placeholder · not actual packaging"
+            )}
           </span>
         </div>
         <div className="detail-copy">

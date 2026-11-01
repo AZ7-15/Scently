@@ -1,22 +1,13 @@
-# Integration status
+# Integrations
 
-## OpenAI
+Render hosts standard Next.js/Node. Production storage uses external Turso **libSQL** through `@libsql/client/web`; local development uses Node SQLite. Parameterized adapters preserve the existing Drizzle queries. Transactional migrations record checksums.
 
-The server uses [Responses API structured function calling](https://developers.openai.com/api/docs/guides/function-calling) to interpret preferences. Output is revalidated using Zod. The model cannot supply products, prices, ratings, SQL or executable code. Retrieval and explanations use application records and deterministic evidence statements. This avoids a second model call that could embellish product facts. Timeout: 15 seconds. Prompt limit: 1,500 characters. Rate limits persist in D1. Requests set `store:false`; usage logs contain model and token counts, not messages.
+Email/password registration and login use scrypt password hashes, random session tokens stored as SHA-256 hashes, HTTP-only SameSite cookies, expiry, rate limits and same-origin mutation checks. `ADMIN_USER_IDS` controls admin access. Caller-provided ChatGPT identity headers are ignored. Google OAuth, email verification and email-based recovery are not configured.
 
-## Retailers
+OpenAI Responses strict function calling interprets preferences only when both `OPENAI_API_KEY` and `OPENAI_MODEL` are set. Catalog retrieval and ranking remain deterministic. Failure or missing credentials produces a labeled rule-based fallback. Requests disable response storage. Usage logs store model/token counts, not messages. Live provider calls remain unverified without credentials.
 
-Research checked October 30, 2026. These are integration leads, not approvals or unrestricted APIs.
+No retailer feeds or affiliate partnerships are connected. `RetailerAdapter.fetchAuthorizedOffers()` defines the feed interface. Offers retain region, currency, concentration, size, packaging, condition, source, verification time and shipping/tax disclosures. Offers expire after 48 hours.
 
-- [FragranceNet](https://www.fragrancenet.com/help/affiliate_program): official partner program directs publishers to Rakuten. Confirm approval and permitted data access separately.
-- [Jomashop](https://help.jomashop.com/hc/en-us/articles/11923106976027-Affiliate-Program): official program uses Commission Junction and mentions a product feed. Obtain approval and feed terms.
-- [FragranceBuy](https://fragrancebuy.ca/pages/collab): a partnership application exists; no unrestricted price API was established.
-- FragranceX: no authorized feed contract established in this work. Keep the adapter unconfigured pending documented access.
+Starter photos come from manufacturer product pages. Exact image URLs, source pages and dates are recorded in `data/photo-sources.json`. Bundled local files avoid runtime hotlink dependence. Attribution does not represent commercial licensing or a brand partnership. No Fragrantica photographs or copied reviews are included. A complete Fragrantica catalog has not been imported.
 
-Implement `RetailerAdapter.fetchAuthorizedOffers()` against approved feeds only. Validate normalized records with `offerSchema`; retain source, region, currency, concentration, size, packaging, condition and verification time. Unknown shipping/tax stays null. Affiliate approval does not automatically permit scraping or image reuse.
-
-## Authentication and assets
-
-Sites supplies ChatGPT identity and D1 persistence. A standalone deployment needs replacement authentication/storage adapters. Do not rely on client-supplied roles or simulate production accounts.
-
-Manufacturer facts were manually checked, each record links to its source, and descriptions are original summaries. Public accessibility does not grant commercial reuse rights. Product images are labeled CSS illustrations unless an administrator supplies a licensed URL. The inherited hero artwork is decorative, not an actual product photo; review its provenance before redistribution outside this project.
+`render.yaml` specifies a free web service without a paid disk. Deployment requires a connected source repository and external database secrets. Previous Sites/D1 data is independent and is not migrated automatically. Creating the Blueprint file does not deploy a service.

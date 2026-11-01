@@ -19,7 +19,7 @@ export default async function Page() {
           {!user && (
             <a
               className="button primary"
-              href="/signin-with-chatgpt?return_to=/admin"
+              href="/login?return_to=/admin"
               target="_top"
             >
               Sign in

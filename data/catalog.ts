@@ -1,11 +1,11 @@
 import type { Fragrance, Note, Season } from "../lib/domain";
+import photos from "./photo-sources.json";
 const notes = (stage: Note["stage"], names: string[]): Note[] =>
   names.map((name) => ({ name, stage }));
 const checkedAt = "2026-10-30T13:00:00.000Z";
 const base = {
   year: null,
   perfumer: null,
-  imageUrl: null,
   checkedAt,
   demo: false,
   rating: null,
@@ -18,7 +18,7 @@ const base = {
   occasions: [],
   style: "all",
 };
-export const curatedCatalog: Fragrance[] = [
+const records: Omit<Fragrance, "imageUrl">[] = [
   {
     ...base,
     id: "sauvage-edp",
@@ -160,3 +160,8 @@ export const curatedCatalog: Fragrance[] = [
     sourceUrl: "https://www.lelabofragrances.com/our-creations.html",
   },
 ];
+export const curatedCatalog: Fragrance[] = records.map((record) => ({
+  ...record,
+  imageUrl:
+    "/images/products/" + photos.find((photo) => photo.id === record.id)!.file,
+}));

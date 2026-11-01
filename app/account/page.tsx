@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/scently/site-link";
 import { identity } from "@/lib/server/security";
 import { getCatalog } from "@/lib/server/catalog";
 import { Collection } from "@/components/scently/collection";
@@ -22,13 +22,10 @@ export default async function Page() {
       {user ? (
         <>
           <div className="detail-actions">
-            <a
-              className="plain-button"
-              href="/signout-with-chatgpt?return_to=/"
-              target="_top"
-            >
-              Sign out
-            </a>
+            <form method="post" action="/api/auth">
+              <input type="hidden" name="action" value="logout" />
+              <button className="plain-button">Sign out</button>
+            </form>
             {user.admin && (
               <Link className="text-link" href="/admin">
                 Administration
@@ -42,15 +39,13 @@ export default async function Page() {
           <h2>Your scent story starts with you.</h2>
           <p>
             Sign in to save your wishlist and collection securely across visits.
-            Email/password and Google sign-in are not configured for this
-            deployment.
           </p>
           <a
-            href="/signin-with-chatgpt?return_to=/account"
+            href="/login?return_to=/account"
             target="_top"
             className="button primary"
           >
-            Sign in with ChatGPT
+            Sign in
           </a>
         </div>
       )}

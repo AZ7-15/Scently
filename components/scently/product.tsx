@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from "@/components/scently/site-link";
 import {
   ArrowUpRight,
   Bookmark,
@@ -8,6 +8,7 @@ import {
   Star,
 } from "lucide-react";
 import type { Fragrance } from "@/lib/domain";
+import { useState } from "react";
 import { sortedOffers, offerTotal } from "@/lib/discovery";
 import { useScently } from "./shell";
 export function Bottle({
@@ -17,15 +18,21 @@ export function Bottle({
   fragrance: Fragrance;
   large?: boolean;
 }) {
+  const [failedImage, setFailedImage] = useState<string | null>(null);
   return (
     <div
       className={"bottle-stage " + (large ? "large" : "")}
       style={{ "--bottle-color": f.color } as React.CSSProperties}
     >
-      {f.imageUrl ? (
-        // Licensed admin URLs do not require an image optimizer allowlist.
+      {f.imageUrl && failedImage !== f.imageUrl ? (
+        // Product photos are served as static assets, with source attribution.
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={f.imageUrl} alt={f.brand + " " + f.name} loading="lazy" />
+        <img
+          src={f.imageUrl}
+          alt={f.brand + " " + f.name + " " + f.concentration + " bottle"}
+          loading={large ? "eager" : "lazy"}
+          onError={() => setFailedImage(f.imageUrl)}
+        />
       ) : (
         <div
           className={"bottle " + f.shape}

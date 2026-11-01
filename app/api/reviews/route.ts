@@ -55,16 +55,14 @@ export async function POST(request: Request) {
         })
         .where(eq(reviews.id, existing.id));
     else
-      await db
-        .insert(reviews)
-        .values({
-          ...b,
-          id: crypto.randomUUID(),
-          userId: user.id,
-          createdAt: now,
-          updatedAt: now,
-          status: "published",
-        });
+      await db.insert(reviews).values({
+        ...b,
+        id: crypto.randomUUID(),
+        userId: user.id,
+        createdAt: now,
+        updatedAt: now,
+        status: "published",
+      });
     return Response.json(
       { reviews: await getReviews(user.id, b.fragranceId) },
       { status: existing ? 200 : 201 },

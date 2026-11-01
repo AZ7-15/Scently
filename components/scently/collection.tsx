@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/scently/site-link";
 import type { Fragrance, CollectionStatus } from "@/lib/domain";
 import { ProductCard } from "./product";
 import { useScently } from "./shell";
