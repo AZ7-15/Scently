@@ -190,5 +190,5 @@ export const slugify = (s: string) =>
 export const brandConfig = {
   name: "Scently",
   tagline: "Discover your next signature scent.",
-  origin: "https://scently-fragrance-discovery.bubbly-creek-5791.chatgpt.site",
+  origin: "https://scently-fragrance-discovery.mzgzaz.chatgpt.site",
 };
