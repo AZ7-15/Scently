@@ -16,7 +16,7 @@ async function register(page: Page, path: string) {
   await visit(page, path);
 }
 test("known search opens its profile and note pyramid", async ({ page }) => {
-  await visit(page, "/fragrances?q=Dior%20Sauvage");
+  await visit(page, "/fragrances?view=community&q=Dior%20Sauvage");
   await expect(page.getByRole("status")).toContainText("1 fragrances");
   await page.getByRole("link", { name: "Sauvage", exact: true }).click();
   await expect(
@@ -30,7 +30,7 @@ test("known search opens its profile and note pyramid", async ({ page }) => {
   ).toBeVisible();
 });
 test("search vanilla, combine filters, reset", async ({ page }) => {
-  await visit(page, "/fragrances");
+  await visit(page, "/fragrances?view=community");
   await page.getByRole("textbox", { name: "Search catalog" }).fill("vanila");
   await expect(page.getByRole("status")).toContainText("3 fragrances");
   await page.getByLabel("winter", { exact: true }).check();
@@ -39,7 +39,7 @@ test("search vanilla, combine filters, reset", async ({ page }) => {
   await expect(page.getByRole("status")).toContainText("6 fragrances");
 });
 test("compare two fragrances", async ({ page }) => {
-  await visit(page, "/fragrances");
+  await visit(page, "/fragrances?view=community");
   await page
     .getByRole("button", { name: "Compare Sauvage", exact: true })
     .click();

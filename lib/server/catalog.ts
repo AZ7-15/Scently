@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import * as s from "@/db/schema";
 import { curatedCatalog } from "@/data/catalog";
+import { databaseConfigured } from "./configuration";
 import {
   slugify,
   type Fragrance,
@@ -137,6 +138,7 @@ export async function saveFragrance(
   await env.DB.batch(statements);
 }
 export async function getCatalog(): Promise<Fragrance[]> {
+  if (!databaseConfigured()) return curatedCatalog;
   await ensureCatalog();
   const db = getDb();
   const [fs, bs, ss, ns, fns, acs, fas, rs, os, vs, rts] = await Promise.all([
@@ -228,6 +230,7 @@ export async function getReviews(
   fragranceId?: string,
   includeHidden = false,
 ): Promise<Review[]> {
+  if (!databaseConfigured()) return [];
   const db = getDb();
   const [rs, us, hvs] = await Promise.all([
     db.select().from(s.reviews),

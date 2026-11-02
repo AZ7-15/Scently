@@ -2,6 +2,7 @@ import Link from "@/components/scently/site-link";
 import { identity } from "@/lib/server/security";
 import { getCatalog } from "@/lib/server/catalog";
 import { Collection } from "@/components/scently/collection";
+import { databaseConfigured } from "@/lib/server/configuration";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Your personal shelf" };
 export default async function Page() {
@@ -38,14 +39,18 @@ export default async function Page() {
         <div className="empty-state">
           <h2>Your scent story starts with you.</h2>
           <p>
-            Sign in to save your wishlist and collection securely across visits.
+            {databaseConfigured()
+              ? "Sign in to save your wishlist and collection securely across visits."
+              : "Saved collections and accounts are temporarily unavailable. Fragrance browsing is available."}
           </p>
           <a
-            href="/login?return_to=/account"
+            href={
+              databaseConfigured() ? "/login?return_to=/account" : "/fragrances"
+            }
             target="_top"
             className="button primary"
           >
-            Sign in
+            {databaseConfigured() ? "Sign in" : "Explore fragrances"}
           </a>
         </div>
       )}

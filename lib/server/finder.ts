@@ -3,6 +3,7 @@ import { parseCriteria, recommend } from "@/lib/discovery";
 import { setting } from "./security";
 import { getDb } from "@/db";
 import { aiUsage } from "@/db/schema";
+import { databaseConfigured } from "./configuration";
 
 // The model interprets preferences only. Retrieval, ranking and factual explanations
 // remain deterministic and never consume model-authored product records.
@@ -86,17 +87,15 @@ export async function findFragrances(
       });
       if (!response.ok) throw new Error("Provider unavailable");
       const data = (await response.json()) as ModelResponse;
-      if (data.usage)
-        await getDb()
-          .insert(aiUsage)
-          .values({
-            id: crypto.randomUUID(),
-            userId,
-            model,
-            inputTokens: data.usage.input_tokens,
-            outputTokens: data.usage.output_tokens,
-            createdAt: new Date().toISOString(),
-          });
+      if (data.usage && databaseConfigured())
+        await getDb().insert(aiUsage).values({
+          id: crypto.randomUUID(),
+          userId,
+          model,
+          inputTokens: data.usage.input_tokens,
+          outputTokens: data.usage.output_tokens,
+          createdAt: new Date().toISOString(),
+        });
       const call = data.output?.find(
         (o) => o.type === "function_call" && o.name === "set_criteria",
       );

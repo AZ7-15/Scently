@@ -2221,3 +2221,131 @@ a {
 .auth-switch {
   margin-top: 24px;
 }
+.catalog-tabs {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 30px;
+}
+.catalog-tabs a {
+  padding: 12px 0;
+}
+.catalog-tabs a[aria-current="page"] {
+  border-bottom: 2px solid var(--green);
+  font-weight: 600;
+}
+.live-search-box {
+  max-width: 800px;
+  margin-bottom: 15px;
+}
+.live-search-box button {
+  flex-shrink: 0;
+}
+.brand-browser {
+  margin: 28px 0;
+}
+.brand-browser summary {
+  cursor: pointer;
+  padding-block: 10px;
+}
+.brand-suggestions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 20px;
+}
+.brand-suggestions h2 {
+  font-size: 22px;
+  margin-bottom: 12px;
+}
+.brand-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.brand-chips button {
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--bg);
+  min-height: 40px;
+}
+.live-results {
+  margin-top: 30px;
+}
+.live-results-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+  margin-top: 24px;
+}
+.live-result-card {
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  overflow-wrap: anywhere;
+}
+.live-result-card h2 {
+  font-size: 27px;
+}
+.live-result-card p {
+  color: var(--muted);
+}
+.live-result-icon {
+  color: var(--green);
+}
+.live-load-more {
+  margin-top: 28px;
+}
+.live-profile-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 40px;
+  margin: 35px 0;
+}
+.live-profile-hero h1 {
+  font-size: clamp(38px, 6vw, 70px);
+  margin: 14px 0;
+}
+.live-profile-hero p {
+  margin: 18px 0;
+}
+.live-pyramid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 25px;
+  margin-top: 22px;
+}
+.live-pyramid h3 {
+  text-transform: capitalize;
+  margin-bottom: 12px;
+}
+.live-pyramid ul {
+  padding-left: 20px;
+  line-height: 1.9;
+}
+@media (max-width: 700px) {
+  .brand-suggestions,
+  .live-profile-hero {
+    grid-template-columns: 1fr;
+  }
+  .live-results-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .live-result-card {
+    padding: 18px;
+  }
+  .live-result-card h2 {
+    font-size: 22px;
+  }
+  .live-pyramid {
+    grid-template-columns: 1fr;
+  }
+}

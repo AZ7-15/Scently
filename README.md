@@ -36,13 +36,26 @@ Manual Web Service settings:
 | Health check       | `/api/health`                            |
 | Required secrets   | `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN` |
 
-Render injects `PORT`; the app listens on `0.0.0.0`. Auto-deploy on commits is off. Free service cold starts and provider quotas apply. Preparing these files does not itself create a Render service.
+Render injects `PORT`; the app listens on `0.0.0.0`. The Blueprint disables auto-deploy on commits; services created manually might enable it. Free service cold starts and provider quotas apply. Preparing these files does not itself create a Render service.
+
+### If Render reports missing Turso secrets
+
+Turso stores account and community data; the fragrance API is a separate reference source. In the Turso dashboard, create a **libSQL** database and a database authentication token with write access (schema migrations require it). In **Render > scently > Environment > Add Environment Variable**, add:
+
+```text
+TURSO_DATABASE_URL=libsql://your-actual-database-host.turso.io
+TURSO_AUTH_TOKEN=your-actual-database-token
+```
+
+Use your actual values, not the examples. Save, rebuild/redeploy, then visit `/api/health`. A working database returns `status: ok`. The current app also supports **browse-only mode**: when either database secret is missing, public browsing and live API lookups work, accounts/review writes return 503, and health explicitly reports `mode: browse-only, database: not_configured`. No user data is written to ephemeral Render storage. Configured but broken database credentials still produce a failing health check instead of hiding the failure.
+
+The Turso CLI alternatives are `turso db create scently`, `turso db show scently --url`, and `turso db tokens create scently`. Keep token output private. Database setup: [create](https://docs.turso.tech/cli/db/create), [token](https://docs.turso.tech/cli/db/tokens/create).
 
 The previous Sites deployment remains independent. Its D1 data and ChatGPT accounts are **not automatically transferred**. Older scaffold files remain as reference; the npm scripts now use standard Next.js. Do not deploy this build with the old Worker publication workflow.
 
 ## Configuration
 
-See `.env.example`. Render requires both Turso variables and refuses ephemeral local storage. Local development uses `SCENTLY_DB_PATH` unless Turso is configured. `NEXT_PUBLIC_SITE_URL` optionally overrides the canonical URL; Render's assigned URL is otherwise detected automatically. `CONTACT_EMAIL` sets the operator contact address.
+See `.env.example`. Render requires both Turso variables for account/community storage and refuses ephemeral local storage. Public browsing supports missing-configuration mode as described above. Local development uses `SCENTLY_DB_PATH` unless Turso is configured. `NEXT_PUBLIC_SITE_URL` optionally overrides the canonical URL; Render's assigned URL is otherwise detected automatically. `CONTACT_EMAIL` sets the operator contact address.
 
 `OPENAI_API_KEY` and `OPENAI_MODEL` optionally enable AI interpretation. Without them the finder labels its rule-based fallback. Retailer feeds, Google OAuth, email verification and email-based password recovery are not configured. Passwords use salted scrypt hashes. Caller-supplied platform identity headers are ignored.
 
@@ -61,6 +74,12 @@ npm start
 In another terminal, set `$env:E2E_BASE_URL='http://localhost:4180'` and run `npm run test:e2e`. Playwright uses installed Chrome. Tests mutate accounts, reviews and collections: use an isolated database, never live user data. On Windows, the native libSQL test driver needs Microsoft's Visual C++ runtime; production uses the HTTP-only driver.
 
 ## Catalog and photos
+
+`/fragrances` now searches the free [Scento Perfume API](https://www.scento.com/developers/perfume-api), without a key or paid subscription. Search any fragrance or brand, including brands outside the suggestions. “Load more” follows the source's continuation cursor. `/discover/[lookup]` shows available note pyramids, composition, concentration, year, perfumer and source attribution. The source does not supply every field for every record or cover every fragrance worldwide. It does not provide product photos through these endpoints.
+
+Read-only JSON endpoints are `/api/discovery/search?q=Lattafa` (optionally `continuation`) and `/api/discovery/fragrance/khamrah-lattafa`. Lookups use a bounded 128-answer, 15-minute cache, request coalescing, timeout and upstream rate limits. There is no whole-database crawling or mirroring. Use follows the [source API terms](https://www.scento.com/terms-of-service#perfume-api).
+
+`/fragrances?view=community` retains the locally sourced catalog, filters, collections and community reviews. The finder still ranks that community catalog; API results do not become invented community ratings or verified offers.
 
 The starter catalog contains **six** sourced fragrances. Actual manufacturer photos are bundled in `public/images/products`, with provenance in `data/photo-sources.json` and visible source links. Photos belong to their rights holders; attribution does not establish a commercial license or brand partnership. No Fragrantica photographs are included. A complete Fragrantica catalog has not been imported.
 

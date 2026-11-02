@@ -7,6 +7,7 @@ import {
 } from "node:crypto";
 import { promisify } from "node:util";
 import { env } from "@/db/runtime";
+import { databaseConfigured } from "./configuration";
 
 const scrypt = promisify(scryptCallback);
 export const sessionCookie = "scently_session";
@@ -39,6 +40,7 @@ export async function createSession(userId: string) {
   return token;
 }
 export async function getSessionUser() {
+  if (!databaseConfigured()) return null;
   const token = (await cookies()).get(sessionCookie)?.value;
   if (!token || token.length > 100) return null;
   return env.DB.prepare(

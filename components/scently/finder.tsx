@@ -6,6 +6,7 @@ import type { Criteria } from "@/lib/domain";
 import type { Match } from "@/lib/discovery";
 import { ProductCard } from "./product";
 import { useScently, api } from "./shell";
+import Link from "./site-link";
 type Result = {
   criteria: Criteria;
   matches: Match[];
@@ -65,6 +66,11 @@ export function Finder({ configured }: { configured: boolean }) {
             ? "AI-assisted finder · grounded in our catalog"
             : "Rule-based finder · AI not connected"}
         </span>
+        <p className="quiet-note">
+          This finder ranks the community catalog.{" "}
+          <Link href="/fragrances">Search the live fragrance database</Link> for
+          more brands and perfumes.
+        </p>
       </header>
       {!turns.length && (
         <div className="example-prompts">

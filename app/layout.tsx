@@ -7,6 +7,7 @@ import { collections } from "@/db/schema";
 import { brandConfig, type CollectionStatus } from "@/lib/domain";
 import "./globals.css";
 import { Ready } from "@/components/scently/ready";
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: {
     default: brandConfig.name + " — Discover your next signature scent",

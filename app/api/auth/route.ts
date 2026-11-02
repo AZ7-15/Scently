@@ -18,10 +18,16 @@ import {
   sameOrigin,
 } from "@/lib/server/security";
 import { failure } from "@/lib/server/http";
+import { databaseConfigured } from "@/lib/server/configuration";
 
 export async function POST(request: Request) {
   try {
     sameOrigin(request);
+    if (!databaseConfigured())
+      throw new HttpError(
+        503,
+        "Account features are temporarily unavailable. Please try again later.",
+      );
     const json = request.headers
       .get("content-type")
       ?.includes("application/json");

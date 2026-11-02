@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test("every starter fragrance has a working product photograph", async ({
   page,
 }) => {
-  await page.goto("/fragrances");
+  await page.goto("/fragrances?view=community");
   const photos = page.locator(".bottle-stage img");
   await expect(photos).toHaveCount(6);
   for (const photo of await photos.all()) {
@@ -65,7 +65,7 @@ test("all main navigation and footer links work in the production build", async 
   expect(errors).toEqual([]);
 });
 
-test("navigation and search submission remain available without JavaScript", async ({
+test("community fragrance navigation remains available without JavaScript", async ({
   browser,
 }) => {
   const context = await browser.newContext({
@@ -73,12 +73,7 @@ test("navigation and search submission remain available without JavaScript", asy
     baseURL: test.info().project.use.baseURL,
   });
   const page = await context.newPage();
-  await page.goto("/");
-  await page
-    .getByRole("textbox", { name: "Search fragrances, brands, or notes" })
-    .fill("Sauvage");
-  await page.getByRole("button", { name: "Search", exact: true }).click();
-  await expect(page).toHaveURL(/fragrances\?q=Sauvage/);
+  await page.goto("/fragrances?view=community&q=Sauvage");
   await page.getByRole("link", { name: "Sauvage", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Fragrance pyramid" }),

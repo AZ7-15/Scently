@@ -29,6 +29,10 @@ const pages: Record<
         text: "Names, concentrations and disclosed notes are manually checked against manufacturer information. Each profile links to its source and records when it was checked. Descriptions are original summaries. Notes remain unclassified when the source does not assign top, heart, and base stages.",
       },
       {
+        title: "Live fragrance lookups",
+        text: "Live search and profiles use the free Scento Perfume API, with links to the original answers. Results are requested on demand and kept in a small temporary cache. Brand suggestions are starting points, not promises of complete brand coverage. The source is not a complete database of every fragrance worldwide. Live profiles do not contribute ratings, performance measurements, or price offers to the community catalog.",
+      },
+      {
         title: "Editorial guidance",
         text: "Accord order, scent families and season picks are editorial interpretations of the disclosed composition. Accord bars show order, not measured percentages. Starter product photos come from the manufacturer pages credited below. Illustrated placeholders are used if a photo is unavailable.",
       },

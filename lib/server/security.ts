@@ -2,6 +2,8 @@ import { env } from "@/db/runtime";
 import { getSessionUser } from "@/lib/server/session";
 import { getDb } from "@/db";
 import { users, audit } from "@/db/schema";
+import { databaseConfigured } from "./configuration";
+import { memoryLimit } from "./memory-limits";
 export class HttpError extends Error {
   constructor(
     public status: number,
@@ -27,6 +29,11 @@ export async function identity() {
     : null;
 }
 export async function requireUser() {
+  if (!databaseConfigured())
+    throw new HttpError(
+      503,
+      "Account features are temporarily unavailable. Please try again later.",
+    );
   const user = await identity();
   if (!user) throw new HttpError(401, "Sign in to continue.");
   await getDb()
@@ -62,6 +69,14 @@ export function sameOrigin(request: Request) {
     throw new HttpError(403, "Cross-site changes are not allowed.");
 }
 export async function limited(key: string, limit: number, seconds: number) {
+  if (!databaseConfigured()) {
+    if (!memoryLimit(key, limit, seconds))
+      throw new HttpError(
+        429,
+        "Too many requests. Please wait a moment and try again.",
+      );
+    return;
+  }
   const window = Math.floor(Date.now() / (seconds * 1000)),
     bucket = `${key}:${window}`;
   const result = await env.DB.prepare(
