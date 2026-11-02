@@ -1,25 +1,26 @@
-import { getCatalog } from "@/lib/server/catalog";
-import { searchCatalog } from "@/lib/discovery";
+import { searchUnifiedCatalog } from "@/lib/server/unified-catalog";
 import { failure } from "@/lib/server/http";
+import { FragranceSourceError } from "@/lib/server/scento";
 export async function GET(request: Request) {
   try {
     const p = new URL(request.url).searchParams;
-    const page = Math.max(1, Math.min(1000, Number(p.get("page")) || 1));
-    const results = searchCatalog(await getCatalog(), {
-      q: p.get("q") || "",
-      notes: p.getAll("note"),
-      seasons: p.getAll("season"),
-      region: p.get("region") === "US" ? "US" : "CA",
-    });
+    const q = p.get("q") || "";
+    if (q.length > 150 || (p.get("continuation")?.length || 0) > 2000)
+      return Response.json({ error: "Search is too long." }, { status: 400 });
+    const result = await searchUnifiedCatalog(
+      q,
+      p.get("continuation") || undefined,
+    );
     return Response.json(
       {
-        results: results.slice((page - 1) * 12, page * 12),
-        page,
-        total: results.length,
+        ...result,
+        total: result.results.length,
       },
       { headers: { "Cache-Control": "public, max-age=30" } },
     );
   } catch (e) {
+    if (e instanceof FragranceSourceError)
+      return Response.json({ error: e.message }, { status: e.status });
     return failure(e);
   }
 }

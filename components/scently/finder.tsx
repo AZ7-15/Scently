@@ -68,8 +68,8 @@ export function Finder({ configured }: { configured: boolean }) {
         </span>
         <p className="quiet-note">
           This finder ranks the community catalog.{" "}
-          <Link href="/fragrances">Search the live fragrance database</Link> for
-          more brands and perfumes.
+          <Link href="/fragrances">Search the fragrance catalog</Link> for more
+          brands and perfumes.
         </p>
       </header>
       {!turns.length && (

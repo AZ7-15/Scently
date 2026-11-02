@@ -6,7 +6,13 @@ Live search and profiles call Scento's public REST API at `https://www.scento.co
 
 The adapter validates responses, uses a bounded 128-answer cache for 15 minutes, coalesces concurrent requests and limits upstream calls to 60 per minute per process. It does not crawl or persist a copy of the source catalog. This follows the [API reference](https://www.scento.com/developers/perfume-api) and [API-specific terms](https://www.scento.com/terms-of-service#perfume-api). The provider can change availability or coverage.
 
-Read-only application routes: `/api/discovery/search?q=Lattafa` and `/api/discovery/fragrance/khamrah-lattafa`. Community filters and the finder continue to use the separately maintained local catalog.
+`/api/catalog?q=Lattafa` combines local records and one provider page, hydrating available composition and season data for common filters. Matching brand/name/concentration records keep the local version and its reviews. Distinct concentrations are preserved. Pagination uses the provider cursor. Legacy `/api/discovery/search` and `/api/discovery/fragrance` routes remain available.
+
+## Product photographs
+
+Bundled manufacturer photos are used where available. `/api/catalog/photo` looks up a product-specific photograph from Scento's public product metadata or an exact bottle label on a brand page. Public Shopify product-search fallbacks use Fragrance Lord, DecantX and Scent Decant. Names and brands must match; another flanker and generic brand cover are rejected. Only configured HTTPS image hosts are accepted, and arbitrary source URLs are never fetched. Matching source URLs are retained for credit. Metadata is cached, upstream requests are limited, and photos load near the viewport. Failed images try another matched candidate. A missing image is clearly marked rather than replaced with an inaccurate bottle. Third-party availability and image rights remain subject to their respective owners.
+
+Lattafa India also supplies an exact-name public product-metadata fallback for Lattafa records that lack a photo in the other sources.
 
 ## Database setup mode
 

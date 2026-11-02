@@ -16,7 +16,10 @@ async function register(page: Page, path: string) {
   await visit(page, path);
 }
 test("known search opens its profile and note pyramid", async ({ page }) => {
-  await visit(page, "/fragrances?view=community&q=Dior%20Sauvage");
+  await visit(page, "/fragrances");
+  await page
+    .getByRole("textbox", { name: "Search catalog" })
+    .fill("Dior Sauvage");
   await expect(page.getByRole("status")).toContainText("1 fragrances");
   await page.getByRole("link", { name: "Sauvage", exact: true }).click();
   await expect(

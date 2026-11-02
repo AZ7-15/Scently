@@ -1,12 +1,32 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { ArrowRight, Search, SlidersHorizontal, X } from "lucide-react";
 import { type Fragrance, seasons, projections } from "@/lib/domain";
 import { searchCatalog, correctQuery, type Filters } from "@/lib/discovery";
 import { ProductGrid } from "./product";
 import { useScently } from "./shell";
-export function Explorer({ catalog }: { catalog: Fragrance[] }) {
+import { mergeFragrances } from "@/lib/catalog";
+import { brandSuggestions } from "@/lib/live-catalog";
+type CatalogResponse = {
+  results: Fragrance[];
+  continuation: string | null;
+  providerTotal: number;
+  error?: string;
+};
+export function Explorer({
+  catalog,
+  initialCatalog = catalog,
+  initialContinuation = null,
+  initialProviderTotal = 0,
+  initialNotice = "",
+}: {
+  catalog: Fragrance[];
+  initialCatalog?: Fragrance[];
+  initialContinuation?: string | null;
+  initialProviderTotal?: number;
+  initialNotice?: string;
+}) {
   const params = useSearchParams(),
     { region } = useScently();
   const initial: Filters = {
@@ -20,6 +40,77 @@ export function Explorer({ catalog }: { catalog: Fragrance[] }) {
   const [filters, setFilters] = useState(initial),
     [query, setQuery] = useState(initial.q || ""),
     [page, setPage] = useState(1);
+  const [records, setRecords] = useState(catalog),
+    [activeQuery, setActiveQuery] = useState(
+      initialNotice ? "" : initial.q || "",
+    ),
+    [cursor, setCursor] = useState(initialContinuation),
+    [providerTotal, setProviderTotal] = useState(initialProviderTotal),
+    [notice, setNotice] = useState(initialNotice),
+    [busy, setBusy] = useState(false);
+  const requestId = useRef(0);
+  function reset() {
+    requestId.current++;
+    setFilters({});
+    setQuery("");
+    setActiveQuery("");
+    setRecords(initialCatalog);
+    setCursor(null);
+    setProviderTotal(0);
+    setNotice("");
+    setBusy(false);
+    setPage(1);
+    window.history.replaceState(null, "", "/fragrances");
+  }
+  async function search(value = query, more = false, clearFilters = false) {
+    const q = value.trim();
+    if (!q) {
+      reset();
+      return;
+    }
+    if (q.length < 2 || q.length > 150) {
+      setNotice("Search using 2–150 characters.");
+      return;
+    }
+    const id = ++requestId.current;
+    setBusy(true);
+    setNotice("");
+    setQuery(q);
+    try {
+      const parameters = new URLSearchParams({ q });
+      if (more && cursor) parameters.set("continuation", cursor);
+      const response = await fetch("/api/catalog?" + parameters);
+      const data = (await response.json()) as CatalogResponse;
+      if (id !== requestId.current) return;
+      if (!response.ok)
+        throw new Error(
+          data.error || "Fragrance search is temporarily unavailable.",
+        );
+      const combined = more
+        ? mergeFragrances(records, data.results)
+        : data.results;
+      setRecords(combined);
+      setCursor(data.continuation);
+      setProviderTotal(data.providerTotal);
+      setActiveQuery(q);
+      setQuery(q);
+      setPage(more ? Math.max(1, Math.ceil(combined.length / 12)) : 1);
+      if (clearFilters) setFilters({ q });
+      window.history.replaceState(
+        null,
+        "",
+        "/fragrances?" + new URLSearchParams({ q }),
+      );
+    } catch (e) {
+      if (id === requestId.current) setNotice((e as Error).message);
+    } finally {
+      if (id === requestId.current) setBusy(false);
+    }
+  }
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void search();
+  }
   useEffect(() => {
     const timer = setTimeout(() => {
       setFilters((f) => ({ ...f, q: query }));
@@ -31,7 +122,11 @@ export function Explorer({ catalog }: { catalog: Fragrance[] }) {
     setFilters((f) => ({ ...f, [key]: value }));
     setPage(1);
   }
-  const result = searchCatalog(catalog, { ...filters, region });
+  const result = searchCatalog(records, {
+    ...filters,
+    q: filters.q === activeQuery ? "" : filters.q,
+    region,
+  });
   const select = (label: string, key: keyof Filters, values: string[]) => (
     <label className="field">
       <span>{label}</span>
@@ -51,20 +146,28 @@ export function Explorer({ catalog }: { catalog: Fragrance[] }) {
   return (
     <>
       <div className="filter-panel">
-        <div className="search-box">
+        <form className="search-box" action="/fragrances" onSubmit={submit}>
           <Search size={19} />
           <input
             aria-label="Search catalog"
+            name="q"
             placeholder="Search fragrances, brands, or notes..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
           {query && (
-            <button aria-label="Clear search" onClick={() => setQuery("")}>
+            <button type="button" aria-label="Clear search" onClick={reset}>
               <X size={16} />
             </button>
           )}
-        </div>
+          <button
+            className="catalog-search-submit"
+            disabled={busy}
+            aria-label="Search database"
+          >
+            {busy ? "Searching…" : <ArrowRight size={18} />}
+          </button>
+        </form>
         <details open>
           <summary>
             <SlidersHorizontal size={16} /> Refine your discovery
@@ -85,7 +188,7 @@ export function Explorer({ catalog }: { catalog: Fragrance[] }) {
                 <option value="">Add a note</option>
                 {[
                   ...new Set(
-                    catalog.flatMap((f) => [
+                    records.flatMap((f) => [
                       ...f.accords,
                       ...f.notes.map((n) => n.name),
                     ]),
@@ -149,10 +252,10 @@ export function Explorer({ catalog }: { catalog: Fragrance[] }) {
             <summary>More filters</summary>
             <div className="filter-grid">
               {select("Brand", "brand", [
-                ...new Set(catalog.map((f) => f.brand)),
+                ...new Set(records.map((f) => f.brand)),
               ])}
               {select("Concentration", "concentration", [
-                ...new Set(catalog.map((f) => f.concentration)),
+                ...new Set(records.map((f) => f.concentration)),
               ])}
               {select("Style preference", "style", [
                 "masculine",
@@ -164,6 +267,7 @@ export function Explorer({ catalog }: { catalog: Fragrance[] }) {
                 "warm",
                 "woody",
                 "dark",
+                "floral",
               ])}
               {select("Minimum rating", "minRating", ["3", "4", "4.5"])}
               {select("Occasion", "occasion", [
@@ -195,18 +299,53 @@ export function Explorer({ catalog }: { catalog: Fragrance[] }) {
               </button>
             ))}
           </div>
-          <button
-            className="plain-button"
-            onClick={() => {
-              setFilters({});
-              setQuery("");
-              setPage(1);
-            }}
-          >
+          <button className="plain-button" onClick={reset}>
             Reset filters
           </button>
         </div>
       </div>
+      <details className="brand-browser">
+        <summary>Explore brands</summary>
+        <div className="brand-suggestions">
+          {Object.entries(brandSuggestions).map(([group, brands]) => (
+            <section key={group}>
+              <h2>{group}</h2>
+              <div className="brand-chips">
+                {brands.map((brand) => (
+                  <button
+                    key={brand}
+                    className="plain-button"
+                    disabled={busy}
+                    onClick={() => void search(brand, false, true)}
+                  >
+                    {brand}
+                  </button>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      </details>
+      {notice && (
+        <div className="info-line" role="alert">
+          <p>{notice}</p>
+          <button
+            className="plain-button"
+            disabled={busy}
+            onClick={() => void search()}
+          >
+            Try search again
+          </button>
+        </div>
+      )}
+      {busy && <p role="status">Searching fragrances…</p>}
+      {providerTotal > 0 && (
+        <p className="quiet-note">
+          {providerTotal.toLocaleString()} matches reported by the source.
+          Filters apply to the {records.length} fragrances loaded so far; load
+          more to include additional matches.
+        </p>
+      )}
       {correctQuery(query) !== query && (
         <p className="info-line">
           Showing results for “{correctQuery(query)}”.
@@ -228,7 +367,7 @@ export function Explorer({ catalog }: { catalog: Fragrance[] }) {
         </label>
       </div>
       {result.length ? (
-        <ProductGrid fragrances={result.slice((page - 1) * 12, page * 12)} />
+        <ProductGrid fragrances={result.slice(0, page * 12)} />
       ) : (
         <div className="empty-state">
           <Search size={30} />
@@ -238,37 +377,30 @@ export function Explorer({ catalog }: { catalog: Fragrance[] }) {
             offers with known shipping; performance filters require community
             evidence.
           </p>
-          <button
-            className="button secondary"
-            onClick={() => {
-              setFilters({});
-              setQuery("");
-            }}
-          >
+          <button className="button secondary" onClick={reset}>
             Explore all fragrances
           </button>
         </div>
       )}
-      {result.length > 12 && (
+      {result.length > page * 12 && (
         <div className="pagination">
-          <button
-            className="button"
-            disabled={page === 1}
-            onClick={() => setPage(page - 1)}
-          >
-            Previous
-          </button>
-          <span>
-            Page {page} of {Math.ceil(result.length / 12)}
-          </span>
           <button
             className="button"
             disabled={page * 12 >= result.length}
             onClick={() => setPage(page + 1)}
           >
-            Next
+            Show more fragrances
           </button>
         </div>
+      )}
+      {cursor && (
+        <button
+          className="button secondary live-load-more"
+          disabled={busy}
+          onClick={() => void search(activeQuery, true)}
+        >
+          Load more fragrances
+        </button>
       )}
       <p className="quiet-note">
         Seasons and scent families are editorial suggestions. Performance and

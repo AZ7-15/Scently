@@ -2,9 +2,10 @@ import { getLiveFragrance, FragranceSourceError } from "@/lib/server/scento";
 import { curatedCatalog } from "@/data/catalog";
 import { normalize } from "@/lib/domain";
 import { Bottle } from "@/components/scently/product";
+import { ProductPhoto } from "@/components/scently/product-photo";
 import Link from "@/components/scently/site-link";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Fragrance profile · Live database" };
+export const metadata = { title: "Fragrance profile" };
 export default async function Page({
   params,
 }: {
@@ -27,7 +28,7 @@ export default async function Page({
   return (
     <main id="main" className="container page">
       <nav className="breadcrumb" aria-label="Breadcrumb">
-        <Link href="/fragrances">Live fragrance database</Link>
+        <Link href="/fragrances">Fragrances</Link>
         <span>/</span>
         <span>{fragrance.name}</span>
       </nav>
@@ -63,11 +64,18 @@ export default async function Page({
             unavailable.
           </p>
         </div>
-        {local && (
-          <div className="detail-image">
+        <div className="detail-image">
+          {local ? (
             <Bottle fragrance={local} large />
-          </div>
-        )}
+          ) : (
+            <ProductPhoto
+              name={fragrance.name}
+              brand={fragrance.brand}
+              sourceUrl={fragrance.sourceUrl}
+              large
+            />
+          )}
+        </div>
       </section>
       <section className="panel detail-section">
         <h2>Fragrance pyramid</h2>
@@ -102,9 +110,8 @@ export default async function Page({
             : "Not provided by the source."}
         </p>
         <p className="quiet-note">
-          Source guidance, rather than Scently community votes. This API does
-          not supply a product photograph, verified wear-time measurements, or
-          current retailer totals.
+          Source guidance, rather than Scently community votes. Verified
+          wear-time measurements and current retailer totals are unavailable.
         </p>
       </section>
       {local && (

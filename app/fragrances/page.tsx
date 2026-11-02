@@ -1,9 +1,6 @@
-import { getCatalog } from "@/lib/server/catalog";
 import { Explorer } from "@/components/scently/explorer";
-import { LiveCatalog } from "@/components/scently/live-catalog";
-import { searchLiveFragrances } from "@/lib/server/scento";
-import type { LiveSearch } from "@/lib/live-catalog";
-import Link from "@/components/scently/site-link";
+import { searchUnifiedCatalog } from "@/lib/server/unified-catalog";
+import { getCatalog } from "@/lib/server/catalog";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Explore fragrances" };
 export default async function Page({
@@ -12,20 +9,20 @@ export default async function Page({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const community =
-    params.view === "community" ||
-    (params.view !== "live" &&
-      ["note", "season", "family", "budget", "hours"].some(
-        (key) => params[key],
-      ));
   const query = typeof params.q === "string" ? params.q.slice(0, 150) : "";
-  let initialResult: LiveSearch | null = null,
-    error = "";
-  if (!community && query.trim().length >= 2) {
+  const local = await getCatalog();
+  let data = {
+    results: local,
+    continuation: null as string | null,
+    providerTotal: 0,
+    notice: "",
+  };
+  if (query.trim().length >= 2) {
     try {
-      initialResult = await searchLiveFragrances(query);
-    } catch (e) {
-      error = (e as Error).message;
+      data = await searchUnifiedCatalog(query);
+    } catch {
+      data.notice =
+        "The fragrance source is temporarily unavailable. You can still browse the available catalog.";
     }
   }
   return (
@@ -42,26 +39,13 @@ export default async function Page({
           niche, and Arabian houses. Availability follows the source catalog.
         </p>
       </div>
-      <nav className="catalog-tabs" aria-label="Catalog source">
-        <Link href="/fragrances" aria-current={!community ? "page" : undefined}>
-          Live fragrance database
-        </Link>
-        <Link
-          href="/fragrances?view=community"
-          aria-current={community ? "page" : undefined}
-        >
-          Community catalog & filters
-        </Link>
-      </nav>
-      {community ? (
-        <Explorer catalog={await getCatalog()} />
-      ) : (
-        <LiveCatalog
-          initialQuery={query}
-          initialResult={initialResult}
-          initialError={error}
-        />
-      )}
+      <Explorer
+        catalog={data.results}
+        initialCatalog={local}
+        initialContinuation={data.continuation}
+        initialProviderTotal={data.providerTotal}
+        initialNotice={data.notice}
+      />
     </main>
   );
 }

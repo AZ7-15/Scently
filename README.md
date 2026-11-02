@@ -75,11 +75,13 @@ In another terminal, set `$env:E2E_BASE_URL='http://localhost:4180'` and run `np
 
 ## Catalog and photos
 
-`/fragrances` now searches the free [Scento Perfume API](https://www.scento.com/developers/perfume-api), without a key or paid subscription. Search any fragrance or brand, including brands outside the suggestions. “Load more” follows the source's continuation cursor. `/discover/[lookup]` shows available note pyramids, composition, concentration, year, perfumer and source attribution. The source does not supply every field for every record or cover every fragrance worldwide. It does not provide product photos through these endpoints.
+`/fragrances` is one catalog with one search and filter panel. Search any fragrance or brand to combine local records with on-demand results from the free [Scento Perfume API](https://www.scento.com/developers/perfume-api). Matching records are deduplicated by brand, name and concentration; local reviews are preserved. Distinct concentration variants remain separate. “Load more” follows the source cursor. Filters use the data available for loaded entries; unknown performance and prices do not pass evidence-based filters. The provider does not cover every fragrance worldwide.
 
 Read-only JSON endpoints are `/api/discovery/search?q=Lattafa` (optionally `continuation`) and `/api/discovery/fragrance/khamrah-lattafa`. Lookups use a bounded 128-answer, 15-minute cache, request coalescing, timeout and upstream rate limits. There is no whole-database crawling or mirroring. Use follows the [source API terms](https://www.scento.com/terms-of-service#perfume-api).
 
-`/fragrances?view=community` retains the locally sourced catalog, filters, collections and community reviews. The finder still ranks that community catalog; API results do not become invented community ratings or verified offers.
+Product photos use the bundled manufacturer assets first. Other records look up matching product photos from Scento product/brand pages, with exact-name retailer product-search fallbacks. Sources are credited on detail pages. Brand covers, unrelated flankers and untrusted image hosts are rejected. Photos load near the viewport and try alternate matched images if a URL fails. Missing photos are explicitly labeled; no unrelated or generated bottle is substituted. Source access and photo availability can change. Lookups are bounded, cached and rate limited.
+
+Legacy source-selection URLs open the same combined catalog. The finder continues to rank persisted records; source records are not fabricated community ratings or verified retailer offers.
 
 The starter catalog contains **six** sourced fragrances. Actual manufacturer photos are bundled in `public/images/products`, with provenance in `data/photo-sources.json` and visible source links. Photos belong to their rights holders; attribution does not establish a commercial license or brand partnership. No Fragrantica photographs are included. A complete Fragrantica catalog has not been imported.
 

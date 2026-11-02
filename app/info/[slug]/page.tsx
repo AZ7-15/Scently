@@ -30,11 +30,11 @@ const pages: Record<
       },
       {
         title: "Live fragrance lookups",
-        text: "Live search and profiles use the free Scento Perfume API, with links to the original answers. Results are requested on demand and kept in a small temporary cache. Brand suggestions are starting points, not promises of complete brand coverage. The source is not a complete database of every fragrance worldwide. Live profiles do not contribute ratings, performance measurements, or price offers to the community catalog.",
+        text: "The catalog combines local records with on-demand Scento Perfume API results in the same search and filters. Duplicate brand, name and concentration records preserve local reviews. Source families are mapped into common scent categories. Filters use the data available for loaded records; missing measurements are not guessed. Brand suggestions do not promise complete coverage, and the source does not contain every fragrance worldwide.",
       },
       {
         title: "Editorial guidance",
-        text: "Accord order, scent families and season picks are editorial interpretations of the disclosed composition. Accord bars show order, not measured percentages. Starter product photos come from the manufacturer pages credited below. Illustrated placeholders are used if a photo is unavailable.",
+        text: "Accord order, scent families and season picks are editorial interpretations of the disclosed composition. Accord bars show order, not measured percentages. Product photos use manufacturer assets or matching source product photographs, with source links on profiles. If a reliable photo cannot be found, it is labeled unavailable rather than showing another fragrance.",
       },
       {
         title: "Community evidence",

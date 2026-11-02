@@ -7,8 +7,8 @@ import {
   GitCompareArrows,
   Star,
 } from "lucide-react";
-import type { Fragrance } from "@/lib/domain";
-import { useState } from "react";
+import { fragrancePath, type Fragrance } from "@/lib/domain";
+import { ProductPhoto } from "./product-photo";
 import { sortedOffers, offerTotal } from "@/lib/discovery";
 import { useScently } from "./shell";
 export function Bottle({
@@ -18,40 +18,19 @@ export function Bottle({
   fragrance: Fragrance;
   large?: boolean;
 }) {
-  const [failedImage, setFailedImage] = useState<string | null>(null);
   return (
     <div
       className={"bottle-stage " + (large ? "large" : "")}
       style={{ "--bottle-color": f.color } as React.CSSProperties}
     >
-      {f.imageUrl && failedImage !== f.imageUrl ? (
-        // Product photos are served as static assets, with source attribution.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={f.imageUrl}
-          alt={f.brand + " " + f.name + " " + f.concentration + " bottle"}
-          loading={large ? "eager" : "lazy"}
-          onError={() => setFailedImage(f.imageUrl)}
-        />
-      ) : (
-        <div
-          className={"bottle " + f.shape}
-          role="img"
-          aria-label={
-            "Illustrated placeholder for " + f.name + "; not actual packaging"
-          }
-        >
-          <div className="bottle-cap" />
-          <div className="bottle-neck" />
-          <div className="bottle-glass">
-            <div className="bottle-label">
-              <span>{f.brand}</span>
-              <strong>{f.name}</strong>
-              <small>{f.concentration}</small>
-            </div>
-          </div>
-        </div>
-      )}
+      <ProductPhoto
+        key={f.id}
+        name={f.name}
+        brand={f.brand}
+        sourceUrl={f.sourceUrl}
+        imageUrl={f.imageUrl}
+        large={large}
+      />
     </div>
   );
 }
@@ -61,20 +40,19 @@ export function ProductCard({ fragrance: f }: { fragrance: Fragrance }) {
   return (
     <article className="product-card">
       <div className={"product-visual tone-" + f.family}>
-        <Link href={"/fragrances/" + f.slug} aria-label={"Explore " + f.name}>
+        <Link href={fragrancePath(f)} aria-label={"Explore " + f.name}>
           <Bottle fragrance={f} />
         </Link>
-        <button
-          className={"save-button " + (shelf[f.id] ? "saved" : "")}
-          aria-label={(shelf[f.id] ? "Unsave " : "Save ") + f.name}
-          aria-pressed={!!shelf[f.id]}
-          onClick={() => save(f.id, shelf[f.id] ? null : "wishlist")}
-        >
-          <Bookmark size={18} fill={shelf[f.id] ? "currentColor" : "none"} />
-        </button>
-        <span className="image-caption">
-          {f.imageUrl ? "" : "Illustration"}
-        </span>
+        {!f.externalLookup && (
+          <button
+            className={"save-button " + (shelf[f.id] ? "saved" : "")}
+            aria-label={(shelf[f.id] ? "Unsave " : "Save ") + f.name}
+            aria-pressed={!!shelf[f.id]}
+            onClick={() => save(f.id, shelf[f.id] ? null : "wishlist")}
+          >
+            <Bookmark size={18} fill={shelf[f.id] ? "currentColor" : "none"} />
+          </button>
+        )}
       </div>
       <div className="product-copy">
         <div className="brand-line">
@@ -87,7 +65,14 @@ export function ProductCard({ fragrance: f }: { fragrance: Fragrance }) {
           </span>
         </div>
         <h3>
-          <Link href={"/fragrances/" + f.slug}>{f.name}</Link>
+          <Link
+            href={fragrancePath(f)}
+            aria-label={
+              f.externalLookup ? f.name + " — " + f.concentration : undefined
+            }
+          >
+            {f.name}
+          </Link>
         </h3>
         <p className="concentration">{f.concentration}</p>
         <div className="accord-tags">
@@ -99,20 +84,22 @@ export function ProductCard({ fragrance: f }: { fragrance: Fragrance }) {
         </div>
         <div className="card-bottom">
           <span>{f.editorialSeasons.slice(0, 2).join(" · ")}</span>
-          <button
-            onClick={() => toggleCompare(f.id)}
-            aria-label={
-              (compare.includes(f.id) ? "Remove " : "Compare ") + f.name
-            }
-            aria-pressed={compare.includes(f.id)}
-          >
-            {compare.includes(f.id) ? (
-              <Check size={14} />
-            ) : (
-              <GitCompareArrows size={14} />
-            )}{" "}
-            Compare
-          </button>
+          {!f.externalLookup && (
+            <button
+              onClick={() => toggleCompare(f.id)}
+              aria-label={
+                (compare.includes(f.id) ? "Remove " : "Compare ") + f.name
+              }
+              aria-pressed={compare.includes(f.id)}
+            >
+              {compare.includes(f.id) ? (
+                <Check size={14} />
+              ) : (
+                <GitCompareArrows size={14} />
+              )}{" "}
+              Compare
+            </button>
+          )}
         </div>
         {offer ? (
           <p className="price-line">
@@ -123,9 +110,12 @@ export function ProductCard({ fragrance: f }: { fragrance: Fragrance }) {
         ) : (
           <Link
             className="price-line"
-            href={"/fragrances/" + f.slug + "#prices"}
+            href={fragrancePath(f) + (f.externalLookup ? "" : "#prices")}
           >
-            Explore scent & retailer information <ArrowUpRight size={13} />
+            {f.externalLookup
+              ? "Explore fragrance details"
+              : "Explore scent & retailer information"}{" "}
+            <ArrowUpRight size={13} />
           </Link>
         )}
       </div>

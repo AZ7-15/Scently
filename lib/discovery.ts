@@ -5,6 +5,7 @@ import {
   type Fragrance,
   type Offer,
 } from "./domain";
+import { brandKey } from "./catalog";
 export const OFFER_TTL_HOURS = 48;
 export function isCurrentOffer(o: Offer, region = "CA", now = Date.now()) {
   const age = now - new Date(o.verifiedAt).getTime();
@@ -99,7 +100,7 @@ export function searchCatalog(catalog: Fragrance[], filters: Filters) {
       (!filters.minHours ||
         (f.longevity !== null && f.longevity >= filters.minHours)) &&
       (!filters.projection || f.projection === filters.projection) &&
-      (!filters.brand || f.brand === filters.brand) &&
+      (!filters.brand || brandKey(f.brand) === brandKey(filters.brand)) &&
       (!filters.concentration || f.concentration === filters.concentration) &&
       (!filters.style || f.style === filters.style) &&
       (!filters.occasion || f.occasions.includes(filters.occasion)) &&

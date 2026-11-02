@@ -78,7 +78,7 @@ export default async function Page({
                 "Product photo"
               )
             ) : (
-              "Illustrated placeholder · not actual packaging"
+              "Product photo lookup"
             )}
           </span>
         </div>

@@ -21,6 +21,7 @@ export interface Note {
   stage: "top" | "heart" | "base" | "unclassified";
 }
 export interface Fragrance {
+  externalLookup?: string;
   id: string;
   slug: string;
   name: string;
@@ -49,6 +50,11 @@ export interface Fragrance {
   performanceVotes: number;
   seasonVotes: Record<string, number>;
   offers: Offer[];
+}
+export function fragrancePath(fragrance: Fragrance) {
+  return fragrance.externalLookup
+    ? "/discover/" + encodeURIComponent(fragrance.externalLookup)
+    : "/fragrances/" + fragrance.slug;
 }
 export interface Offer {
   id: string;

@@ -65,7 +65,7 @@ test("all main navigation and footer links work in the production build", async 
   expect(errors).toEqual([]);
 });
 
-test("community fragrance navigation remains available without JavaScript", async ({
+test("fragrance navigation remains available without JavaScript", async ({
   browser,
 }) => {
   const context = await browser.newContext({
@@ -73,7 +73,7 @@ test("community fragrance navigation remains available without JavaScript", asyn
     baseURL: test.info().project.use.baseURL,
   });
   const page = await context.newPage();
-  await page.goto("/fragrances?view=community&q=Sauvage");
+  await page.goto("/fragrances");
   await page.getByRole("link", { name: "Sauvage", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Fragrance pyramid" }),
