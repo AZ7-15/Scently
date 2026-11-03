@@ -52,11 +52,16 @@ test("search vanilla, combine filters, reset", async ({ page }) => {
 });
 test("compare two fragrances", async ({ page }) => {
   await visit(page, "/fragrances?view=community");
-  await page
+  const sauvage = page
+    .locator(".product-card")
+    .filter({
+      has: page.getByRole("button", { name: "Save Sauvage", exact: true }),
+    });
+  await sauvage
     .getByRole("button", { name: "Compare Sauvage", exact: true })
     .click();
   await expect(
-    page.getByRole("button", { name: "Remove Sauvage", exact: true }),
+    sauvage.getByRole("button", { name: "Remove Sauvage", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
   await page
     .getByRole("button", { name: "Compare Santal 33", exact: true })

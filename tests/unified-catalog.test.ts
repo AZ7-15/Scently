@@ -79,3 +79,86 @@ it("excludes unrelated provider suggestions and normalizes spaced model numbers"
     "9 PM",
   ]);
 });
+
+it("removes unspecified duplicates regardless of source order, retaining real concentration variants", () => {
+  const base = { ...curatedCatalog[0], name: "Sauvage" };
+  const unknown = { ...base, id: "unknown", concentration: "Not provided" };
+  const edt = { ...base, id: "edt", concentration: "EDT" };
+  for (const items of [
+    [unknown, base, edt],
+    [base, edt, unknown],
+    [edt, unknown, base],
+  ]) {
+    const merged = mergeFragrances([], items);
+    expect(merged).toHaveLength(2);
+    expect(merged.map((f) => f.id)).not.toContain("unknown");
+  }
+  expect(
+    mergeFragrances([unknown], [{ ...unknown, id: "another" }]),
+  ).toHaveLength(1);
+});
+it("deduplicates concentration suffixes, punctuation and numeric spacing across pages", () => {
+  const base = { ...curatedCatalog[0], reviewCount: 8 };
+  const same = {
+    ...base,
+    id: "source",
+    name: "Sauvage Eau de Parfum",
+    concentration: "EDP",
+    reviewCount: 0,
+  };
+  expect(mergeFragrances([base], [same])).toEqual([base]);
+  const numbered = { ...base, name: "9 PM", brand: "Afnan" };
+  expect(
+    mergeFragrances([numbered], [{ ...numbered, id: "other", name: "9PM" }]),
+  ).toHaveLength(1);
+  const cologne = {
+    ...base,
+    name: "Wood Sage & Sea Salt",
+    brand: "Jo Malone London",
+    concentration: "Cologne",
+  };
+  expect(
+    mergeFragrances(
+      [cologne],
+      [
+        {
+          ...cologne,
+          id: "open",
+          name: "Wood Sage and Sea Salt",
+          concentration: "Not provided",
+        },
+      ],
+    ),
+  ).toEqual([cologne]);
+  expect(
+    mergeFragrances(
+      [base],
+      [
+        {
+          ...base,
+          id: "elixir",
+          name: "Sauvage Elixir",
+          concentration: "Elixir",
+        },
+      ],
+    ),
+  ).toHaveLength(2);
+  expect(
+    mergeFragrances(
+      [base],
+      [{ ...base, id: "oil", concentration: "Perfume oil" }],
+    ),
+  ).toHaveLength(2);
+});
+
+it("does not create an extra edition from an Elixir marketing label", () => {
+  const base = {
+    ...curatedCatalog[0],
+    name: "Odyssey Mandarin Sky Elixir",
+    brand: "Armaf",
+    concentration: "Eau de Parfum",
+  };
+  expect(
+    mergeFragrances([base], [{ ...base, id: "open", concentration: "Elixir" }]),
+  ).toEqual([base]);
+});

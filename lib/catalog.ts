@@ -17,7 +17,7 @@ export function concentrationKey(value: string | null | undefined) {
   if (/\b(extrait de parfum|extrait|extract)\b/.test(text)) return "extrait";
   if (/\b(eau de parfum|edp)\b/.test(text)) return "edp";
   if (/\b(eau de toilette|edt)\b/.test(text)) return "edt";
-  if (/\b(eau de cologne|edc)\b/.test(text)) return "edc";
+  if (/\b(eau de cologne|cologne|edc)\b/.test(text)) return "edc";
   if (/\bparfum\b/.test(text)) return "parfum";
   if (/\belixir\b/.test(text)) return "elixir";
   return "";
@@ -43,21 +43,66 @@ export function photoConcentrationMatches(expected: string, evidence: string) {
   const found = new Set(mentions.map(concentrationKey));
   return found.size === 1 && found.has(wanted);
 }
-export function fragranceKey(
-  fragrance: Pick<Fragrance, "brand" | "name" | "concentration">,
-) {
-  return [
-    brandKey(fragrance.brand),
-    identityName(fragrance.name),
-    concentrationKey(fragrance.concentration) ||
-      normalize(fragrance.concentration),
-  ].join("|");
+type CatalogIdentity = Pick<Fragrance, "brand" | "name" | "concentration">;
+function editionName(fragrance: CatalogIdentity) {
+  return identityName(fragrance.name.replace(/&/g, " and "))
+    .replace(
+      /\s+(?:eau de parfum|eau de toilette|eau de cologne|edp|edt|edc)$/,
+      "",
+    )
+    .replace(/\s+/g, "");
+}
+function editionConcentration(f: CatalogIdentity) {
+  const explicit =
+    concentrationKey(f.concentration) ||
+    concentrationKey(
+      f.name.match(
+        /(?:eau de parfum|eau de toilette|eau de cologne|edp|edt|edc)$/i,
+      )?.[0],
+    );
+  // Elixir in a product name is an edition label, not a separate strength.
+  if (explicit === "elixir" && /\belixir\b/.test(identityName(f.name)))
+    return "";
+  const raw = identityName(f.concentration || "");
+  return (
+    explicit ||
+    (["", "not provided", "unknown", "n a", "not specified"].includes(raw)
+      ? ""
+      : raw)
+  );
+}
+function editionKey(f: CatalogIdentity) {
+  return brandKey(f.brand) + "|" + editionName(f);
+}
+export function fragranceKey(f: CatalogIdentity) {
+  return editionKey(f) + "|" + editionConcentration(f);
+}
+export function matchingCatalogEdition(a: CatalogIdentity, b: CatalogIdentity) {
+  const ac = editionConcentration(a),
+    bc = editionConcentration(b);
+  return editionKey(a) === editionKey(b) && (!ac || !bc || ac === bc);
 }
 export function mergeFragrances(local: Fragrance[], incoming: Fragrance[]) {
-  const records = new Map(local.map((item) => [fragranceKey(item), item]));
-  for (const item of incoming)
-    if (!records.has(fragranceKey(item))) records.set(fragranceKey(item), item);
-  return [...records.values()];
+  const groups = new Map<string, Fragrance[]>();
+  for (const item of [...local, ...incoming]) {
+    const key = editionKey(item);
+    const group = groups.get(key) || [];
+    group.push(item);
+    groups.set(key, group);
+  }
+  const result: Fragrance[] = [];
+  for (const group of groups.values()) {
+    const known = new Map<string, Fragrance>();
+    for (const item of group) {
+      const concentration = editionConcentration(item);
+      if (concentration && !known.has(concentration))
+        known.set(concentration, item);
+    }
+    // An unspecified record is not another edition. Keep explicitly identified
+    // concentrations, or one unspecified listing when no edition is known.
+    result.push(...(known.size ? known.values() : [group[0]]));
+  }
+  return result;
 }
 export function catalogFamily(value: string) {
   if (/wood|root/i.test(value)) return "woody";

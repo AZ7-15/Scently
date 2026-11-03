@@ -5,7 +5,7 @@ import {
   identityName,
   brandKey,
   mergeFragrances,
-  fragranceKey,
+  matchingCatalogEdition,
 } from "@/lib/catalog";
 import { browseSourceCatalog, sourceFacets } from "./source-browse";
 import { searchUnifiedCatalog } from "./unified-catalog";
@@ -143,27 +143,22 @@ export async function finderCandidates(
       facets.brands.find((b) => brandKey(b.name) === brandKey(f.brand))
         ?.isNiche ?? null,
   }));
-  const sourceKeys = new Set(sourceRecords.map(fragranceKey));
+  const fromSource = (f: Fragrance) =>
+    sourceRecords.some((source) => matchingCatalogEdition(f, source));
   const excluded = new Set(seen);
   const catalog = mergeFragrances(classified, [...sourceRecords, ...indexed])
     .filter(
       (f) =>
         !excluded.has(f.id) &&
-        (!criteria.newArrivals || sourceKeys.has(fragranceKey(f))) &&
+        (!criteria.newArrivals || fromSource(f)) &&
         (!criteria.brand || brandKey(f.brand) === brandKey(criteria.brand)),
     )
     .map((f) => ({
       ...f,
       isNewArrival:
-        criteria.newArrivals && sourceKeys.has(fragranceKey(f))
-          ? true
-          : f.isNewArrival,
+        criteria.newArrivals && fromSource(f) ? true : f.isNewArrival,
     }))
-    .sort(
-      (a, b) =>
-        Number(sourceKeys.has(fragranceKey(b))) -
-        Number(sourceKeys.has(fragranceKey(a))),
-    );
+    .sort((a, b) => Number(fromSource(b)) - Number(fromSource(a)));
   return {
     catalog,
     continuation:
