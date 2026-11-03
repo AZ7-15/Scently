@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { curatedCatalog } from "../data/catalog";
 import { criteriaSchema } from "../lib/domain";
+vi.mock("../lib/server/open-catalog", () => ({
+  getOpenCatalog: async () => [],
+}));
 const source = vi.hoisted(() => ({ browse: vi.fn(), search: vi.fn() }));
 vi.mock("../lib/server/source-browse", () => ({
   sourceFacets: async () => ({
@@ -140,4 +143,30 @@ it("keeps unknown price and performance constraints visible as gaps", async () =
   expect(
     r.matches.find((m) => m.fragrance.id === external.id)?.gaps.join(" "),
   ).toContain("No current verified total");
+});
+
+it("restricts latest-arrivals requests to the live feed", async () => {
+  source.browse.mockResolvedValueOnce({
+    results: [{ ...external, notes: [{ name: "Pistachio", stage: "top" }] }],
+    continuation: null,
+    providerTotal: 1,
+    notice: "",
+  });
+  const r = await findFragrances(
+    "latest arrivals with pistachio",
+    curatedCatalog,
+    undefined,
+    "CA",
+    "finder-test",
+  );
+  expect(source.search).not.toHaveBeenCalled();
+  expect(source.browse).toHaveBeenCalledWith(
+    expect.objectContaining({ sort: "newest" }),
+    undefined,
+    { candidates: true },
+  );
+  expect(r.criteria.newArrivals).toBe(true);
+  expect(r.matches.map((m) => m.fragrance.id)).toEqual([external.id]);
+  expect(r.matches[0].fragrance.isNewArrival).toBe(true);
+  expect(r.catalogHref).toContain("sort=newest");
 });

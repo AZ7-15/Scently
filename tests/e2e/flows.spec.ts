@@ -20,7 +20,9 @@ test("known search opens its profile and note pyramid", async ({ page }) => {
   await page
     .getByRole("textbox", { name: "Search catalog" })
     .fill("Dior Sauvage");
-  await expect(page.getByRole("status")).toContainText("1 fragrances");
+  await expect(
+    page.getByRole("link", { name: "Sauvage", exact: true }),
+  ).toBeVisible();
   await page.getByRole("link", { name: "Sauvage", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Fragrance pyramid" }),

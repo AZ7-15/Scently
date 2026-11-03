@@ -58,3 +58,14 @@ The finder now interprets preferences using the source note directory and house 
 Every response reports the source candidate total, records assessed in the current page, and a continuation. More recommendations preserves criteria and omits already shown record IDs; it does not rerun the model for the same page sequence. This is source-wide query retrieval with paginated ranking, not a claim that every catalog record was individually scored in one response. No background crawl or complete supplier mirror is created. Source failure is surfaced rather than silently reverting to starter-only suggestions. AI interpretation remains optional and transparently labelled.
 
 Landing autocomplete and the comparison picker call /api/catalog rather than filtering the starter array. External comparison records are retained only in the visitor's browser, capped at the three selected records. This does not create source reviews, save supplier records to a database, or invent price/performance statistics. Personal shelf filters and review selectors remain scoped to the visitor's actual saved records and published reviews.
+
+
+## Licensed published index and new arrivals
+
+The additional Scento Open Dataset is a publisher-provided export under CC BY 4.0, separate from the live API's no-crawl workflow. The bundled 2026-10-29 edition contains 1,479 rows across 160 source house names, including 189 Armaf and 53 Afnan rows. Provenance and licensing are recorded beside the data. Records are normalized for the shared domain with explicit publisher attribution; missing photos, measurements, prices, dates and note stages remain unknown.
+
+The server validates and checks the published JSONL and license descriptor at most daily, coalesces refreshes, bounds response size and falls back to the shipped copy on failure. It does not scrape the supplier's complete storefront. New source versions supply their own publication date. No image reuse license is inferred from the data license.
+
+Unified browsing and text search merge the full matching published index with saved records and the current live page, preserving known concentration variants. The finder ranks matching index candidates as well as live candidates; after live pages end, a bounded index continuation can retrieve additional unseen recommendations. Source and indexed candidate counts are disclosed separately. Open-index profiles resolve by their own identifiers, without substituting a fuzzy API result for another flanker.
+
+New arrivals forwards sort_by=new-releases and new_releases_only=true to the live storefront, with existing brand and note criteria. The published snapshot and old starter records are excluded from this mode so they cannot masquerade as arrivals. A newly stocked older fragrance is explicitly distinguished from a newly launched perfume. Live source caching remains short; this is not a worldwide launch feed or a guarantee of complete house coverage.

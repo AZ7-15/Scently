@@ -1,4 +1,7 @@
 import { expect, it, vi } from "vitest";
+vi.mock("../lib/server/open-catalog", () => ({
+  getOpenCatalog: async () => [],
+}));
 vi.mock("../lib/server/catalog", () => ({ getCatalog: vi.fn(async () => []) }));
 vi.mock("../lib/server/scento", () => ({
   searchLiveFragrances: vi.fn(async () => ({

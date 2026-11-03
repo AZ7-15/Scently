@@ -41,6 +41,7 @@ export function ProductCard({ fragrance: f }: { fragrance: Fragrance }) {
   return (
     <article className="product-card">
       <div className={"product-visual tone-" + f.family}>
+        {f.isNewArrival && <span className="arrival-badge">New arrival</span>}
         <Link href={fragrancePath(f)} aria-label={"Explore " + f.name}>
           <Bottle fragrance={f} />
         </Link>

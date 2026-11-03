@@ -212,6 +212,12 @@ export function parseCriteria(
   }
   if (/must|only|need/.test(text) && named.length) c.hardNotes = true;
   if (text.includes("niche")) c.niche = true;
+  if (
+    /\b(new arrivals|latest|newest|recent releases|new releases)\b/.test(text)
+  )
+    c.newArrivals = true;
+  if (/\b(all editions|all releases|any release|include older)\b/.test(text))
+    c.newArrivals = false;
   if (text.includes("longest")) c.sortLongevity = true;
   for (const occasion of [
     "school",
@@ -262,6 +268,13 @@ export function recommend(
           reasons.push(yes);
         } else gaps.push(no);
       };
+      if (criteria.newArrivals)
+        check(
+          weights.style,
+          f.isNewArrival === true,
+          "Listed in the live source new-arrivals feed.",
+          "Not established as a current source arrival.",
+        );
       if (criteria.notes.length)
         check(
           weights.notes,

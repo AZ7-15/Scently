@@ -17,7 +17,7 @@ export async function POST(request: Request) {
         message: z.string().trim().min(2).max(1500),
         previous: criteriaSchema.optional(),
         continuation: z.string().max(2000).optional(),
-        seen: z.array(z.string().max(250)).max(200).default([]),
+        seen: z.array(z.string().max(250)).max(2000).default([]),
         region: z.enum(["CA", "US"]).default("CA"),
       })
       .parse(await readBody(request));

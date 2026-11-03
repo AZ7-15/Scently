@@ -13,6 +13,7 @@ const nullableString = { type: ["string", "null"] };
 const nullableNumber = { type: ["number", "null"] };
 const properties = {
   brand: nullableString,
+  newArrivals: { type: "boolean" },
   notes: { type: "array", items: { type: "string" } },
   excludeNotes: { type: "array", items: { type: "string" } },
   season: {
@@ -109,6 +110,7 @@ export async function findFragrances(
       );
       if (!call?.arguments) throw new Error("Missing criteria");
       const interpreted = criteriaSchema.parse(JSON.parse(call.arguments));
+      interpreted.newArrivals = criteria.newArrivals;
       if (criteria.brand) interpreted.brand = criteria.brand;
       if (/\b(any|all) (brands|brand|houses|house)\b/i.test(message))
         interpreted.brand = null;
@@ -138,6 +140,7 @@ export async function findFragrances(
     }
   }
   const meaningful =
+    criteria.newArrivals ||
     criteria.brand ||
     criteria.notes.length ||
     criteria.excludeNotes.length ||
@@ -176,6 +179,7 @@ export async function findFragrances(
         notes: criteria.notes,
         seasons: criteria.season ? [criteria.season] : [],
         style: criteria.style || undefined,
+        sort: criteria.newArrivals ? "newest" : undefined,
       }),
     message: !meaningful
       ? "Tell me a note, season, budget, or performance preference so I can narrow the catalog."

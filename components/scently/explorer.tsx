@@ -134,7 +134,7 @@ export function Explorer({
     const next = { ...filters, [key]: value };
     setFilters(next);
     setPage(1);
-    if (key !== "sort") schedule(query, next);
+    schedule(query, next);
   }
   function schedule(value: string, next: Filters) {
     clearTimeout(searchTimer.current);
@@ -374,9 +374,17 @@ export function Explorer({
       {busy && <p role="status">Searching fragrances…</p>}
       {providerTotal > 0 && (
         <p className="quiet-note">
-          Searching across brands in the source catalog.{" "}
-          {providerTotal.toLocaleString()} candidate fragrances reported; every
-          page uses your selected filters.
+          The live storefront reports {providerTotal.toLocaleString()}{" "}
+          candidates.{" "}
+          {filters.sort !== "newest" &&
+            "Published-index records are also included. "}
+          Every page uses your selected filters.
+        </p>
+      )}
+      {filters.sort === "newest" && (
+        <p className="quiet-note">
+          Recently added by the live source. A new arrival can be an older
+          fragrance newly stocked; launch dates are only shown when supplied.
         </p>
       )}
       {correctQuery(query) !== query && (
@@ -397,6 +405,7 @@ export function Explorer({
             onChange={(e) => change("sort", e.target.value)}
           >
             <option value="">Curated selection</option>
+            <option value="newest">New arrivals</option>
             <option value="name">Name</option>
             <option value="rating">Community rating</option>
           </select>
@@ -440,6 +449,25 @@ export function Explorer({
           Load more fragrances
         </button>
       )}
+      <p className="quiet-note">
+        Published index adapted from{" "}
+        <a
+          href="https://www.scento.com/perfume-database"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Scento
+        </a>
+        ,{" "}
+        <a
+          href="https://creativecommons.org/licenses/by/4.0/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          CC BY 4.0
+        </a>
+        . Fields are normalized for Scently; image rights remain separate.
+      </p>
       <p className="quiet-note">
         Seasons and scent families are editorial suggestions. Performance and
         ratings come from published community reviews.

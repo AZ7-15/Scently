@@ -186,8 +186,14 @@ export async function browseSourceCatalog(
   const params = new URLSearchParams({
     page: String(page),
     limit: "12",
-    sort_by: filters.sort === "name" ? "title-asc" : "curated",
+    sort_by:
+      filters.sort === "newest"
+        ? "new-releases"
+        : filters.sort === "name"
+          ? "title-asc"
+          : "curated",
   });
+  if (filters.sort === "newest") params.set("new_releases_only", "true");
   if (filters.brand) {
     const brand = facets.brands.find(
       (b) => brandKey(b.name) === brandKey(filters.brand!),
@@ -240,6 +246,7 @@ export async function browseSourceCatalog(
         id: "scento-" + p.id,
         slug: p.handle,
         externalLookup: p.handle,
+        isNewArrival: filters.sort === "newest",
         niche:
           facets.brands.find(
             (house) => brandKey(house.name) === brandKey(brand),

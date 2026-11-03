@@ -1,3 +1,4 @@
+import { getOpenProfile } from "@/lib/server/open-catalog";
 import { getLiveFragrance, FragranceSourceError } from "@/lib/server/scento";
 import { detailedProfile } from "@/lib/server/fragrance-editorial";
 import { curatedCatalog } from "@/data/catalog";
@@ -19,7 +20,17 @@ export default async function Page({
   }>;
 }) {
   const { lookup } = await params;
-  const result = await getLiveFragrance(lookup).then(
+  const load = lookup.startsWith("open:")
+    ? getOpenProfile(lookup).then((value) => {
+        if (!value)
+          throw new FragranceSourceError(
+            "This published profile is unavailable.",
+            404,
+          );
+        return value;
+      })
+    : getLiveFragrance(lookup);
+  const result = await load.then(
     (value) => ({ value, error: null }),
     (error: unknown) => ({ value: null, error }),
   );

@@ -114,10 +114,10 @@ export default async function Home() {
         )}
       </section>
       <div className="landing-wayfinding container">
-        <span>
+        <Link href="/fragrances?sort=newest">
           <Compass size={16} />
-          Explore every side of scent
-        </span>
+          Explore new arrivals
+        </Link>
         <span>
           <Flower2 size={16} />
           See the notes. Understand the layers.

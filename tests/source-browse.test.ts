@@ -84,3 +84,12 @@ it("rejects invalid cursors without fetching a page", async () => {
   });
   expect(calls).toHaveLength(0);
 });
+
+it("uses the live new-arrivals feed rather than guessing arrivals from launch year", async () => {
+  const calls = mockSource();
+  const { browseSourceCatalog } = await import("../lib/server/source-browse");
+  await browseSourceCatalog({ sort: "newest" });
+  const params = calls.at(-1)!.searchParams;
+  expect(params.get("sort_by")).toBe("new-releases");
+  expect(params.get("new_releases_only")).toBe("true");
+});

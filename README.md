@@ -77,7 +77,7 @@ In another terminal, set `$env:E2E_BASE_URL='http://localhost:4180'` and run `np
 
 `/fragrances` is one catalog with one search and filter panel. Search any fragrance or brand to combine local records with on-demand results from the free [Scento Perfume API](https://www.scento.com/developers/perfume-api). Matching records are deduplicated by brand, name and concentration; local reviews are preserved. Distinct concentration variants remain separate. “Load more” follows the source cursor. The default listing browses the source catalog through pagination; choosing brand, note or family sends the filter upstream and each page is validated against the combined criteria. Brand options come from the full source directory rather than loaded cards. Unknown performance and prices do not pass evidence-based filters. The provider does not cover every fragrance worldwide.
 
-Read-only JSON endpoints are `/api/discovery/search?q=Lattafa` (optionally `continuation`) and `/api/discovery/fragrance/khamrah-lattafa`. Lookups use a bounded 128-answer, 15-minute cache, request coalescing, timeout and upstream rate limits. There is no whole-database crawling or mirroring. Use follows the [source API terms](https://www.scento.com/terms-of-service#perfume-api).
+Read-only JSON endpoints are `/api/discovery/search?q=Lattafa` (optionally `continuation`) and `/api/discovery/fragrance/khamrah-lattafa`. Lookups use a bounded 128-answer, 15-minute cache, request coalescing, timeout and upstream rate limits. The live API is not crawled. A separately published, licensed export is also bundled and refreshed with attribution. Use follows the [source API terms](https://www.scento.com/terms-of-service#perfume-api).
 
 Product photos use the bundled manufacturer assets first. The paginated source catalog provides product-specific pack shots directly. Other records look up matching product photos from Scento product/brand pages, with exact-name retailer product-search fallbacks. Sources are credited on detail pages. Brand covers, unrelated flankers and untrusted image hosts are rejected. Photos load near the viewport and try alternate matched images if a URL fails. Missing photos are explicitly labeled; no unrelated or generated bottle is substituted. Source access and photo availability can change. Lookups are bounded, cached and rate limited.
 
@@ -100,3 +100,10 @@ These checks prevent identity mismatches; they do not independently verify every
 ## Shared visual system
 
 The landing page and catalog use the same bottle and note imagery, typography, controls and surface styles as the detail pages. Both detail routes render components/scently/fragrance-story.tsx, including all saved records and source-backed profiles. Real community actions remain available for saved records. See [design consistency](docs/design-system.md) before changing a detail layout.
+
+
+## Expanded flanker index and arrivals
+
+The full published Scento Open Dataset (bundled edition: 1,479 records dated 2026-10-29) is combined with live listings. It is licensed CC BY 4.0, attributed in the catalog and profiles, and mapped without fabricated dates, images, prices or ratings. The publisher export is checked at most daily; validation or network failure retains the bundled copy. See [dataset license](data/scento-open-catalog.LICENSE.md).
+
+Search a house or a range such as Club de Nuit, Le Male or Libre to discover its indexed editions. Known concentrations and differently named flankers remain distinct. New arrivals queries the live source feed, refreshed through its short cache; it means newly added to the supplier catalog, not necessarily newly launched worldwide. No free source guarantees every house, edition or latest global release.

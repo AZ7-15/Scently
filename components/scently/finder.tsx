@@ -19,6 +19,7 @@ type Result = {
     assessed: number;
     totalCandidates: number;
     sourceCandidates: number;
+    indexedCandidates?: number;
   } | null;
   catalogHref: string;
 };
@@ -66,7 +67,7 @@ export function Finder({ configured }: { configured: boolean }) {
         previous: turn.result.criteria,
         region,
         continuation: turn.result.continuation,
-        seen: turn.result.matches.map((m) => m.fragrance.id).slice(-200),
+        seen: turn.result.matches.map((m) => m.fragrance.id).slice(-2000),
       });
       setTurns((current) =>
         current.map((item, i) =>
@@ -141,10 +142,15 @@ export function Finder({ configured }: { configured: boolean }) {
             <p className="info-line">{t.result.notice}</p>
             {t.result.coverage && (
               <p className="quiet-note">
-                {t.result.coverage.totalCandidates.toLocaleString()} source
-                candidates for this search. This page assessed{" "}
-                {t.result.coverage.assessed} records; missing prices or
-                performance are not guessed.
+                {t.result.coverage.totalCandidates.toLocaleString()} live-source
+                candidates.{" "}
+                {t.result.coverage.indexedCandidates
+                  ? "Also searched " +
+                    t.result.coverage.indexedCandidates.toLocaleString() +
+                    " published-index candidates. "
+                  : ""}
+                This request assessed {t.result.coverage.assessed} records;
+                missing prices or performance are not guessed.
               </p>
             )}
             {[true, false].map((exact) => {

@@ -17,7 +17,7 @@ const pages: Record<
       },
       {
         title: "A growing catalog",
-        text: "Our starter catalog contains six manually checked fragrances. Catalog expansion is in progress. Each profile identifies its sources; a complete Fragrantica catalog has not been imported.",
+        text: "The catalog combines manually checked starter records, Scento live listings, and the published Scento Open Dataset. Source coverage varies by house; it is not a complete worldwide fragrance register. Each profile identifies its sources.",
       },
     ],
   },
@@ -25,8 +25,16 @@ const pages: Record<
     title: "Know what’s behind the notes.",
     sections: [
       {
+        title: "Published catalog and license",
+        text: "The Scento Open Dataset is used under Creative Commons Attribution 4.0 (CC BY 4.0): https://www.scento.com/perfume-database and https://creativecommons.org/licenses/by/4.0/. Scently normalizes metadata fields, note stages and season labels. The bundled 29 October 2026 edition contains 1,479 records; a validated published update is checked at most daily. Product and ingredient image rights are separate.",
+      },
+      {
+        title: "New arrivals",
+        text: "New arrivals come from the live source listing and mean recently added to that source. They are not automatically new worldwide launches. Launch years are displayed only when supplied; no future releases or missing flankers are invented.",
+      },
+      {
         title: "Fragrance facts",
-        text: "Names, concentrations and disclosed notes are manually checked against manufacturer information. Each profile links to its source and records when it was checked. Descriptions are original summaries. Notes remain unclassified when the source does not assign top, heart, and base stages.",
+        text: "Starter records are manually checked against manufacturer information. Additional records are supplied by the attributed catalog publisher and are not all independently verified by Scently. Each profile links to its source and records its source date. Descriptions may be adapted from the attributed publisher. Notes remain unclassified when the source does not assign top, heart, and base stages.",
       },
       {
         title: "Live fragrance lookups",

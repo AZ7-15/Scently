@@ -44,7 +44,8 @@ export default async function Page({
         </h1>
         <p>
           Search fragrances and brands, from everyday favorites to designer,
-          niche, and Arabian houses. Availability follows the source catalog.
+          niche, and Arabian houses. Search a range such as Le Male, Libre or
+          Club de Nuit to explore its listed editions.
         </p>
       </div>
       <Explorer

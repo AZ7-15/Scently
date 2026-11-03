@@ -3,6 +3,7 @@ export function brandKey(brand: string) {
   const key = identityName(brand)
     .replace(/\bperfumes?\b/g, "")
     .trim();
+  if (key === "maison margiela fragrances") return "maison margiela";
   return key === "christian dior" ? "dior" : key;
 }
 export function identityName(value: string) {

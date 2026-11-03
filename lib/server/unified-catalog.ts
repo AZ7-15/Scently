@@ -1,3 +1,4 @@
+import { getOpenCatalog } from "./open-catalog";
 import { browseSourceCatalog } from "./source-browse";
 import { catalogSourceQuery } from "@/lib/catalog-filters";
 import type { Filters } from "@/lib/discovery";
@@ -20,13 +21,42 @@ export async function searchUnifiedCatalog(
 ) {
   const q = correctQuery(query.trim());
   const criteria = { ...filters, q };
-  const local = searchCatalog(await getCatalog(), criteria);
+  const newest = filters.sort === "newest";
+  const [saved, open] = await Promise.all([
+    getCatalog(),
+    newest ? Promise.resolve([]) : getOpenCatalog(),
+  ]);
+  const local = newest ? [] : searchCatalog(saved, criteria);
+  const indexed = searchCatalog(open, criteria);
   const sourceQuery = catalogSourceQuery(criteria);
-  if (!q) {
-    const source = await browseSourceCatalog(criteria, continuation);
-    return { ...source, results: mergeFragrances(local, source.results) };
+  if (!q || newest) {
+    try {
+      const source = await browseSourceCatalog(criteria, continuation);
+      return {
+        ...source,
+        notice:
+          indexed.length && source.notice
+            ? "Showing the published database; live storefront coverage may differ."
+            : source.notice,
+        results: mergeFragrances(local, [...source.results, ...indexed]),
+      };
+    } catch (e) {
+      if (!indexed.length) throw e;
+      return {
+        results: mergeFragrances(local, indexed),
+        continuation: null,
+        providerTotal: 0,
+        notice:
+          "Live listings are temporarily unavailable. Showing the attributed published index.",
+      };
+    }
   }
-  const remote = await searchLiveFragrances(sourceQuery, continuation);
+  const remote = await searchLiveFragrances(sourceQuery, continuation).catch(
+    (error) => {
+      if (!indexed.length) throw error;
+      return { matches: [], continuation: null, total: 0 };
+    },
+  );
   // Only the current page is hydrated. No catalog crawling or background import.
   const records: Fragrance[] = [];
   for (let start = 0; start < remote.matches.length; start += 3) {
@@ -92,7 +122,10 @@ export async function searchUnifiedCatalog(
     records.push(...group);
   }
   return {
-    results: mergeFragrances(local, searchCatalog(records, criteria)),
+    results: mergeFragrances(local, [
+      ...searchCatalog(records, criteria),
+      ...indexed,
+    ]),
     continuation: remote.continuation,
     providerTotal: remote.total,
     notice:

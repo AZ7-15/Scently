@@ -205,8 +205,34 @@ export function FragranceStory({
             <a href={f.sourceUrl} target="_blank" rel="noopener noreferrer">
               {f.sourceName}
             </a>
-            . Retrieved {f.checkedAt.slice(0, 10)}.
+            .{" "}
+            {f.sourceName.includes("Open Dataset")
+              ? "Published snapshot"
+              : "Retrieved"}{" "}
+            {f.checkedAt.slice(0, 10)}.
           </p>
+          {f.sourceName.includes("Open Dataset") && (
+            <p>
+              Published-index content is adapted from{" "}
+              <a
+                href="https://www.scento.com/perfume-database"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Scento
+              </a>
+              ,{" "}
+              <a
+                href="https://creativecommons.org/licenses/by/4.0/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                CC BY 4.0
+              </a>
+              . Metadata is normalized for Scently. Live product content and
+              images retain their separate source rights.
+            </p>
+          )}
           <p>
             Only the layers disclosed by the source are shown. Note descriptions
             are editorial guides to materials and accords, not additional
