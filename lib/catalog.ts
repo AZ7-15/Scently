@@ -125,6 +125,12 @@ export function mergeFragrances(local: Fragrance[], incoming: Fragrance[]) {
     // concentrations, or one unspecified listing when no edition is known.
     const selected = known.size ? [...known.values()] : [group[0]];
     for (const item of selected) {
+      const evidence = group.find(
+        (candidate) =>
+          (candidate.bestsellerRank != null ||
+            candidate.popularityRank != null) &&
+          fragranceKey(item) === fragranceKey(candidate),
+      );
       const donor =
         !item.imageUrl &&
         group.find(
@@ -133,15 +139,21 @@ export function mergeFragrances(local: Fragrance[], incoming: Fragrance[]) {
             matchingCatalogEdition(item, candidate) &&
             (known.size <= 1 || fragranceKey(item) === fragranceKey(candidate)),
         );
-      result.push(
-        donor
+      result.push({
+        ...item,
+        ...(donor
           ? {
-              ...item,
               imageUrl: donor.imageUrl,
               imageSourceUrl: donor.imageSourceUrl || donor.sourceUrl,
             }
-          : item,
-      );
+          : {}),
+        ...(item.bestsellerRank == null && evidence?.bestsellerRank != null
+          ? { bestsellerRank: evidence.bestsellerRank }
+          : {}),
+        ...(item.popularityRank == null && evidence?.popularityRank != null
+          ? { popularityRank: evidence.popularityRank }
+          : {}),
+      });
     }
   }
   return result;

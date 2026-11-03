@@ -6,6 +6,7 @@ import {
   type Offer,
 } from "./domain";
 import { brandKey, identityName, concentrationKey } from "./catalog";
+import { comparePopularity } from "./popularity";
 export const OFFER_TTL_HOURS = 48;
 export function isCurrentOffer(o: Offer, region = "CA", now = Date.now()) {
   const age = now - new Date(o.verifiedAt).getTime();
@@ -118,6 +119,8 @@ export function searchCatalog(catalog: Fragrance[], filters: Filters) {
     result.sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1));
   if (filters.sort === "name")
     result.sort((a, b) => a.name.localeCompare(b.name));
+  if (!filters.sort || filters.sort === "popular")
+    result.sort(comparePopularity);
   return result;
 }
 export const weights = {
@@ -374,7 +377,8 @@ export function recommend(
         (criteria.sortLongevity
           ? (b.fragrance.longevity ?? -1) - (a.fragrance.longevity ?? -1)
           : 0) ||
-        b.score - a.score,
+        b.score - a.score ||
+        comparePopularity(a.fragrance, b.fragrance),
     )
     .slice(0, 5);
 }

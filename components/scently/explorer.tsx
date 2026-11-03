@@ -401,10 +401,10 @@ export function Explorer({
           Sort by{" "}
           <select
             aria-label="Sort fragrances"
-            value={filters.sort || ""}
+            value={filters.sort || "popular"}
             onChange={(e) => change("sort", e.target.value)}
           >
-            <option value="">Curated selection</option>
+            <option value="popular">Popularity</option>
             <option value="newest">New arrivals</option>
             <option value="name">Name</option>
             <option value="rating">Community rating</option>
@@ -467,6 +467,11 @@ export function Explorer({
           CC BY 4.0
         </a>
         . Fields are normalized for Scently; image rights remain separate.
+      </p>
+      <p className="quiet-note">
+        Popularity order uses a dated 10ML most-ordered list and Scento's
+        published best-known rank. Items without a matching source rank follow
+        the catalog's existing order.
       </p>
       <p className="quiet-note">
         Seasons and scent families are editorial suggestions. Performance and

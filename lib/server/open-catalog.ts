@@ -8,6 +8,7 @@ import {
 } from "@/lib/catalog";
 import { seasons, type Fragrance, type Note } from "@/lib/domain";
 import type { LiveProfile } from "@/lib/live-catalog";
+import { bestsellerRankFor } from "@/lib/popularity";
 const strings = z.array(z.string().max(300)).max(200);
 const rowSchema = z.object({
   id: z.string().min(1).max(300),
@@ -25,6 +26,7 @@ const rowSchema = z.object({
   base_notes: strings,
   notes: strings,
   description: z.string().max(6000),
+  popularity_rank: z.number().int().positive().nullable().optional(),
   url: z
     .string()
     .url()
@@ -46,7 +48,13 @@ export function mapOpenCatalog(
   rows: unknown,
   date = "2026-10-29",
 ): Fragrance[] {
-  return rowsSchema.parse(rows).map((r: Row) => {
+  const sourceRows = rowsSchema.parse(rows);
+  const identities = sourceRows.map((candidate) => ({
+    name: candidate.name,
+    brand: candidate.house,
+    concentration: candidate.concentration || "Not provided",
+  }));
+  const fragrances = sourceRows.map((r: Row) => {
     const notes: Note[] = (["top", "heart", "base"] as const).flatMap((stage) =>
       r[(stage + "_notes") as "top_notes" | "heart_notes" | "base_notes"].map(
         (name) => ({ name, stage }),
@@ -72,6 +80,15 @@ export function mapOpenCatalog(
       color: "#b7a47d",
       shape: "round",
       imageUrl: null,
+      popularityRank: r.popularity_rank ?? null,
+      bestsellerRank: bestsellerRankFor(
+        {
+          name: r.name,
+          brand: r.house,
+          concentration: r.concentration || "Not provided",
+        },
+        identities,
+      ),
       accords: [
         ...new Set(
           [r.family, r.secondary_family, ...r.character].filter(Boolean),
@@ -97,6 +114,7 @@ export function mapOpenCatalog(
       offers: [],
     };
   });
+  return fragrances;
 }
 let catalog = mapOpenCatalog(bundled);
 let expires = 0;

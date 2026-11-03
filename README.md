@@ -89,24 +89,23 @@ The admin UI supports JSON/CSV preview, validation, duplicate detection, edits, 
 
 Append migrations instead of changing applied SQL files. SQLite/libSQL migrations use transactions and recorded checksums. See [integrations](docs/integrations.md) and [data rules](docs/data-rules.md).
 
-
 ### Accuracy checks across brands
 
 All source records use the same name, brand and concentration checks. Search results are re-filtered locally because the upstream provider can return unrelated suggestions. External profile links carry the expected identity; a different source profile is withheld. Photo requests and cache keys include concentration. A known concentration needs explicit, unambiguous matching evidence from the photo source, otherwise the photo remains unavailable.
 
 These checks prevent identity mismatches; they do not independently verify every provider fact or guarantee a photo for every record. The cross-brand audit and its scope are recorded in [accuracy audit](docs/accuracy-audit.md).
 
-
 ## Shared visual system
 
 The landing page and catalog use the same bottle and note imagery, typography, controls and surface styles as the detail pages. Both detail routes render components/scently/fragrance-story.tsx, including all saved records and source-backed profiles. Real community actions remain available for saved records. See [design consistency](docs/design-system.md) before changing a detail layout.
-
 
 ## Expanded flanker index and arrivals
 
 The full published Scento Open Dataset (bundled edition: 1,479 records dated 2026-10-29) is combined with live listings. It is licensed CC BY 4.0, attributed in the catalog and profiles, and mapped without fabricated dates, images, prices or ratings. The publisher export is checked at most daily; validation or network failure retains the bundled copy. See [dataset license](data/scento-open-catalog.LICENSE.md).
 
 Search a house or a range such as Club de Nuit, Le Male or Libre to discover its indexed editions. Known concentrations and differently named flankers remain distinct. New arrivals queries the live source feed, refreshed through its short cache; it means newly added to the supplier catalog, not necessarily newly launched worldwide. No free source guarantees every house, edition or latest global release.
+
+Catalog search defaults to popularity order, combining dated 10ML sales positions and Scento's published best-known rank as equal-weight percentiles. House, edition and concentration are matched before a rank is applied. Unmatched or ambiguous editions stay unranked and follow the catalog's existing order. Sources and limits: [popularity ranking snapshot](data/10ml-bestsellers.SOURCES.md).
 
 Catalog duplicate audit: run `npx tsx scripts/audit-catalog.ts` to check every shipped record and write `outputs/catalog-duplicate-audit.json`. House and collection aliases (such as Emporio Armani and Replica) share edition identities; actual flankers and known concentration variants remain separate.
 

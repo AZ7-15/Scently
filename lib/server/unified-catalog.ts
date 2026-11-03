@@ -38,12 +38,15 @@ export async function searchUnifiedCatalog(
           indexed.length && source.notice
             ? "Showing the published database; live storefront coverage may differ."
             : source.notice,
-        results: mergeFragrances(local, [...source.results, ...indexed]),
+        results: searchCatalog(
+          mergeFragrances(local, [...source.results, ...indexed]),
+          criteria,
+        ),
       };
     } catch (e) {
       if (!indexed.length) throw e;
       return {
-        results: mergeFragrances(local, indexed),
+        results: searchCatalog(mergeFragrances(local, indexed), criteria),
         continuation: null,
         providerTotal: 0,
         notice:
@@ -122,10 +125,10 @@ export async function searchUnifiedCatalog(
     records.push(...group);
   }
   return {
-    results: mergeFragrances(local, [
-      ...searchCatalog(records, criteria),
-      ...indexed,
-    ]),
+    results: searchCatalog(
+      mergeFragrances(local, [...searchCatalog(records, criteria), ...indexed]),
+      criteria,
+    ),
     continuation: remote.continuation,
     providerTotal: remote.total,
     notice:
