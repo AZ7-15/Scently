@@ -18,21 +18,27 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import { brandConfig, type CollectionStatus } from "@/lib/domain";
+import {
+  brandConfig,
+  type CollectionStatus,
+  type Fragrance,
+} from "@/lib/domain";
 export type Viewer = { id: string; name: string; admin: boolean } | null;
 type Shelf = Record<string, CollectionStatus>;
 const Context = createContext<{
   user: Viewer;
   region: string;
   compare: string[];
+  comparedRecords: Fragrance[];
   shelf: Shelf;
-  toggleCompare: (id: string) => void;
+  toggleCompare: (id: string, fragrance?: Fragrance) => void;
   save: (id: string, status: CollectionStatus | null) => Promise<void>;
   notify: (s: string) => void;
 }>({
   user: null,
   region: "CA",
   compare: [],
+  comparedRecords: [],
   shelf: {},
   toggleCompare: () => {},
   save: async () => {},
@@ -103,6 +109,27 @@ function readCompared(raw: string): string[] {
     return [];
   }
 }
+function readComparedRecords(raw: string): Fragrance[] {
+  try {
+    const value: unknown = JSON.parse(raw);
+    return Array.isArray(value)
+      ? value
+          .filter(
+            (f) =>
+              f &&
+              typeof f.id === "string" &&
+              typeof f.name === "string" &&
+              typeof f.brand === "string" &&
+              Array.isArray(f.notes) &&
+              Array.isArray(f.accords) &&
+              Array.isArray(f.offers),
+          )
+          .slice(0, 3)
+      : [];
+  } catch {
+    return [];
+  }
+}
 export function Shell({
   children,
   user,
@@ -116,17 +143,39 @@ export function Shell({
     [menu, setMenu] = useState(false),
     [notice, setNotice] = useState(""),
     [shelf, setShelf] = useState(initialShelf);
+  const recordsRaw = useStored("scently-compare-records", "[]");
+  const comparedRecords = readComparedRecords(recordsRaw);
   const compareRaw = useStored("scently-compare", "[]"),
     region = useStored("scently-region", "CA");
   const compare = readCompared(compareRaw);
   function notify(message: string) {
     setNotice(message);
   }
-  function toggleCompare(id: string) {
+  function toggleCompare(id: string, fragrance?: Fragrance) {
     const current = readCompared(readStored("scently-compare", "[]"));
-    if (current.includes(id))
+    if (current.includes(id)) {
+      store(
+        "scently-compare-records",
+        JSON.stringify(
+          readComparedRecords(
+            readStored("scently-compare-records", "[]"),
+          ).filter((f) => f.id !== id),
+        ),
+      );
       store("scently-compare", JSON.stringify(current.filter((x) => x !== id)));
-    else if (current.length < 3) {
+    } else if (current.length < 3) {
+      if (fragrance)
+        store(
+          "scently-compare-records",
+          JSON.stringify(
+            [
+              ...readComparedRecords(
+                readStored("scently-compare-records", "[]"),
+              ).filter((f) => f.id !== id),
+              fragrance,
+            ].slice(-3),
+          ),
+        );
       store("scently-compare", JSON.stringify([...current, id]));
       notify("Added to your comparison.");
     } else notify("Compare up to three fragrances. Remove one to make room.");
@@ -161,7 +210,16 @@ export function Shell({
   ];
   return (
     <Context.Provider
-      value={{ user, region, compare, shelf, toggleCompare, save, notify }}
+      value={{
+        user,
+        region,
+        compare,
+        comparedRecords,
+        shelf,
+        toggleCompare,
+        save,
+        notify,
+      }}
     >
       <a className="skip-link" href="#main">
         Skip to content

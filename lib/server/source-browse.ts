@@ -37,10 +37,35 @@ async function request(path: string): Promise<unknown> {
   pending.set(path, task);
   return task;
 }
+function noteVocabulary(html: string, fallback: string[]) {
+  try {
+    const text = [
+      ...html.matchAll(/self\.__next_f\.push\((\[.*?\])\)<\/script>/g),
+    ]
+      .map((m) => JSON.parse(m[1])[1])
+      .filter((v) => typeof v === "string")
+      .join("");
+    const raw = text.match(/"notes":(\[\{.*?\}\])/);
+    const values: unknown = raw ? JSON.parse(raw[1]) : [];
+    return [
+      ...new Set([
+        ...fallback,
+        ...(Array.isArray(values)
+          ? values.flatMap((v) =>
+              v && typeof v.name === "string" ? [v.name] : [],
+            )
+          : []),
+      ]),
+    ];
+  } catch {
+    return fallback;
+  }
+}
 export async function sourceFacets() {
-  const [directory, notesData] = await Promise.all([
+  const [directory, notesData, noteDirectory] = await Promise.all([
     request("/brands"),
     request("/api/notes"),
+    request("/notes").catch(() => ""),
   ]);
   const chunks = [
     ...String(directory).matchAll(
@@ -58,7 +83,24 @@ export async function sourceFacets() {
       }
     })
     .join("");
-  const brands = new Map<string, { id: string; name: string }>();
+  const brands = new Map<
+    string,
+    { id: string; name: string; isNiche?: boolean }
+  >();
+  const classifications = new Map<string, boolean>();
+  const brandArray = chunks.match(/"brands":(\[\{.*?\}\])/);
+  if (brandArray)
+    try {
+      const records: unknown = JSON.parse(brandArray[1]);
+      if (Array.isArray(records))
+        for (const value of records)
+          if (
+            value &&
+            typeof value.name === "string" &&
+            typeof value.isNiche === "boolean"
+          )
+            classifications.set(brandKey(value.name), value.isNiche);
+    } catch {}
   for (const m of chunks.matchAll(
     /\{"id":"((?:bra|brand)_[a-zA-Z0-9_-]+)","name":("(?:[^"\\]|\\.)*")/g,
   )) {
@@ -72,6 +114,7 @@ export async function sourceFacets() {
           ]),
         ].join(","),
         name,
+        isNiche: classifications.get(brandKey(name)),
       });
   }
   const parsed = z
@@ -80,6 +123,10 @@ export async function sourceFacets() {
   return {
     brands: [...brands.values()].sort((a, b) => a.name.localeCompare(b.name)),
     notes: parsed.notes,
+    vocabulary: noteVocabulary(
+      String(noteDirectory),
+      parsed.notes.map((n) => n.name),
+    ),
   };
 }
 const productSchema = z.object({
@@ -130,6 +177,7 @@ const accordFamilies: Record<string, string> = {
 export async function browseSourceCatalog(
   filters: Filters,
   continuation?: string,
+  options: { candidates?: boolean } = {},
 ) {
   const page = continuation ? Number(continuation.replace(/^browse:/, "")) : 1;
   if (!Number.isSafeInteger(page) || page < 1 || page > 1000)
@@ -153,6 +201,9 @@ export async function browseSourceCatalog(
       };
     params.set("brands", brand.id);
   }
+  if (filters.style === "masculine") params.set("gender", "men");
+  if (filters.style === "feminine") params.set("gender", "women");
+  if (filters.niche) params.set("is_niche", "true");
   const materialIds: string[] = [];
   for (const note of filters.notes || []) {
     const material = facets.notes.find(
@@ -189,6 +240,10 @@ export async function browseSourceCatalog(
         id: "scento-" + p.id,
         slug: p.handle,
         externalLookup: p.handle,
+        niche:
+          facets.brands.find(
+            (house) => brandKey(house.name) === brandKey(brand),
+          )?.isNiche ?? null,
         name: p.title,
         brand,
         concentration: p.metadata?.concentration || "Not provided",
@@ -241,7 +296,7 @@ export async function browseSourceCatalog(
     ];
   });
   return {
-    results: searchCatalog(results, filters),
+    results: options.candidates ? results : searchCatalog(results, filters),
     continuation: data.hasNextPage ? "browse:" + (page + 1) : null,
     providerTotal: data.totalCount,
     notice: "",

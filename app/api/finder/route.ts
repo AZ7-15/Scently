@@ -3,6 +3,7 @@ import { criteriaSchema } from "@/lib/domain";
 import { getCatalog } from "@/lib/server/catalog";
 import { identity, sameOrigin, readBody, limited } from "@/lib/server/security";
 import { failure } from "@/lib/server/http";
+import { FragranceSourceError } from "@/lib/server/scento";
 import { findFragrances } from "@/lib/server/finder";
 export async function POST(request: Request) {
   try {
@@ -15,6 +16,8 @@ export async function POST(request: Request) {
       .object({
         message: z.string().trim().min(2).max(1500),
         previous: criteriaSchema.optional(),
+        continuation: z.string().max(2000).optional(),
+        seen: z.array(z.string().max(250)).max(200).default([]),
         region: z.enum(["CA", "US"]).default("CA"),
       })
       .parse(await readBody(request));
@@ -25,9 +28,13 @@ export async function POST(request: Request) {
         b.previous,
         b.region,
         id,
+        b.continuation,
+        b.seen,
       ),
     );
   } catch (e) {
+    if (e instanceof FragranceSourceError)
+      return Response.json({ error: e.message }, { status: e.status });
     return failure(e);
   }
 }

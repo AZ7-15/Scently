@@ -1,12 +1,52 @@
 "use client";
+import { useState, type FormEvent } from "react";
+import { mergeFragrances } from "@/lib/catalog";
 import Link from "@/components/scently/site-link";
 import type { Fragrance } from "@/lib/domain";
 import { sortedOffers, offerTotal } from "@/lib/discovery";
 import { useScently } from "./shell";
 import { ProductCard } from "./product";
 export function Comparison({ catalog }: { catalog: Fragrance[] }) {
-  const { compare, toggleCompare, region } = useScently(),
-    selected = catalog.filter((f) => compare.includes(f.id));
+  const { compare, comparedRecords, toggleCompare, region } = useScently();
+  const selected = mergeFragrances(catalog, comparedRecords).filter((f) =>
+    compare.includes(f.id),
+  );
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<Fragrance[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [activeQuery, setActiveQuery] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  async function search(more = false) {
+    if (query.trim().length < 2 || busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      const p = new URLSearchParams({ q: more ? activeQuery : query.trim() });
+      if (more && cursor) p.set("continuation", cursor);
+      const response = await fetch("/api/catalog?" + p);
+      const data = (await response.json()) as {
+        results: Fragrance[];
+        continuation: string | null;
+        error?: string;
+      };
+      if (!response.ok)
+        throw new Error(data.error || "Catalog search is unavailable.");
+      setResults((old) =>
+        more ? mergeFragrances(old, data.results) : data.results,
+      );
+      setCursor(data.continuation);
+      if (!more) setActiveQuery(query.trim());
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    void search();
+  }
   const rows: [string, (f: Fragrance) => string][] = [
     [
       "Rating",
@@ -47,24 +87,57 @@ export function Comparison({ catalog }: { catalog: Fragrance[] }) {
   return (
     <>
       {selected.length < 3 && (
-        <label className="field compare-select">
-          <span>Add a fragrance</span>
-          <select
-            value=""
-            onChange={(e) => {
-              if (e.target.value) toggleCompare(e.target.value);
-            }}
-          >
-            <option value="">Choose a scent</option>
-            {catalog
+        <section className="comparison-catalog-search">
+          <form className="search-box" onSubmit={submit}>
+            <input
+              aria-label="Search fragrances to compare"
+              placeholder="Search the catalog by fragrance or brand..."
+              value={query}
+              maxLength={150}
+              disabled={busy}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setResults([]);
+                setCursor(null);
+              }}
+            />
+            <button
+              className="button primary"
+              disabled={busy || query.trim().length < 2}
+            >
+              Search catalog
+            </button>
+          </form>
+          {error && <p role="alert">{error}</p>}
+          <div className="comparison-search-results">
+            {results
               .filter((f) => !compare.includes(f.id))
               .map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.brand} · {f.name}
-                </option>
+                <button
+                  key={f.id}
+                  className="comparison-search-choice"
+                  onClick={() => toggleCompare(f.id, f)}
+                >
+                  <span>
+                    <strong>{f.name}</strong>
+                    <small>
+                      {f.brand} - {f.concentration}
+                    </small>
+                  </span>
+                  <span>Add to comparison</span>
+                </button>
               ))}
-          </select>
-        </label>
+          </div>
+          {cursor && (
+            <button
+              className="button secondary"
+              disabled={busy}
+              onClick={() => void search(true)}
+            >
+              More catalog results
+            </button>
+          )}
+        </section>
       )}
       {selected.length ? (
         <>

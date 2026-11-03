@@ -49,3 +49,12 @@ Individual source profiles now read the matching public product page to obtain i
 The shared illustrated pyramid is also used on the six community detail pages. Every note links to the combined catalog filter. Descriptions explain general material/accord character and are editorial, rather than additional product ingredients. /api/notes/portrait resolves the specific note portrait from Scento's public note page; it rejects recommended-product pictures, different note names and external hosts. Note images load near the viewport. Missing imagery retains a labelled note with a neutral leaf marker.
 
 Source pages are fetched on demand with coalescing, short bounded caching, timeouts and rate limits. No complete catalog or note-image library is copied. Imagery remains credited to Scento and its respective rights holders. Illustrated notes can represent accords recreated with aroma materials; the images do not assert that the depicted raw ingredient was physically used in a bottle.
+
+
+## Catalog-wide finder, suggestions and comparisons
+
+The finder now interprets preferences using the source note directory and house names, then queries source candidates before deterministic ranking. Material, house, style and niche constraints are sent upstream when supported; rarer materials use the public Perfume API search. Candidate records are merged with saved records to preserve real community evidence. Niche classifications come from the source directory rather than a hardcoded list of three houses.
+
+Every response reports the source candidate total, records assessed in the current page, and a continuation. More recommendations preserves criteria and omits already shown record IDs; it does not rerun the model for the same page sequence. This is source-wide query retrieval with paginated ranking, not a claim that every catalog record was individually scored in one response. No background crawl or complete supplier mirror is created. Source failure is surfaced rather than silently reverting to starter-only suggestions. AI interpretation remains optional and transparently labelled.
+
+Landing autocomplete and the comparison picker call /api/catalog rather than filtering the starter array. External comparison records are retained only in the visitor's browser, capped at the three selected records. This does not create source reviews, save supplier records to a database, or invent price/performance statistics. Personal shelf filters and review selectors remain scoped to the visitor's actual saved records and published reviews.

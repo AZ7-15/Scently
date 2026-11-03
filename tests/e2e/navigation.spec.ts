@@ -5,7 +5,7 @@ test("every starter fragrance has a working product photograph", async ({
 }) => {
   await page.goto("/fragrances?view=community");
   const photos = page.locator(
-    '.product-card:has(button[aria-label^="Compare "]) .bottle-stage img',
+    '.product-card:has(button[aria-label^="Save "]) .bottle-stage img',
   );
   await expect(photos).toHaveCount(6);
   for (const photo of await photos.all()) {

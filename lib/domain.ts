@@ -22,6 +22,7 @@ export interface Note {
 }
 export interface Fragrance {
   externalLookup?: string;
+  niche?: boolean | null;
   id: string;
   slug: string;
   name: string;
@@ -184,6 +185,7 @@ export const offerSchema = z
     "Verification cannot be in the future",
   );
 export const criteriaSchema = z.object({
+  brand: z.string().trim().max(100).nullable().default(null),
   notes: z.array(z.string().max(60)).max(15).default([]),
   excludeNotes: z.array(z.string().max(60)).max(15).default([]),
   season: z.enum(seasons).nullable().default(null),

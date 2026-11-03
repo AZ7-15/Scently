@@ -50,6 +50,7 @@ export interface Filters {
   occasion?: string;
   region?: string;
   sort?: string;
+  niche?: boolean;
 }
 export function searchCatalog(catalog: Fragrance[], filters: Filters) {
   const q = identityName(correctQuery(filters.q || "")).replace(
@@ -131,20 +132,28 @@ export function parseCriteria(
   message: string,
   catalog: Fragrance[],
   previous?: Criteria,
+  sourceVocabulary: string[] = [],
 ): Criteria {
   const c = criteriaSchema.parse(previous ?? {}),
     text = normalize(correctQuery(message));
   const vocabulary = [
-    ...new Set(
-      catalog.flatMap((f) => [
+    ...new Set([
+      ...sourceVocabulary.map(normalize),
+      ...catalog.flatMap((f) => [
         ...f.notes.map((n) => normalize(n.name)),
         ...f.accords.map(normalize),
       ]),
-    ),
+    ]),
   ];
-  const named = vocabulary.filter((n) =>
-    new RegExp(`\\b${n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`).test(text),
-  );
+  const named = vocabulary
+    .filter((n) =>
+      new RegExp(`\\b${n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`).test(
+        text,
+      ),
+    )
+    .filter(
+      (n, _, all) => !all.some((longer) => longer !== n && longer.includes(n)),
+    );
   const similar = catalog.find(
     (f) =>
       text.includes(normalize(f.name)) && /like|similar|cheaper/.test(text),
@@ -309,6 +318,13 @@ export function recommend(
           `Verified total within ${region === "CA" ? "CAD" : "USD"} ${criteria.budget}.`,
           "No current verified total including shipping and tax meets your budget.",
         );
+      if (criteria.brand)
+        check(
+          weights.style,
+          brandKey(f.brand) === brandKey(criteria.brand),
+          `From ${f.brand}.`,
+          `Not from ${criteria.brand}.`,
+        );
       if (criteria.style)
         check(
           weights.style,
@@ -316,11 +332,10 @@ export function recommend(
           `A ${criteria.style} style preference match; anyone can wear it.`,
           "The catalog does not establish this style preference.",
         );
-      if (
-        criteria.niche &&
-        !["Le Labo", "Diptyque", "Byredo"].includes(f.brand)
-      )
-        gaps.push("This brand is not in our curated niche selection.");
+      if (criteria.niche && f.niche !== true)
+        gaps.push(
+          "The source does not establish a niche classification for this brand.",
+        );
       return {
         fragrance: f,
         score: possible ? earned / possible : 0,

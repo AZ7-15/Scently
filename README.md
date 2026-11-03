@@ -81,7 +81,7 @@ Read-only JSON endpoints are `/api/discovery/search?q=Lattafa` (optionally `cont
 
 Product photos use the bundled manufacturer assets first. The paginated source catalog provides product-specific pack shots directly. Other records look up matching product photos from Scento product/brand pages, with exact-name retailer product-search fallbacks. Sources are credited on detail pages. Brand covers, unrelated flankers and untrusted image hosts are rejected. Photos load near the viewport and try alternate matched images if a URL fails. Missing photos are explicitly labeled; no unrelated or generated bottle is substituted. Source access and photo availability can change. Lookups are bounded, cached and rate limited.
 
-Legacy source-selection URLs open the same combined catalog. The finder continues to rank persisted records; source records are not fabricated community ratings or verified retailer offers.
+Legacy source-selection URLs open the same combined catalog. The finder retrieves candidates from the same source catalog before ranking them, preserves criteria through additional pages, and exposes its candidate coverage. Source records are not fabricated community ratings or verified retailer offers.
 
 The starter catalog contains **six** sourced fragrances. Actual manufacturer photos are bundled in `public/images/products`, with provenance in `data/photo-sources.json` and visible source links. Photos belong to their rights holders; attribution does not establish a commercial license or brand partnership. No Fragrantica photographs are included. A complete Fragrantica catalog has not been imported.
 

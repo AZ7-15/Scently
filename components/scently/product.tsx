@@ -85,9 +85,9 @@ export function ProductCard({ fragrance: f }: { fragrance: Fragrance }) {
         </div>
         <div className="card-bottom">
           <span>{f.editorialSeasons.slice(0, 2).join(" · ")}</span>
-          {!f.externalLookup && (
+          {
             <button
-              onClick={() => toggleCompare(f.id)}
+              onClick={() => toggleCompare(f.id, f)}
               aria-label={
                 (compare.includes(f.id) ? "Remove " : "Compare ") + f.name
               }
@@ -100,7 +100,7 @@ export function ProductCard({ fragrance: f }: { fragrance: Fragrance }) {
               )}{" "}
               Compare
             </button>
-          )}
+          }
         </div>
         {offer ? (
           <p className="price-line">

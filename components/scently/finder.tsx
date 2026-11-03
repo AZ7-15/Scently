@@ -13,6 +13,14 @@ type Result = {
   mode: string;
   notice: string;
   message: string;
+  continuation: string | null;
+  coverage: {
+    scope: string;
+    assessed: number;
+    totalCandidates: number;
+    sourceCandidates: number;
+  } | null;
+  catalogHref: string;
 };
 const examples = [
   "Find me a sweet winter fragrance.",
@@ -47,6 +55,46 @@ export function Finder({ configured }: { configured: boolean }) {
       setBusy(false);
     }
   }
+  async function more(index: number) {
+    const turn = turns[index];
+    if (busy || !turn.result.continuation) return;
+    setBusy(true);
+    setError("");
+    try {
+      const next = await api<Result>("/api/finder", {
+        message: turn.prompt,
+        previous: turn.result.criteria,
+        region,
+        continuation: turn.result.continuation,
+        seen: turn.result.matches.map((m) => m.fragrance.id).slice(-200),
+      });
+      setTurns((current) =>
+        current.map((item, i) =>
+          i === index
+            ? {
+                ...item,
+                result: {
+                  ...next,
+                  matches: [
+                    ...item.result.matches,
+                    ...next.matches.filter(
+                      (match) =>
+                        !item.result.matches.some(
+                          (old) => old.fragrance.id === match.fragrance.id,
+                        ),
+                    ),
+                  ],
+                },
+              }
+            : item,
+        ),
+      );
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
   return (
     <div className="finder-page">
       <header className="finder-header">
@@ -67,9 +115,9 @@ export function Finder({ configured }: { configured: boolean }) {
             : "Rule-based finder · AI not connected"}
         </span>
         <p className="quiet-note">
-          This finder ranks the community catalog.{" "}
-          <Link href="/fragrances">Search the fragrance catalog</Link> for more
-          brands and perfumes.
+          Your preferences search the same source catalog as{" "}
+          <Link href="/fragrances">fragrance browsing</Link>. Results are ranked
+          from retrieved candidates, with more pages available.
         </p>
       </header>
       {!turns.length && (
@@ -91,6 +139,14 @@ export function Finder({ configured }: { configured: boolean }) {
               {t.result.message}
             </p>
             <p className="info-line">{t.result.notice}</p>
+            {t.result.coverage && (
+              <p className="quiet-note">
+                {t.result.coverage.totalCandidates.toLocaleString()} source
+                candidates for this search. This page assessed{" "}
+                {t.result.coverage.assessed} records; missing prices or
+                performance are not guessed.
+              </p>
+            )}
             {[true, false].map((exact) => {
               const matches = t.result.matches.filter((m) => m.exact === exact);
               return matches.length ? (
@@ -128,6 +184,23 @@ export function Finder({ configured }: { configured: boolean }) {
                 </div>
               ) : null;
             })}
+            <div className="finder-catalog-actions">
+              {t.result.continuation && (
+                <button
+                  className="button secondary"
+                  disabled={busy}
+                  onClick={() => void more(i)}
+                >
+                  More recommendations
+                </button>
+              )}
+              {t.result.catalogHref && (
+                <Link className="text-link" href={t.result.catalogHref}>
+                  Browse these preferences in the catalog{" "}
+                  <ArrowUpRight size={14} />
+                </Link>
+              )}
+            </div>
           </section>
         ))}
         {busy && (

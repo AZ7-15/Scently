@@ -1,5 +1,7 @@
 import { criteriaSchema, type Criteria, type Fragrance } from "@/lib/domain";
-import { parseCriteria, recommend } from "@/lib/discovery";
+import { recommend } from "@/lib/discovery";
+import { finderCandidates, interpretCatalogCriteria } from "./finder-catalog";
+import { catalogParameters } from "@/lib/catalog-filters";
 import { setting } from "./security";
 import { getDb } from "@/db";
 import { aiUsage } from "@/db/schema";
@@ -10,6 +12,7 @@ import { databaseConfigured } from "./configuration";
 const nullableString = { type: ["string", "null"] };
 const nullableNumber = { type: ["number", "null"] };
 const properties = {
+  brand: nullableString,
   notes: { type: "array", items: { type: "string" } },
   excludeNotes: { type: "array", items: { type: "string" } },
   season: {
@@ -40,14 +43,19 @@ export async function findFragrances(
   previous: Criteria | undefined,
   region: string,
   userId: string,
+  continuation?: string,
+  seen: string[] = [],
 ) {
-  let criteria = parseCriteria(message, catalog, previous),
+  let criteria =
+      continuation && previous
+        ? criteriaSchema.parse(previous)
+        : await interpretCatalogCriteria(message, catalog, previous),
     mode = "rules",
     notice =
       "Rule-based finder · AI is not configured. Preferences are interpreted using a limited vocabulary.";
   const key = setting("OPENAI_API_KEY"),
     model = setting("OPENAI_MODEL");
-  if (key && model) {
+  if (key && model && !continuation) {
     try {
       const response = await fetch("https://api.openai.com/v1/responses", {
         method: "POST",
@@ -101,6 +109,11 @@ export async function findFragrances(
       );
       if (!call?.arguments) throw new Error("Missing criteria");
       const interpreted = criteriaSchema.parse(JSON.parse(call.arguments));
+      if (criteria.brand) interpreted.brand = criteria.brand;
+      if (/\b(any|all) (brands|brand|houses|house)\b/i.test(message))
+        interpreted.brand = null;
+      if (/\b(like|similar to)\b/i.test(message) && !criteria.brand)
+        interpreted.brand = null;
       // Explicitly parsed hard constraints cannot be softened by model output.
       if (criteria.hardBudget) {
         interpreted.hardBudget = true;
@@ -125,6 +138,7 @@ export async function findFragrances(
     }
   }
   const meaningful =
+    criteria.brand ||
     criteria.notes.length ||
     criteria.excludeNotes.length ||
     criteria.season ||
@@ -136,12 +150,33 @@ export async function findFragrances(
     criteria.budget ||
     criteria.niche ||
     criteria.sortLongevity;
-  const matches = meaningful ? recommend(catalog, criteria, region) : [];
+  const retrieval = meaningful
+    ? await finderCandidates(criteria, catalog, continuation, seen)
+    : null;
+  const matches = retrieval
+    ? recommend(retrieval.catalog, criteria, region)
+    : [];
+  if (retrieval)
+    notice +=
+      " Searching the source catalog; " +
+      retrieval.coverage.assessed +
+      " candidate records assessed on this page. " +
+      (retrieval.notice || "");
   return {
     criteria,
     matches,
     mode,
     notice,
+    continuation: retrieval?.continuation || null,
+    coverage: retrieval?.coverage || null,
+    catalogHref:
+      "/fragrances?" +
+      catalogParameters({
+        brand: criteria.brand || undefined,
+        notes: criteria.notes,
+        seasons: criteria.season ? [criteria.season] : [],
+        style: criteria.style || undefined,
+      }),
     message: !meaningful
       ? "Tell me a note, season, budget, or performance preference so I can narrow the catalog."
       : !matches.length
