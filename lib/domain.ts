@@ -37,6 +37,7 @@ export interface Fragrance {
   color: string;
   shape: string;
   imageUrl: string | null;
+  imageSourceUrl?: string;
   accords: string[];
   notes: Note[];
   editorialSeasons: Season[];

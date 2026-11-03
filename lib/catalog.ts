@@ -29,7 +29,11 @@ export function sameFragrance(
 ) {
   const concentration = concentrationKey(expected.concentration);
   return (
-    identityName(expected.name) === identityName(actual.name) &&
+    editionName({
+      ...expected,
+      concentration: expected.concentration || "",
+    }) ===
+      editionName({ ...actual, concentration: actual.concentration || "" }) &&
     brandKey(expected.brand) === brandKey(actual.brand) &&
     (!concentration || concentration === concentrationKey(actual.concentration))
   );
@@ -67,6 +71,9 @@ function editionName(fragrance: CatalogIdentity) {
       "",
     )
     .replace(/\s+/g, "");
+}
+export function catalogNameKey(name: string, brand: string) {
+  return editionName({ name, brand, concentration: "" });
 }
 function editionConcentration(f: CatalogIdentity) {
   const explicit =
@@ -116,7 +123,26 @@ export function mergeFragrances(local: Fragrance[], incoming: Fragrance[]) {
     }
     // An unspecified record is not another edition. Keep explicitly identified
     // concentrations, or one unspecified listing when no edition is known.
-    result.push(...(known.size ? known.values() : [group[0]]));
+    const selected = known.size ? [...known.values()] : [group[0]];
+    for (const item of selected) {
+      const donor =
+        !item.imageUrl &&
+        group.find(
+          (candidate) =>
+            candidate.imageUrl &&
+            matchingCatalogEdition(item, candidate) &&
+            (known.size <= 1 || fragranceKey(item) === fragranceKey(candidate)),
+        );
+      result.push(
+        donor
+          ? {
+              ...item,
+              imageUrl: donor.imageUrl,
+              imageSourceUrl: donor.imageSourceUrl || donor.sourceUrl,
+            }
+          : item,
+      );
+    }
   }
   return result;
 }

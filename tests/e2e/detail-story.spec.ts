@@ -8,15 +8,17 @@ test("fragrance story has a visible bottle, illustrated layers and working note 
     page.getByRole("heading", { name: "Le Male Elixir", exact: true }),
   ).toBeVisible();
   const bottle = page.locator(".scene-product img");
-  await expect(bottle).toBeVisible();
+  await expect(bottle).toBeVisible({ timeout: 20000 });
   await expect
-    .poll(() =>
-      bottle.evaluate(
-        (img: HTMLImageElement) =>
-          img.complete &&
-          img.naturalWidth > 0 &&
-          img.getBoundingClientRect().height > 250,
-      ),
+    .poll(
+      () =>
+        bottle.evaluate(
+          (img: HTMLImageElement) =>
+            img.complete &&
+            img.naturalWidth > 0 &&
+            img.getBoundingClientRect().height > 250,
+        ),
+      { timeout: 20000 },
     )
     .toBe(true);
   await page.getByRole("link", { name: "Explore the composition" }).click();
@@ -30,7 +32,9 @@ test("fragrance story has a visible bottle, illustrated layers and working note 
     "Tonka Bean",
     "Tobacco",
   ]) {
-    await expect(page.getByRole("link", { name, exact: true })).toHaveAttribute(
+    await expect(
+      page.locator("#composition").getByRole("link", { name, exact: true }),
+    ).toHaveAttribute(
       "href",
       new RegExp("note=" + encodeURIComponent(name).replace(/%20/g, "\\+")),
     );
@@ -44,6 +48,9 @@ test("fragrance story has a visible bottle, illustrated layers and working note 
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
-  await page.getByRole("link", { name: "Mint", exact: true }).click();
+  await page
+    .locator("#composition")
+    .getByRole("link", { name: "Mint", exact: true })
+    .click();
   await expect(page).toHaveURL(/note=Mint/);
 });

@@ -226,3 +226,33 @@ it("merges house and collection labels without merging actual flankers", () => {
       ),
     ).toHaveLength(2);
 });
+
+it("preserves a matched bottle image when a richer duplicate wins, without crossing concentrations", () => {
+  const open = {
+    ...curatedCatalog[0],
+    id: "open",
+    name: "Stronger With You Intensely",
+    brand: "Giorgio Armani",
+    imageUrl: null,
+    concentration: "EDP",
+  };
+  const live = {
+    ...open,
+    id: "live",
+    name: "Emporio Armani Stronger With You Intensely",
+    concentration: "Not provided",
+    imageUrl: "https://imagedelivery.net/account/intensely/public",
+    sourceUrl: "https://www.scento.com/perfumes/intensely",
+  };
+  const result = mergeFragrances([], [live, open]);
+  expect(result).toHaveLength(1);
+  expect(result[0]).toMatchObject({
+    id: "open",
+    imageUrl: live.imageUrl,
+    imageSourceUrl: live.sourceUrl,
+  });
+  const edt = { ...open, id: "edt", concentration: "EDT" };
+  const ambiguous = mergeFragrances([], [live, open, edt]);
+  expect(ambiguous).toHaveLength(2);
+  expect(ambiguous.every((f) => f.imageUrl === null)).toBe(true);
+});

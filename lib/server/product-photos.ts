@@ -1,8 +1,12 @@
+import { canonicalProductUrl } from "./open-catalog";
+import { productFromMarkup, sourceMarkup } from "./fragrance-editorial";
 import { normalize } from "@/lib/domain";
 import {
   brandKey,
   identityName,
   sameFragrance,
+  matchingCatalogEdition,
+  catalogNameKey,
   photoConcentrationMatches,
 } from "@/lib/catalog";
 import type { ProductPhoto, ProductPhotoResult } from "@/lib/product-photos";
@@ -19,6 +23,14 @@ const cdnHosts = new Set([
   "imagedelivery.net",
   "cdn.shopify.com",
   "www.scento.com",
+  "www.lattafaindia.com",
+  "lattafaindia.com",
+  "fragrancelord.com",
+  "www.fragrancelord.com",
+  "www.decantx.com",
+  "decantx.com",
+  "www.scentdecant.com",
+  "scentdecant.com",
 ]);
 function safeImage(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -50,16 +62,20 @@ function photoName(value: string) {
   return identityName(value);
 }
 function productLabel(value: string, brand: string) {
-  let label = photoName(value);
-  for (const token of photoName(brand).split(" ").filter(Boolean))
-    label = label.replace(new RegExp("\\b" + token + "\\b", "g"), " ");
-  return label
-    .replace(
-      /\b(eau de parfum|eau de toilette|eau de cologne|extrait de parfum|perfume bottle|perfume|perfumes|parfum spray|spray|bottle|luxury fragrance|luxury|fragrance|by)\b/g,
-      " ",
-    )
-    .replace(/\s+/g, " ")
-    .trim();
+  const label = value.replace(
+    /\b\d+(?:\.\d+)?\s*(?:ml|fl\.?\s*oz|oz)\b/gi,
+    " ",
+  );
+  return catalogNameKey(
+    identityName(label)
+      .replace(
+        /\b(eau de parfum|eau de toilette|eau de cologne|perfume bottle|perfume|perfumes|spray|bottle|luxury fragrance|luxury|fragrance|by)\b/g,
+        " ",
+      )
+      .replace(/\s+/g, " ")
+      .trim(),
+    brand,
+  );
 }
 export function photosFromPage(
   html: string,
@@ -78,9 +94,12 @@ export function photosFromPage(
         : record.brand;
     if (
       ["ProductGroup", "Product"].includes(String(record["@type"])) &&
-      photoName(String(record.name)) === photoName(name) &&
+      typeof record.name === "string" &&
       typeof productBrand === "string" &&
-      brandKey(productBrand) === brandKey(brand) &&
+      sameFragrance(
+        { name, brand },
+        { name: record.name as string, brand: productBrand },
+      ) &&
       photoConcentrationMatches(
         concentration,
         String(record.name) + " " + String(record.description || ""),
@@ -113,6 +132,34 @@ export function photosFromPage(
       /* Ignore unrelated or invalid schema. */
     }
   }
+  const product = productFromMarkup(html);
+  if (product && typeof product.title === "string") {
+    const house =
+      product.brand && typeof product.brand === "object"
+        ? (product.brand as Record<string, unknown>).name
+        : product.subtitle;
+    const metadata =
+      product.metadata && typeof product.metadata === "object"
+        ? (product.metadata as Record<string, unknown>)
+        : {};
+    if (
+      typeof house === "string" &&
+      matchingCatalogEdition(
+        { name, brand, concentration },
+        {
+          name: product.title,
+          brand: house,
+          concentration:
+            typeof metadata.concentration === "string"
+              ? metadata.concentration
+              : "",
+        },
+      )
+    ) {
+      const image = safeImage(product.thumbnail);
+      if (image && !image.includes("/campaign")) images.unshift(image);
+    }
+  }
   // Brand pages list bottle photographs with product-specific alt labels.
   if (!images.length)
     for (const match of html.matchAll(/<img\b[^>]*>/gi)) {
@@ -139,6 +186,12 @@ export function photosFromPage(
     .map((url) => ({ url, sourceUrl }));
 }
 async function pageHtml(url: string) {
+  const location = new URL(url);
+  if (
+    location.origin === "https://www.scento.com" &&
+    /^\/perfumes\/[a-z0-9-]+$/.test(location.pathname)
+  )
+    return sourceMarkup(location.pathname);
   const existing = pages.get(url);
   if (existing) return existing;
   if (!memoryLimit("photo:pages", 80, 60)) return "";
@@ -171,6 +224,7 @@ async function retailerPhoto(
   name: string,
   brand: string,
   concentration: string,
+  excluded: string[] = [],
 ): Promise<ProductPhoto[]> {
   const stores = [
     "https://fragrancelord.com",
@@ -214,9 +268,12 @@ async function retailerPhoto(
           productLabel(product.title, brand) !== productLabel(name, brand)
         )
           continue;
-        const image = safeImage(product.featured_image?.url || product.image);
+        const rawImage = product.featured_image?.url || product.image;
+        const image = rawImage
+          ? safeImage(new URL(rawImage, store).href)
+          : null;
         const sourceUrl = new URL(product.url, store);
-        if (image && sourceUrl.origin === store)
+        if (image && !excluded.includes(image) && sourceUrl.origin === store)
           return [
             { url: image, sourceUrl: sourceUrl.origin + sourceUrl.pathname },
           ];
@@ -260,7 +317,7 @@ async function brandPhoto(
     )
       return [];
     return (product.images || [])
-      .map(safeImage)
+      .map((image) => safeImage(new URL(image, sourceUrl).href))
       .filter((url): url is string => !!url)
       .slice(0, 3)
       .map((url) => ({ url, sourceUrl }));
@@ -273,14 +330,25 @@ export async function resolveProductPhotos(
   brand: string,
   source: string,
   concentration = "",
+  retry = false,
+  excluded: string[] = [],
 ): Promise<ProductPhotoResult> {
-  const key = [normalize(name), brandKey(brand), concentration, source].join(
-    "|",
-  );
+  const key = [
+    normalize(name),
+    brandKey(brand),
+    concentration,
+    source,
+    ...excluded,
+  ].join("|");
   const cached = photos.get(key);
-  if (cached && cached.expires > Date.now()) return cached.result;
+  if (
+    cached &&
+    cached.expires > Date.now() &&
+    !(retry && !cached.result.images.length)
+  )
+    return cached.result;
   if (pending.has(key)) return pending.get(key)!;
-  if (pending.size >= 16) return { images: [] };
+  if (pending.size >= 16) return { images: [], retryAfter: 2 };
   const task = (async () => {
     let sourceUrl: URL | null = null;
     try {
@@ -292,6 +360,10 @@ export async function resolveProductPhotos(
         sourceUrl = url;
     } catch {
       /* A provider profile may locate the canonical public page. */
+    }
+    if (!sourceUrl) {
+      const indexed = await canonicalProductUrl({ name, brand, concentration });
+      if (indexed) sourceUrl = new URL(indexed);
     }
     if (!sourceUrl) {
       const profile = await getLiveFragrance(name + " " + brand).catch(
@@ -309,14 +381,18 @@ export async function resolveProductPhotos(
           concentration,
         )
       : [];
-    if (!images.length) images = await brandPhoto(name, brand, concentration);
+    images = images.filter((image) => !excluded.includes(image.url));
     if (!images.length)
-      images = await retailerPhoto(name, brand, concentration);
+      images = (await brandPhoto(name, brand, concentration)).filter(
+        (image) => !excluded.includes(image.url),
+      );
+    if (!images.length)
+      images = await retailerPhoto(name, brand, concentration, excluded);
     const result = { images };
     if (photos.size >= 512) photos.delete(photos.keys().next().value!);
     photos.set(key, {
       result,
-      expires: Date.now() + (images.length ? 7 * 24 * 3600000 : 5 * 60000),
+      expires: Date.now() + (images.length ? 7 * 24 * 3600000 : 30000),
     });
     return result;
   })().finally(() => pending.delete(key));

@@ -17,17 +17,26 @@ export async function GET(request: Request) {
         concentration: params.get("concentration") || "",
         source: params.get("source") || "",
       });
+    const failed = z
+      .array(z.string().url().max(1500))
+      .max(4)
+      .parse(params.getAll("failed"));
     const result = await resolveProductPhotos(
       input.name,
       input.brand,
       input.source,
       input.concentration,
+      params.get("retry") === "1",
+      failed,
     );
     return Response.json(result, {
+      status: result.retryAfter ? 202 : 200,
       headers: {
-        "Cache-Control": result.images.length
-          ? "public, max-age=86400"
-          : "public, max-age=60",
+        "Cache-Control": result.retryAfter
+          ? "no-store"
+          : result.images.length
+            ? "public, max-age=86400"
+            : "public, max-age=60",
       },
     });
   } catch {

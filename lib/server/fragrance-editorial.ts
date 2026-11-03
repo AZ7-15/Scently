@@ -1,5 +1,8 @@
+import { canonicalProductUrl } from "./open-catalog";
+import { sourceWearEvidence, type WearEvidence } from "@/lib/wear-evidence";
+import { getLiveFragrance } from "./scento";
 import type { LiveProfile } from "@/lib/live-catalog";
-import { sameFragrance } from "@/lib/catalog";
+import { sameFragrance, matchingCatalogEdition } from "@/lib/catalog";
 import { memoryLimit } from "./memory-limits";
 const cache = new Map<string, { html: string; expires: number }>();
 const pending = new Map<string, Promise<string>>();
@@ -65,7 +68,18 @@ function objectAfter(text: string, marker: string): unknown {
   }
   return null;
 }
+export function productFromMarkup(
+  html: string,
+): Record<string, unknown> | null {
+  const raw = objectAfter(sourceStream(html), '"product":{"id":"prod_');
+  return raw && typeof raw === "object"
+    ? (raw as Record<string, unknown>)
+    : null;
+}
 export type EditorialProfile = LiveProfile & {
+  wearEvidence: WearEvidence[];
+  imageSourceUrl?: string;
+  detailSourceUrl?: string;
   imageUrl: string | null;
   accords: string[];
   detailed: boolean;
@@ -77,14 +91,14 @@ export function enrichProfile(
   const result: EditorialProfile = {
     ...profile,
     imageUrl: null,
+    wearEvidence: [],
     accords: [profile.family, profile.subfamily].filter(
       (s): s is string => !!s,
     ),
     detailed: false,
   };
-  const raw = objectAfter(sourceStream(html), '"product":{"id":"prod_');
-  if (!raw || typeof raw !== "object") return result;
-  const p = raw as Record<string, unknown>;
+  const p = productFromMarkup(html);
+  if (!p) return result;
   const brand =
     p.brand && typeof p.brand === "object"
       ? (p.brand as Record<string, unknown>).name
@@ -98,6 +112,24 @@ export function enrichProfile(
     )
   )
     return result;
+  const metadata =
+    p.metadata && typeof p.metadata === "object"
+      ? (p.metadata as Record<string, unknown>)
+      : {};
+  if (
+    typeof metadata.concentration === "string" &&
+    profile.concentration &&
+    !matchingCatalogEdition(
+      { ...profile, concentration: profile.concentration },
+      {
+        name: p.title as string,
+        brand: brand as string,
+        concentration: metadata.concentration,
+      },
+    )
+  )
+    return result;
+  result.wearEvidence = sourceWearEvidence(metadata, profile.sourceUrl);
   // Supplier pages contain full note stages where the portrait API may list only signature materials.
   if (Array.isArray(p.product_notes)) {
     const pyramid: LiveProfile["pyramid"] = { top: [], heart: [], base: [] };
@@ -143,17 +175,53 @@ export function enrichProfile(
         image.protocol === "https:" &&
         image.hostname === "imagedelivery.net" &&
         !image.pathname.includes("/campaign")
-      )
+      ) {
         result.imageUrl = image.href;
+        result.imageSourceUrl = profile.sourceUrl;
+      }
     } catch {}
   return result;
 }
 export async function detailedProfile(profile: LiveProfile) {
   try {
-    const url = new URL(profile.sourceUrl);
-    return url.origin === "https://www.scento.com"
-      ? enrichProfile(profile, await sourceMarkup(url.pathname))
-      : enrichProfile(profile, "");
+    let url = new URL(profile.sourceUrl);
+    if (url.origin !== "https://www.scento.com")
+      return enrichProfile(profile, "");
+    if (!/^\/perfumes\/[a-z0-9-]+$/.test(url.pathname)) {
+      const indexedUrl = await canonicalProductUrl({
+        ...profile,
+        concentration: profile.concentration || "",
+      });
+      if (indexedUrl) url = new URL(indexedUrl);
+    }
+    if (!/^\/perfumes\/[a-z0-9-]+$/.test(url.pathname)) {
+      const canonical = await getLiveFragrance(
+        profile.name + " " + profile.brand,
+      ).catch(() => null);
+      if (
+        canonical &&
+        matchingCatalogEdition(
+          { ...profile, concentration: profile.concentration || "" },
+          { ...canonical, concentration: canonical.concentration || "" },
+        )
+      ) {
+        const candidate = new URL(canonical.sourceUrl);
+        if (
+          candidate.origin === "https://www.scento.com" &&
+          /^\/perfumes\/[a-z0-9-]+$/.test(candidate.pathname)
+        )
+          url = candidate;
+      }
+    }
+    const result = enrichProfile(
+      { ...profile, sourceUrl: url.href },
+      await sourceMarkup(url.pathname),
+    );
+    return {
+      ...result,
+      sourceUrl: profile.sourceUrl,
+      detailSourceUrl: result.detailed ? url.href : undefined,
+    };
   } catch {
     return enrichProfile(profile, "");
   }

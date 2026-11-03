@@ -1,6 +1,11 @@
 import { z } from "zod";
 import bundled from "@/data/scento-open-catalog.json";
-import { catalogFamily, concentrationKey } from "@/lib/catalog";
+import {
+  catalogFamily,
+  concentrationKey,
+  matchingCatalogEdition,
+  fragranceKey,
+} from "@/lib/catalog";
 import { seasons, type Fragrance, type Note } from "@/lib/domain";
 import type { LiveProfile } from "@/lib/live-catalog";
 const strings = z.array(z.string().max(300)).max(200);
@@ -168,4 +173,22 @@ export async function getOpenProfile(
     source: f.sourceName,
     checkedAt: f.checkedAt,
   };
+}
+
+export async function canonicalProductUrl(identity: {
+  name: string;
+  brand: string;
+  concentration: string;
+}): Promise<string | null> {
+  const candidates = (await getOpenCatalog()).filter(
+    (f) =>
+      matchingCatalogEdition(identity, f) &&
+      /^https:\/\/www\.scento\.com\/perfumes\/[a-z0-9-]+$/.test(f.sourceUrl),
+  );
+  const exact = candidates.filter(
+    (f) => fragranceKey(f) === fragranceKey(identity),
+  );
+  const selected = exact.length ? exact : candidates;
+  const urls = [...new Set(selected.map((f) => f.sourceUrl))];
+  return urls.length === 1 ? urls[0] : null;
 }

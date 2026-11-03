@@ -1,10 +1,14 @@
+import { redirect } from "next/navigation";
+import { Prices } from "@/components/scently/detail";
+import { CatalogDetailActions } from "@/components/scently/catalog-detail-actions";
+import { RelatedFragrances } from "@/components/scently/related-fragrances";
 import { getOpenProfile } from "@/lib/server/open-catalog";
 import { getLiveFragrance, FragranceSourceError } from "@/lib/server/scento";
 import { detailedProfile } from "@/lib/server/fragrance-editorial";
 import { curatedCatalog } from "@/data/catalog";
 import { sameFragrance } from "@/lib/catalog";
 import { FragranceStory } from "@/components/scently/fragrance-story";
-import type { Note } from "@/lib/domain";
+import { slugify, type Fragrance, type Note } from "@/lib/domain";
 import Link from "@/components/scently/site-link";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Fragrance profile" };
@@ -62,23 +66,69 @@ export default async function Page({
   const local = curatedCatalog.find(
     (item) => !!f.concentration && sameFragrance(item, f),
   );
+  if (local) redirect("/fragrances/" + local.slug);
   const notes: Note[] = (["top", "heart", "base"] as const).flatMap((stage) =>
     f.pyramid[stage].map((name) => ({ name, stage })),
   );
   for (const name of f.notes)
     if (!notes.some((n) => n.name.toLowerCase() === name.toLowerCase()))
       notes.push({ name, stage: "unclassified" });
+  const record: Fragrance = {
+    ...f,
+    id: lookup.startsWith("open:")
+      ? "open-" + lookup.slice(5)
+      : "scento-" +
+        slugify(
+          f.brand + "-" + f.name + "-" + (f.concentration || "Not provided"),
+        ),
+    slug: lookup,
+    externalLookup: lookup,
+    concentration: f.concentration || "Not provided",
+    style: "unknown",
+    color: "#b7a47d",
+    shape: "round",
+    family: f.family,
+    notes,
+    editorialSeasons: f.seasons
+      .map((v) => (v === "autumn" ? "fall" : v))
+      .filter((s): s is "spring" | "summer" | "fall" | "winter" =>
+        ["spring", "summer", "fall", "winter"].includes(s),
+      ),
+    occasions: [],
+    sourceName: f.source,
+    demo: false,
+    rating: null,
+    reviewCount: 0,
+    longevity: null,
+    projection: null,
+    performanceVotes: 0,
+    seasonVotes: {},
+    offers: [],
+  };
   return (
     <FragranceStory
       profile={{
         ...f,
-        imageUrl: local?.imageUrl || f.imageUrl,
-        photoSourceUrl: local?.imageUrl ? local.sourceUrl : f.sourceUrl,
+        imageUrl: f.imageUrl,
+        photoSourceUrl: f.imageSourceUrl || f.sourceUrl,
         notes,
         sourceName: f.source,
       }}
-      communityLink={local ? "/fragrances/" + local.slug : undefined}
-    />
+      actions={<CatalogDetailActions fragrance={record} />}
+    >
+      <section id="reviews" className="detail-section">
+        <h2>Real experiences. Personal impressions.</h2>
+        <div className="story-community-placeholder">
+          <p>This edition has no Scently community reviews yet.</p>
+          <p>
+            Published research appears in How it wears above, with its own
+            source credits.
+          </p>
+        </div>
+      </section>
+      <Prices fragrance={record} />
+      <RelatedFragrances fragrance={record} />
+    </FragranceStory>
   );
 }
 function ProfileFailure({ error: e }: { error: unknown }) {

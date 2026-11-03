@@ -45,6 +45,10 @@ const pages: Record<
         text: "Accord order, scent families and season picks are editorial interpretations of the disclosed composition. Accord bars show order, not measured percentages. Product photos use manufacturer assets or matching source product photographs, with source links on profiles. If a reliable photo cannot be found, it is labeled unavailable rather than showing another fragrance.",
       },
       {
+        title: "Performance research",
+        text: "Detail pages distinguish source research from Scently reviews. The 3 November 2026 research snapshot checked 6,018 profiles in the free 10ML Fragrance Index and found 481 editorial performance assessments; 288 match editions in the shipped catalog. Scores use the publisher's 1-5 scale and are not hours or Scently votes. Missing or conflicting editions stay unknown. Matched Scento product pages may supply additional, separately credited longevity and sillage categories. Sillage describes scent trail, not a measured projection distance. Each displayed assessment links to its source and date.",
+      },
+      {
         title: "Community evidence",
         text: "Ratings are the arithmetic mean of published reviews. Longevity is the median of reported hours. Projection is the most frequent reported category; ties follow the first reported category. Season counts are mentions, not suitability percentages. Fewer than 20 reviews are labeled early impressions. No reviews or performance measurements are seeded.",
       },
@@ -67,7 +71,7 @@ const pages: Record<
       },
       {
         title: "Why is performance sometimes missing?",
-        text: "We show community evidence when it exists. Skin, application and environment can change an experience. Missing reports are shown as missing data, not guessed values.",
+        text: "We show matched editorial research, source-reported wear descriptions and community evidence separately. Not every fragrance or concentration has a supported assessment. Skin, application and environment change performance; missing figures stay unknown.",
       },
       {
         title: "Can anyone wear these fragrances?",

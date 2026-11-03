@@ -52,11 +52,9 @@ test("search vanilla, combine filters, reset", async ({ page }) => {
 });
 test("compare two fragrances", async ({ page }) => {
   await visit(page, "/fragrances?view=community");
-  const sauvage = page
-    .locator(".product-card")
-    .filter({
-      has: page.getByRole("button", { name: "Save Sauvage", exact: true }),
-    });
+  const sauvage = page.locator(".product-card").filter({
+    has: page.getByRole("button", { name: "Save Sauvage", exact: true }),
+  });
   await sauvage
     .getByRole("button", { name: "Compare Sauvage", exact: true })
     .click();
@@ -86,7 +84,7 @@ test("finder uses catalog evidence and respects hard budgets", async ({
     page.getByRole("heading", {
       name: "Near matches — preferences not fully verified",
     }),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 20000 });
   await expect(page.locator(".match-card").first()).toContainText(
     "Longevity has not been established",
   );

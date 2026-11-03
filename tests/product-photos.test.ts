@@ -1,3 +1,6 @@
+vi.mock("../lib/server/open-catalog", () => ({
+  canonicalProductUrl: async () => null,
+}));
 import { afterEach, expect, it, vi } from "vitest";
 import {
   photosFromPage,
@@ -141,4 +144,87 @@ it("rejects ambiguous concentration evidence and wrong brand alt labels", () => 
       source,
     ),
   ).toEqual([]);
+});
+
+it("reads an attributed bottle from matched source product metadata using the catalog's aliases", () => {
+  const html =
+    "<script>self.__next_f.push(" +
+    JSON.stringify([
+      1,
+      JSON.stringify({
+        product: {
+          id: "prod_photo",
+          title: "Emporio Armani Stronger With You Intensely",
+          brand: { name: "Giorgio Armani" },
+          thumbnail: packShot,
+          metadata: { concentration: "EDP" },
+        },
+      }),
+    ]) +
+    ")</script>";
+  expect(
+    photosFromPage(
+      html,
+      "Stronger With You Intensely",
+      "Giorgio Armani",
+      source,
+      "EDP",
+    ),
+  ).toEqual([{ url: packShot, sourceUrl: source }]);
+  expect(
+    photosFromPage(
+      html,
+      "Stronger With You Absolutely",
+      "Giorgio Armani",
+      source,
+      "EDP",
+    ),
+  ).toEqual([]);
+  expect(
+    photosFromPage(
+      html,
+      "Stronger With You Intensely",
+      "Giorgio Armani",
+      source,
+      "EDT",
+    ),
+  ).toEqual([]);
+});
+it("accepts the actual manufacturer's image host while still rejecting unrelated hosts", () => {
+  const url = "https://www.lattafaindia.com/cdn/shop/files/asad.jpg";
+  expect(
+    photosFromPage(page("Asad", "Lattafa", url), "Asad", "Lattafa", source),
+  ).toEqual([{ url, sourceUrl: source }]);
+});
+
+it("tries a different source when the browser reports that the matched image is broken", async () => {
+  const sourceUrl = "https://www.scento.com/perfumes/asad-broken-test";
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (input: string | URL) => {
+      const url = String(input);
+      if (url === sourceUrl)
+        return new Response(page("Asad", "Lattafa", packShot));
+      if (url === "https://www.lattafaindia.com/products/asad.js")
+        return Response.json({
+          title: "Asad",
+          vendor: "Lattafa India",
+          images: [
+            "https://www.lattafaindia.com/cdn/shop/files/asad-alternate.jpg",
+          ],
+        });
+      throw Error("Unexpected request");
+    }),
+  );
+  const result = await resolveProductPhotos(
+    "Asad",
+    "Lattafa",
+    sourceUrl,
+    "",
+    false,
+    [packShot],
+  );
+  expect(result.images.map((i) => i.url)).toEqual([
+    "https://www.lattafaindia.com/cdn/shop/files/asad-alternate.jpg",
+  ]);
 });

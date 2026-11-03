@@ -80,3 +80,27 @@ it("audits the full published snapshot for known duplicate names", () => {
   expect(merged.some((f) => f.name === "Absolu Aventus")).toBe(true);
   expect(merged.some((f) => f.name === "Aventus")).toBe(true);
 });
+
+it("locates a product page through a known alias without substituting another flanker", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue(new Response("unavailable", { status: 503 })),
+  );
+  const { canonicalProductUrl } = await import("../lib/server/open-catalog");
+  expect(
+    await canonicalProductUrl({
+      name: "Stronger With You Absolutely",
+      brand: "Giorgio Armani",
+      concentration: "Parfum",
+    }),
+  ).toBe(
+    "https://www.scento.com/perfumes/emporio-armani-stronger-with-you-absolutely-giorgio-armani",
+  );
+  expect(
+    await canonicalProductUrl({
+      name: "Stronger With You Absolutely Intense",
+      brand: "Giorgio Armani",
+      concentration: "Parfum",
+    }),
+  ).toBeNull();
+});

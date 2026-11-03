@@ -3803,3 +3803,48 @@ a {
   letter-spacing: 0.04em;
   pointer-events: none;
 }
+
+.wear-evidence-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+  gap: 16px;
+  margin-top: 22px;
+}
+.wear-evidence {
+  padding: 20px 23px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+.wear-evidence a {
+  font-weight: 600;
+  color: var(--green);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.wear-evidence p {
+  margin: 12px 0 6px;
+  font-size: 13px;
+}
+.wear-evidence small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+}
+.story-community-placeholder {
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f4f5ef;
+  color: var(--muted);
+}
+.photo-retry {
+  margin-top: 12px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 6px 12px;
+  font-size: 11px;
+  color: var(--green);
+  cursor: pointer;
+}

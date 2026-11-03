@@ -1,3 +1,7 @@
+import { concentrationKey } from "@/lib/catalog";
+import { WearPerformance } from "./wear-performance";
+import { researchedPerformance } from "@/lib/server/performance-research";
+import type { WearEvidence } from "@/lib/wear-evidence";
 import type { ReactNode } from "react";
 import type { Note } from "@/lib/domain";
 import { scentMood } from "@/lib/note-profiles";
@@ -26,8 +30,13 @@ export type StoryProfile = {
   seasons: string[];
   sourceUrl: string;
   photoSourceUrl?: string;
+  detailSourceUrl?: string;
   sourceName: string;
   checkedAt: string;
+  wearEvidence?: WearEvidence[];
+  longevity?: number | null;
+  projection?: string | null;
+  performanceVotes?: number;
 };
 export function FragranceStory({
   profile: f,
@@ -45,6 +54,17 @@ export function FragranceStory({
   communityLink?: string;
 }) {
   const mood = scentMood(f.family);
+  const concentrationLabels: Record<string, string> = {
+    edp: "Eau de Parfum",
+    edt: "Eau de Toilette",
+    edc: "Eau de Cologne",
+    extrait: "Extrait de Parfum",
+    parfum: "Parfum",
+    elixir: "Elixir",
+  };
+  const concentration =
+    concentrationLabels[concentrationKey(f.concentration)] ||
+    (f.concentration === "Not provided" ? null : f.concentration);
   const count = new Set(f.notes.map((n) => n.name.toLowerCase())).size;
   return (
     <main
@@ -87,7 +107,7 @@ export function FragranceStory({
           </Link>
           <h1>{f.name}</h1>
           <div className="fragrance-facts">
-            {f.concentration && <span>{f.concentration}</span>}
+            {concentration && <span>{concentration}</span>}
             {f.year && <span>{f.year}</span>}
             {f.perfumer && <span>By {f.perfumer}</span>}
             <span>{count} listed notes</span>
@@ -119,13 +139,9 @@ export function FragranceStory({
       <nav className="fragrance-story-nav" aria-label="Fragrance sections">
         <a href="#composition">The composition</a>
         <a href="#season-story">When to wear</a>
-        {community && (
-          <>
-            <a href="#performance">How it wears</a>
-            <a href="#reviews">Reviews</a>
-            <a href="#prices">Where to buy</a>
-          </>
-        )}
+        <a href="#performance">How it wears</a>
+        <a href="#reviews">Reviews</a>
+        <a href="#prices">Where to buy</a>
         <a href="#fragrance-sources">Sources & details</a>
       </nav>
       <NotePyramid notes={f.notes} />
@@ -179,6 +195,10 @@ export function FragranceStory({
           </p>
         </div>
       </section>
+      <WearPerformance
+        evidence={[...researchedPerformance(f), ...(f.wearEvidence || [])]}
+        community={community ? f : undefined}
+      />
       {children}
       <section id="fragrance-sources" className="fragrance-story-footer">
         <div>
@@ -211,6 +231,19 @@ export function FragranceStory({
               : "Retrieved"}{" "}
             {f.checkedAt.slice(0, 10)}.
           </p>
+          {f.detailSourceUrl && f.detailSourceUrl !== f.sourceUrl && (
+            <p>
+              Additional composition details:{" "}
+              <a
+                href={f.detailSourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Scento product profile
+              </a>
+              .
+            </p>
+          )}
           {f.sourceName.includes("Open Dataset") && (
             <p>
               Published-index content is adapted from{" "}
