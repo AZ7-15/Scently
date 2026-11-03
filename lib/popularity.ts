@@ -1,9 +1,5 @@
 import ranking from "@/data/10ml-bestsellers.json";
-import {
-  brandKey,
-  catalogNameKey,
-  concentrationKey,
-} from "@/lib/catalog";
+import { brandKey, catalogNameKey, concentrationKey } from "@/lib/catalog";
 import type { Fragrance } from "@/lib/domain";
 
 type Bestseller = {
@@ -14,7 +10,9 @@ type Bestseller = {
 };
 const bestsellers = (ranking as { products: Bestseller[] }).products;
 
-function editionConcentration(item: Pick<Fragrance, "name" | "concentration">) {
+type Edition = Pick<Fragrance, "name"> & { concentration?: string | null };
+
+function editionConcentration(item: Edition) {
   return (
     concentrationKey(item.concentration) ||
     concentrationKey(
