@@ -1,6 +1,6 @@
 import { getLiveFragrance, FragranceSourceError } from "@/lib/server/scento";
 import { curatedCatalog } from "@/data/catalog";
-import { normalize } from "@/lib/domain";
+import { sameFragrance } from "@/lib/catalog";
 import { Bottle } from "@/components/scently/product";
 import { ProductPhoto } from "@/components/scently/product-photo";
 import Link from "@/components/scently/site-link";
@@ -8,8 +8,14 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Fragrance profile" };
 export default async function Page({
   params,
+  searchParams,
 }: {
   params: Promise<{ lookup: string }>;
+  searchParams: Promise<{
+    name?: string;
+    brand?: string;
+    concentration?: string;
+  }>;
 }) {
   const { lookup } = await params;
   const result = await getLiveFragrance(lookup).then(
@@ -18,12 +24,31 @@ export default async function Page({
   );
   if (!result.value) return <ProfileFailure error={result.error} />;
   const fragrance = result.value;
+  const expected = await searchParams;
+  if (
+    expected.name &&
+    expected.brand &&
+    !sameFragrance(
+      {
+        name: expected.name,
+        brand: expected.brand,
+        concentration: expected.concentration,
+      },
+      fragrance,
+    )
+  )
+    return (
+      <ProfileFailure
+        error={
+          new FragranceSourceError(
+            "The source returned a different fragrance or concentration. Its details have been withheld.",
+            404,
+          )
+        }
+      />
+    );
   const local = curatedCatalog.find(
-    (item) =>
-      normalize(item.name) === normalize(fragrance.name) &&
-      normalize(item.brand) === normalize(fragrance.brand) &&
-      !!fragrance.concentration &&
-      normalize(item.concentration) === normalize(fragrance.concentration),
+    (item) => !!fragrance.concentration && sameFragrance(item, fragrance),
   );
   return (
     <main id="main" className="container page">
@@ -71,6 +96,7 @@ export default async function Page({
             <ProductPhoto
               name={fragrance.name}
               brand={fragrance.brand}
+              concentration={fragrance.concentration || ""}
               sourceUrl={fragrance.sourceUrl}
               large
             />

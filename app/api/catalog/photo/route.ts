@@ -8,17 +8,20 @@ export async function GET(request: Request) {
       .object({
         name: z.string().trim().min(1).max(250),
         brand: z.string().trim().min(1).max(250),
+        concentration: z.string().max(100),
         source: z.string().max(1000),
       })
       .parse({
         name: params.get("name"),
         brand: params.get("brand"),
+        concentration: params.get("concentration") || "",
         source: params.get("source") || "",
       });
     const result = await resolveProductPhotos(
       input.name,
       input.brand,
       input.source,
+      input.concentration,
     );
     return Response.json(result, {
       headers: {

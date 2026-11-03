@@ -7,21 +7,26 @@ import { searchCatalog, correctQuery, type Filters } from "@/lib/discovery";
 import { ProductGrid } from "./product";
 import { useScently } from "./shell";
 import { mergeFragrances } from "@/lib/catalog";
-import { brandSuggestions } from "@/lib/live-catalog";
+import { catalogFilters, catalogParameters } from "@/lib/catalog-filters";
 type CatalogResponse = {
   results: Fragrance[];
   continuation: string | null;
   providerTotal: number;
   error?: string;
+  notice?: string;
 };
 export function Explorer({
   catalog,
+  brands = [],
+  noteOptions = [],
   initialCatalog = catalog,
   initialContinuation = null,
   initialProviderTotal = 0,
   initialNotice = "",
 }: {
   catalog: Fragrance[];
+  brands?: string[];
+  noteOptions?: string[];
   initialCatalog?: Fragrance[];
   initialContinuation?: string | null;
   initialProviderTotal?: number;
@@ -29,14 +34,9 @@ export function Explorer({
 }) {
   const params = useSearchParams(),
     { region } = useScently();
-  const initial: Filters = {
-    q: params.get("q") || "",
-    notes: params.getAll("note"),
-    seasons: params.getAll("season"),
-    family: params.get("family") || "",
-    budget: Number(params.get("budget")) || undefined,
-    minHours: Number(params.get("hours")) || undefined,
-  };
+  const initial: Filters = catalogFilters(
+    new URLSearchParams(params.toString()),
+  );
   const [filters, setFilters] = useState(initial),
     [query, setQuery] = useState(initial.q || ""),
     [page, setPage] = useState(1);
@@ -49,7 +49,12 @@ export function Explorer({
     [notice, setNotice] = useState(initialNotice),
     [busy, setBusy] = useState(false);
   const requestId = useRef(0);
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  useEffect(() => () => clearTimeout(searchTimer.current), []);
   function reset() {
+    clearTimeout(searchTimer.current);
     requestId.current++;
     setFilters({});
     setQuery("");
@@ -61,14 +66,20 @@ export function Explorer({
     setBusy(false);
     setPage(1);
     window.history.replaceState(null, "", "/fragrances");
+    void search("", false, true, {});
   }
-  async function search(value = query, more = false, clearFilters = false) {
+  async function search(
+    value = query,
+    more = false,
+    clearFilters = false,
+    nextFilters = filters,
+  ) {
+    clearTimeout(searchTimer.current);
+    const criteria: Filters = clearFilters
+      ? { q: value }
+      : { ...nextFilters, q: value };
     const q = value.trim();
-    if (!q) {
-      reset();
-      return;
-    }
-    if (q.length < 2 || q.length > 150) {
+    if ((q.length > 0 && q.length < 2) || q.length > 150) {
       setNotice("Search using 2–150 characters.");
       return;
     }
@@ -77,7 +88,7 @@ export function Explorer({
     setNotice("");
     setQuery(q);
     try {
-      const parameters = new URLSearchParams({ q });
+      const parameters = catalogParameters({ ...criteria, region }, q);
       if (more && cursor) parameters.set("continuation", cursor);
       const response = await fetch("/api/catalog?" + parameters);
       const data = (await response.json()) as CatalogResponse;
@@ -92,14 +103,15 @@ export function Explorer({
       setRecords(combined);
       setCursor(data.continuation);
       setProviderTotal(data.providerTotal);
+      setNotice(data.notice || "");
       setActiveQuery(q);
       setQuery(q);
       setPage(more ? Math.max(1, Math.ceil(combined.length / 12)) : 1);
-      if (clearFilters) setFilters({ q });
+      setFilters(criteria);
       window.history.replaceState(
         null,
         "",
-        "/fragrances?" + new URLSearchParams({ q }),
+        "/fragrances?" + catalogParameters(criteria, q),
       );
     } catch (e) {
       if (id === requestId.current) setNotice((e as Error).message);
@@ -119,18 +131,29 @@ export function Explorer({
     return () => clearTimeout(timer);
   }, [query]);
   function change(key: keyof Filters, value: unknown) {
-    setFilters((f) => ({ ...f, [key]: value }));
+    const next = { ...filters, [key]: value };
+    setFilters(next);
     setPage(1);
+    if (key !== "sort") schedule(query, next);
+  }
+  function schedule(value: string, next: Filters) {
+    clearTimeout(searchTimer.current);
+    requestId.current++;
+    searchTimer.current = setTimeout(
+      () => void search(value, false, false, next),
+      500,
+    );
   }
   const result = searchCatalog(records, {
     ...filters,
-    q: filters.q === activeQuery ? "" : filters.q,
+    q: filters.q,
     region,
   });
   const select = (label: string, key: keyof Filters, values: string[]) => (
     <label className="field">
       <span>{label}</span>
       <select
+        aria-label={label}
         value={String(filters[key] ?? "")}
         onChange={(e) => change(key, e.target.value)}
       >
@@ -153,7 +176,10 @@ export function Explorer({
             name="q"
             placeholder="Search fragrances, brands, or notes..."
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              schedule(e.target.value, filters);
+            }}
           />
           {query && (
             <button type="button" aria-label="Clear search" onClick={reset}>
@@ -173,6 +199,17 @@ export function Explorer({
             <SlidersHorizontal size={16} /> Refine your discovery
           </summary>
           <div className="filter-grid">
+            {select(
+              "Brand",
+              "brand",
+              [
+                ...new Set([
+                  ...brands,
+                  ...initialCatalog.map((f) => f.brand),
+                  ...records.map((f) => f.brand),
+                ]),
+              ].sort(),
+            )}
             <label className="field">
               <span>Notes / accords</span>
               <select
@@ -187,12 +224,27 @@ export function Explorer({
               >
                 <option value="">Add a note</option>
                 {[
-                  ...new Set(
-                    records.flatMap((f) => [
+                  ...new Set([
+                    ...noteOptions,
+                    "Floral",
+                    "Woody",
+                    "Fresh",
+                    "Amber",
+                    "Vanilla",
+                    "Rose",
+                    "Jasmine",
+                    "Oud",
+                    "Musk",
+                    "Bergamot",
+                    "Tobacco",
+                    "Sandalwood",
+                    "Lavender",
+                    "Citrus",
+                    ...[...initialCatalog, ...records].flatMap((f) => [
                       ...f.accords,
                       ...f.notes.map((n) => n.name),
                     ]),
-                  ),
+                  ]),
                 ]
                   .sort()
                   .map((n) => (
@@ -251,11 +303,14 @@ export function Explorer({
           <details className="more-filters">
             <summary>More filters</summary>
             <div className="filter-grid">
-              {select("Brand", "brand", [
-                ...new Set(records.map((f) => f.brand)),
-              ])}
               {select("Concentration", "concentration", [
-                ...new Set(records.map((f) => f.concentration)),
+                ...new Set([
+                  "Eau de Parfum",
+                  "Eau de Toilette",
+                  "Parfum",
+                  "Extrait de Parfum",
+                  ...records.map((f) => f.concentration),
+                ]),
               ])}
               {select("Style preference", "style", [
                 "masculine",
@@ -304,28 +359,6 @@ export function Explorer({
           </button>
         </div>
       </div>
-      <details className="brand-browser">
-        <summary>Explore brands</summary>
-        <div className="brand-suggestions">
-          {Object.entries(brandSuggestions).map(([group, brands]) => (
-            <section key={group}>
-              <h2>{group}</h2>
-              <div className="brand-chips">
-                {brands.map((brand) => (
-                  <button
-                    key={brand}
-                    className="plain-button"
-                    disabled={busy}
-                    onClick={() => void search(brand, false, true)}
-                  >
-                    {brand}
-                  </button>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
-      </details>
       {notice && (
         <div className="info-line" role="alert">
           <p>{notice}</p>
@@ -341,9 +374,9 @@ export function Explorer({
       {busy && <p role="status">Searching fragrances…</p>}
       {providerTotal > 0 && (
         <p className="quiet-note">
-          {providerTotal.toLocaleString()} matches reported by the source.
-          Filters apply to the {records.length} fragrances loaded so far; load
-          more to include additional matches.
+          Searching across brands in the source catalog.{" "}
+          {providerTotal.toLocaleString()} candidate fragrances reported; every
+          page uses your selected filters.
         </p>
       )}
       {correctQuery(query) !== query && (
@@ -352,7 +385,10 @@ export function Explorer({
         </p>
       )}
       <div className="results-header">
-        <span role="status">{result.length} fragrances found</span>
+        <span role="status">
+          {result.length} fragrances{" "}
+          {cursor ? "shown; more results available" : "found"}
+        </span>
         <label>
           Sort by{" "}
           <select
@@ -371,11 +407,13 @@ export function Explorer({
       ) : (
         <div className="empty-state">
           <Search size={30} />
-          <h2>No scents found. Yet.</h2>
+          <h2>
+            {cursor ? "No matches on this page." : "No scents found. Yet."}
+          </h2>
           <p>
-            Try fewer filters or another note. Budget filters require current
-            offers with known shipping; performance filters require community
-            evidence.
+            {cursor && "More catalog pages remain available below. "}Try fewer
+            filters or another note. Budget filters require current offers with
+            known shipping; performance filters require community evidence.
           </p>
           <button className="button secondary" onClick={reset}>
             Explore all fragrances

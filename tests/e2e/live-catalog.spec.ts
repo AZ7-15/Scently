@@ -63,6 +63,7 @@ test("one catalog combines source searches, photos, pagination and filters", asy
     });
   });
   await page.goto("/fragrances");
+  await page.locator('[data-app-ready="true"]').waitFor();
   await expect(
     page.getByRole("navigation", { name: "Catalog source" }),
   ).toHaveCount(0);
@@ -71,6 +72,13 @@ test("one catalog combines source searches, photos, pagination and filters", asy
   await expect(page.getByRole("status").last()).toContainText("1 fragrances");
   const khamrah = page.locator(".product-card").filter({ hasText: "Khamrah" });
   await khamrah.scrollIntoViewIfNeeded();
+  const detailUrl = new URL(
+    (await khamrah.locator("h3 a").getAttribute("href")) || "",
+    "https://example.com",
+  );
+  expect(detailUrl.searchParams.get("name")).toBe("Khamrah");
+  expect(detailUrl.searchParams.get("brand")).toBe("Lattafa");
+  expect(detailUrl.searchParams.get("concentration")).toBe("Eau de Parfum");
   await expect(khamrah.locator("img")).toHaveAttribute(
     "alt",
     "Lattafa Khamrah bottle",
@@ -99,8 +107,8 @@ test("source failure gives a retry within the same catalog", async ({
       });
   });
   await page.goto("/fragrances");
-  await page.getByText("Explore brands", { exact: true }).click();
-  await page.getByRole("button", { name: "Armaf", exact: true }).click();
+  await page.locator('[data-app-ready="true"]').waitFor();
+  await page.getByLabel("Brand", { exact: true }).selectOption("Armaf");
   await expect(page.locator("main").getByRole("alert")).toContainText(
     "Source unavailable",
   );
@@ -108,4 +116,43 @@ test("source failure gives a retry within the same catalog", async ({
   await expect(
     page.getByRole("heading", { name: "No scents found. Yet." }),
   ).toBeVisible();
+});
+
+test("one filter panel queries beyond loaded cards and preserves filters on the next page", async ({
+  page,
+}) => {
+  const requests: URL[] = [];
+  await page.route(/\/api\/catalog\?/, async (route) => {
+    const url = new URL(route.request().url());
+    requests.push(url);
+    expect(url.searchParams.get("q")).toBe("");
+    expect(url.searchParams.get("note")).toBe("Floral");
+    await route.fulfill({
+      json: {
+        results: [
+          {
+            ...fragrance(
+              url.searchParams.has("continuation")
+                ? "Floral Two"
+                : "Floral One",
+              "Rose",
+            ),
+            accords: ["Floral"],
+          },
+        ],
+        providerTotal: 166,
+        continuation: url.searchParams.has("continuation") ? null : "browse:2",
+      },
+    });
+  });
+  await page.goto("/fragrances");
+  await page.locator('[data-app-ready="true"]').waitFor();
+  expect(
+    await page.getByLabel("Brand", { exact: true }).locator("option").count(),
+  ).toBeGreaterThan(100);
+  await page.getByLabel("Add a note").selectOption("Floral");
+  await expect(page.locator(".product-card")).toContainText(["Floral One"]);
+  await page.getByRole("button", { name: "Load more fragrances" }).click();
+  await expect(page.locator(".product-card")).toHaveCount(2);
+  expect(requests.at(-1)?.searchParams.get("continuation")).toBe("browse:2");
 });

@@ -75,11 +75,11 @@ In another terminal, set `$env:E2E_BASE_URL='http://localhost:4180'` and run `np
 
 ## Catalog and photos
 
-`/fragrances` is one catalog with one search and filter panel. Search any fragrance or brand to combine local records with on-demand results from the free [Scento Perfume API](https://www.scento.com/developers/perfume-api). Matching records are deduplicated by brand, name and concentration; local reviews are preserved. Distinct concentration variants remain separate. “Load more” follows the source cursor. Filters use the data available for loaded entries; unknown performance and prices do not pass evidence-based filters. The provider does not cover every fragrance worldwide.
+`/fragrances` is one catalog with one search and filter panel. Search any fragrance or brand to combine local records with on-demand results from the free [Scento Perfume API](https://www.scento.com/developers/perfume-api). Matching records are deduplicated by brand, name and concentration; local reviews are preserved. Distinct concentration variants remain separate. “Load more” follows the source cursor. The default listing browses the source catalog through pagination; choosing brand, note or family sends the filter upstream and each page is validated against the combined criteria. Brand options come from the full source directory rather than loaded cards. Unknown performance and prices do not pass evidence-based filters. The provider does not cover every fragrance worldwide.
 
 Read-only JSON endpoints are `/api/discovery/search?q=Lattafa` (optionally `continuation`) and `/api/discovery/fragrance/khamrah-lattafa`. Lookups use a bounded 128-answer, 15-minute cache, request coalescing, timeout and upstream rate limits. There is no whole-database crawling or mirroring. Use follows the [source API terms](https://www.scento.com/terms-of-service#perfume-api).
 
-Product photos use the bundled manufacturer assets first. Other records look up matching product photos from Scento product/brand pages, with exact-name retailer product-search fallbacks. Sources are credited on detail pages. Brand covers, unrelated flankers and untrusted image hosts are rejected. Photos load near the viewport and try alternate matched images if a URL fails. Missing photos are explicitly labeled; no unrelated or generated bottle is substituted. Source access and photo availability can change. Lookups are bounded, cached and rate limited.
+Product photos use the bundled manufacturer assets first. The paginated source catalog provides product-specific pack shots directly. Other records look up matching product photos from Scento product/brand pages, with exact-name retailer product-search fallbacks. Sources are credited on detail pages. Brand covers, unrelated flankers and untrusted image hosts are rejected. Photos load near the viewport and try alternate matched images if a URL fails. Missing photos are explicitly labeled; no unrelated or generated bottle is substituted. Source access and photo availability can change. Lookups are bounded, cached and rate limited.
 
 Legacy source-selection URLs open the same combined catalog. The finder continues to rank persisted records; source records are not fabricated community ratings or verified retailer offers.
 
@@ -88,3 +88,10 @@ The starter catalog contains **six** sourced fragrances. Actual manufacturer pho
 The admin UI supports JSON/CSV preview, validation, duplicate detection, edits, offers and moderation. Imports accept 100 records / 110 KB at a time and do not overwrite existing records. Large-catalog database-side search and pagination remain additional work. Missing reviews, performance and prices are displayed as missing evidence.
 
 Append migrations instead of changing applied SQL files. SQLite/libSQL migrations use transactions and recorded checksums. See [integrations](docs/integrations.md) and [data rules](docs/data-rules.md).
+
+
+### Accuracy checks across brands
+
+All source records use the same name, brand and concentration checks. Search results are re-filtered locally because the upstream provider can return unrelated suggestions. External profile links carry the expected identity; a different source profile is withheld. Photo requests and cache keys include concentration. A known concentration needs explicit, unambiguous matching evidence from the photo source, otherwise the photo remains unavailable.
+
+These checks prevent identity mismatches; they do not independently verify every provider fact or guarantee a photo for every record. The cross-brand audit and its scope are recorded in [accuracy audit](docs/accuracy-audit.md).

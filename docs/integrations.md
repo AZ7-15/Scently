@@ -29,3 +29,14 @@ No retailer feeds or affiliate partnerships are connected. `RetailerAdapter.fetc
 Starter photos come from manufacturer product pages. Exact image URLs, source pages and dates are recorded in `data/photo-sources.json`. Bundled local files avoid runtime hotlink dependence. Attribution does not represent commercial licensing or a brand partnership. No Fragrantica photographs or copied reviews are included. A complete Fragrantica catalog has not been imported.
 
 `render.yaml` specifies a free web service without a paid disk. Deployment requires a connected source repository and external database secrets. Previous Sites/D1 data is independent and is not migrated automatically. Creating the Blueprint file does not deploy a service.
+
+
+## Unified catalog browsing and filters
+
+The catalog page now browses the supplier's public storefront listing at /api/products, one 12-record page per user request. This currently reports 1,475 records. /brands supplies 151 distinct house names after combining duplicate accent aliases; /api/notes supplies the common material identifiers. These are runtime observations, not fixed catalog totals.
+
+Brand identifiers, material identifiers and accord/family filters are forwarded to the listing before pagination. Other selected criteria are checked against each returned page, with unknown data excluded. The same criteria are preserved in the URL and continuation requests. Text searches continue to use the public Perfume API. Local records and reviews are merged by identity with both paths.
+
+The source listing and directory formats are public storefront interfaces, not the documented Perfume API contract; they can change. Responses are validated, request-coalesced, cached briefly in bounded memory and rate limited. There is no background crawl, persisted supplier catalog or full-catalog mirror. Failure leaves sourced local records available with an explicit notice. Candidate counts belong to the source and may exceed the matches shown after all local criteria.
+
+Supplier thumbnails are accepted only as HTTPS pack shots on the configured image CDN. Campaign art is excluded. Supplier metadata such as Fragrantica ratings or vote counts is deliberately not turned into Scently reviews or measured performance. Season categories are source guidance, not community votes. Actual source facts still need independent verification when a discrepancy is reported.

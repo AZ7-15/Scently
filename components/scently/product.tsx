@@ -27,6 +27,7 @@ export function Bottle({
         key={f.id}
         name={f.name}
         brand={f.brand}
+        concentration={f.concentration}
         sourceUrl={f.sourceUrl}
         imageUrl={f.imageUrl}
         large={large}

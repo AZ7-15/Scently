@@ -5,12 +5,14 @@ import type { ProductPhotoResult } from "@/lib/product-photos";
 export function ProductPhoto({
   name,
   brand,
+  concentration = "",
   sourceUrl,
   imageUrl,
   large = false,
 }: {
   name: string;
   brand: string;
+  concentration?: string;
   sourceUrl: string;
   imageUrl?: string | null;
   large?: boolean;
@@ -24,7 +26,12 @@ export function ProductPhoto({
   useEffect(() => {
     if (imageUrl && !providedBroken) return;
     const controller = new AbortController();
-    const params = new URLSearchParams({ name, brand, source: sourceUrl });
+    const params = new URLSearchParams({
+      name,
+      brand,
+      concentration,
+      source: sourceUrl,
+    });
     const load = () => {
       void fetch("/api/catalog/photo?" + params, { signal: controller.signal })
         .then((response) => response.json() as Promise<ProductPhotoResult>)
@@ -53,7 +60,7 @@ export function ProductPhoto({
       observer?.disconnect();
       controller.abort();
     };
-  }, [name, brand, sourceUrl, imageUrl, large, providedBroken]);
+  }, [name, brand, concentration, sourceUrl, imageUrl, large, providedBroken]);
   const photo = result?.images[index];
   return (
     <div ref={container} className="product-photo" aria-busy={result === null}>

@@ -1,5 +1,10 @@
 import { normalize } from "@/lib/domain";
-import { brandKey } from "@/lib/catalog";
+import {
+  brandKey,
+  identityName,
+  sameFragrance,
+  photoConcentrationMatches,
+} from "@/lib/catalog";
 import type { ProductPhoto, ProductPhotoResult } from "@/lib/product-photos";
 import { getLiveFragrance } from "./scento";
 import { memoryLimit } from "./memory-limits";
@@ -42,10 +47,7 @@ function decode(value: string) {
     .replace(/&#(\d+);/g, (_, number) => String.fromCharCode(Number(number)));
 }
 function photoName(value: string) {
-  return normalize(value)
-    .replace(/[’']/g, "")
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
+  return identityName(value);
 }
 function productLabel(value: string, brand: string) {
   let label = photoName(value);
@@ -64,6 +66,7 @@ export function photosFromPage(
   name: string,
   brand: string,
   sourceUrl: string,
+  concentration = "",
 ): ProductPhoto[] {
   const images: string[] = [];
   function visit(value: unknown) {
@@ -77,7 +80,11 @@ export function photosFromPage(
       ["ProductGroup", "Product"].includes(String(record["@type"])) &&
       photoName(String(record.name)) === photoName(name) &&
       typeof productBrand === "string" &&
-      brandKey(productBrand) === brandKey(brand)
+      brandKey(productBrand) === brandKey(brand) &&
+      photoConcentrationMatches(
+        concentration,
+        String(record.name) + " " + String(record.description || ""),
+      )
     ) {
       const candidates = Array.isArray(record.image)
         ? record.image
@@ -113,6 +120,8 @@ export function photosFromPage(
       if (
         !alt ||
         !/bottle/i.test(alt) ||
+        !photoName(decode(alt)).includes(photoName(brand)) ||
+        !photoConcentrationMatches(concentration, decode(alt)) ||
         productLabel(decode(alt), brand) !== productLabel(name, brand)
       )
         continue;
@@ -161,6 +170,7 @@ async function pageHtml(url: string) {
 async function retailerPhoto(
   name: string,
   brand: string,
+  concentration: string,
 ): Promise<ProductPhoto[]> {
   const stores = [
     "https://fragrancelord.com",
@@ -200,6 +210,7 @@ async function retailerPhoto(
           typeof product.title !== "string" ||
           typeof product.vendor !== "string" ||
           brandKey(product.vendor) !== brandKey(brand) ||
+          !photoConcentrationMatches(concentration, product.title) ||
           productLabel(product.title, brand) !== productLabel(name, brand)
         )
           continue;
@@ -219,6 +230,7 @@ async function retailerPhoto(
 async function brandPhoto(
   name: string,
   brand: string,
+  concentration: string,
 ): Promise<ProductPhoto[]> {
   if (brandKey(brand) !== "lattafa" || !memoryLimit("photo:brand", 30, 60))
     return [];
@@ -235,10 +247,15 @@ async function brandPhoto(
       title?: string;
       vendor?: string;
       images?: string[];
+      body_html?: string;
     };
     if (
       !product.title ||
       photoName(product.title) !== photoName(name) ||
+      !photoConcentrationMatches(
+        concentration,
+        product.title + " " + (product.body_html || ""),
+      ) ||
       !["lattafa", "lattafa india"].includes(normalize(product.vendor || ""))
     )
       return [];
@@ -255,8 +272,11 @@ export async function resolveProductPhotos(
   name: string,
   brand: string,
   source: string,
+  concentration = "",
 ): Promise<ProductPhotoResult> {
-  const key = [normalize(name), brandKey(brand), source].join("|");
+  const key = [normalize(name), brandKey(brand), concentration, source].join(
+    "|",
+  );
   const cached = photos.get(key);
   if (cached && cached.expires > Date.now()) return cached.result;
   if (pending.has(key)) return pending.get(key)!;
@@ -277,11 +297,7 @@ export async function resolveProductPhotos(
       const profile = await getLiveFragrance(name + " " + brand).catch(
         () => null,
       );
-      if (
-        profile &&
-        normalize(profile.name) === normalize(name) &&
-        brandKey(profile.brand) === brandKey(brand)
-      )
+      if (profile && sameFragrance({ name, brand, concentration }, profile))
         sourceUrl = new URL(profile.sourceUrl);
     }
     let images = sourceUrl
@@ -290,10 +306,12 @@ export async function resolveProductPhotos(
           name,
           brand,
           sourceUrl.href,
+          concentration,
         )
       : [];
-    if (!images.length) images = await brandPhoto(name, brand);
-    if (!images.length) images = await retailerPhoto(name, brand);
+    if (!images.length) images = await brandPhoto(name, brand, concentration);
+    if (!images.length)
+      images = await retailerPhoto(name, brand, concentration);
     const result = { images };
     if (photos.size >= 512) photos.delete(photos.keys().next().value!);
     photos.set(key, {

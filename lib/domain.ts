@@ -53,7 +53,14 @@ export interface Fragrance {
 }
 export function fragrancePath(fragrance: Fragrance) {
   return fragrance.externalLookup
-    ? "/discover/" + encodeURIComponent(fragrance.externalLookup)
+    ? "/discover/" +
+        encodeURIComponent(fragrance.externalLookup) +
+        "?" +
+        new URLSearchParams({
+          name: fragrance.name,
+          brand: fragrance.brand,
+          concentration: fragrance.concentration,
+        })
     : "/fragrances/" + fragrance.slug;
 }
 export interface Offer {

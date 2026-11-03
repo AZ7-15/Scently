@@ -1,7 +1,10 @@
+import { browseSourceCatalog } from "./source-browse";
+import { catalogSourceQuery } from "@/lib/catalog-filters";
+import type { Filters } from "@/lib/discovery";
 import { getCatalog } from "./catalog";
 import { getLiveFragrance, searchLiveFragrances } from "./scento";
 import { searchCatalog, correctQuery } from "@/lib/discovery";
-import { catalogFamily, brandKey, mergeFragrances } from "@/lib/catalog";
+import { catalogFamily, sameFragrance, mergeFragrances } from "@/lib/catalog";
 import {
   seasons,
   slugify,
@@ -13,12 +16,17 @@ import {
 export async function searchUnifiedCatalog(
   query: string,
   continuation?: string,
+  filters: Filters = {},
 ) {
   const q = correctQuery(query.trim());
-  const local = searchCatalog(await getCatalog(), { q });
-  if (q.length < 2)
-    return { results: local, continuation: null, providerTotal: 0, notice: "" };
-  const remote = await searchLiveFragrances(q, continuation);
+  const criteria = { ...filters, q };
+  const local = searchCatalog(await getCatalog(), criteria);
+  const sourceQuery = catalogSourceQuery(criteria);
+  if (!q) {
+    const source = await browseSourceCatalog(criteria, continuation);
+    return { ...source, results: mergeFragrances(local, source.results) };
+  }
+  const remote = await searchLiveFragrances(sourceQuery, continuation);
   // Only the current page is hydrated. No catalog crawling or background import.
   const records: Fragrance[] = [];
   for (let start = 0; start < remote.matches.length; start += 3) {
@@ -26,11 +34,7 @@ export async function searchUnifiedCatalog(
       remote.matches.slice(start, start + 3).map(async (item) => {
         const candidate = await getLiveFragrance(item.lookup).catch(() => null);
         const profile =
-          candidate &&
-          normalize(candidate.name) === normalize(item.name) &&
-          brandKey(candidate.brand) === brandKey(item.brand)
-            ? candidate
-            : null;
+          candidate && sameFragrance(item, candidate) ? candidate : null;
         const concentration = profile?.concentration || "Not provided";
         const notes: Note[] = profile
           ? (["top", "heart", "base"] as const).flatMap((stage) =>
@@ -88,9 +92,12 @@ export async function searchUnifiedCatalog(
     records.push(...group);
   }
   return {
-    results: mergeFragrances(local, records),
+    results: mergeFragrances(local, searchCatalog(records, criteria)),
     continuation: remote.continuation,
     providerTotal: remote.total,
-    notice: "",
+    notice:
+      q.length > 0 && searchCatalog(records, { q }).length < records.length
+        ? "Unrelated source suggestions were excluded. The source may not contain the fragrance you searched for."
+        : "",
   };
 }

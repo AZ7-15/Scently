@@ -5,7 +5,9 @@ test("register, sign out, reject a wrong password, and sign back in", async ({
 }) => {
   const email = `account-${crypto.randomUUID()}@example.com`;
   await page.goto("/account");
+  await page.locator('[data-app-ready="true"]').waitFor();
   await page.getByRole("link", { name: "Sign in", exact: true }).click();
+  await page.locator('[data-app-ready="true"]').waitFor();
   await page
     .getByRole("button", { name: "New to Scently? Create an account" })
     .click();

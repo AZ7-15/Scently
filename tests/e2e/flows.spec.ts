@@ -35,11 +35,18 @@ test("known search opens its profile and note pyramid", async ({ page }) => {
 test("search vanilla, combine filters, reset", async ({ page }) => {
   await visit(page, "/fragrances?view=community");
   await page.getByRole("textbox", { name: "Search catalog" }).fill("vanila");
-  await expect(page.getByRole("status")).toContainText("3 fragrances");
+  await expect(
+    page.locator(".product-card").filter({ hasText: "Tobacco Vanille" }),
+  ).toBeVisible();
   await page.getByLabel("winter", { exact: true }).check();
-  await expect(page.getByRole("status")).toContainText("2 fragrances");
+  await expect(
+    page.locator(".product-card").filter({ hasText: "Tobacco Vanille" }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Reset filters" }).click();
-  await expect(page.getByRole("status")).toContainText("6 fragrances");
+  await expect(page.getByLabel("Search catalog")).toHaveValue("");
+  await expect(
+    page.getByRole("button", { name: "Compare Sauvage", exact: true }),
+  ).toBeVisible();
 });
 test("compare two fragrances", async ({ page }) => {
   await visit(page, "/fragrances?view=community");

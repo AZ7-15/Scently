@@ -1,3 +1,4 @@
+import { catalogFilters } from "@/lib/catalog-filters";
 import { searchUnifiedCatalog } from "@/lib/server/unified-catalog";
 import { failure } from "@/lib/server/http";
 import { FragranceSourceError } from "@/lib/server/scento";
@@ -10,6 +11,7 @@ export async function GET(request: Request) {
     const result = await searchUnifiedCatalog(
       q,
       p.get("continuation") || undefined,
+      catalogFilters(p),
     );
     return Response.json(
       {

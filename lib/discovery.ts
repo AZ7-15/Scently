@@ -5,7 +5,7 @@ import {
   type Fragrance,
   type Offer,
 } from "./domain";
-import { brandKey } from "./catalog";
+import { brandKey, identityName, concentrationKey } from "./catalog";
 export const OFFER_TTL_HOURS = 48;
 export function isCurrentOffer(o: Offer, region = "CA", now = Date.now()) {
   const age = now - new Date(o.verifiedAt).getTime();
@@ -52,7 +52,10 @@ export interface Filters {
   sort?: string;
 }
 export function searchCatalog(catalog: Fragrance[], filters: Filters) {
-  const q = normalize(correctQuery(filters.q || ""));
+  const q = identityName(correctQuery(filters.q || "")).replace(
+    /(\d)\s+([a-z])/g,
+    "$1$2",
+  );
   const terms = q
     .split(/\s+/)
     .filter(Boolean)
@@ -69,7 +72,7 @@ export function searchCatalog(catalog: Fragrance[], filters: Filters) {
         ].includes(t),
     );
   const result = catalog.filter((f) => {
-    const words = normalize(
+    const words = identityName(
       [
         f.name,
         f.brand,
@@ -81,7 +84,7 @@ export function searchCatalog(catalog: Fragrance[], filters: Filters) {
         ...f.editorialSeasons,
         ...f.occasions,
       ].join(" "),
-    );
+    ).replace(/(\d)\s+([a-z])/g, "$1$2");
     return (
       terms.every((t) => words.includes(t)) &&
       (!filters.family || f.family === filters.family) &&
@@ -101,7 +104,9 @@ export function searchCatalog(catalog: Fragrance[], filters: Filters) {
         (f.longevity !== null && f.longevity >= filters.minHours)) &&
       (!filters.projection || f.projection === filters.projection) &&
       (!filters.brand || brandKey(f.brand) === brandKey(filters.brand)) &&
-      (!filters.concentration || f.concentration === filters.concentration) &&
+      (!filters.concentration ||
+        (concentrationKey(f.concentration) || f.concentration) ===
+          (concentrationKey(filters.concentration) || filters.concentration)) &&
       (!filters.style || f.style === filters.style) &&
       (!filters.occasion || f.occasions.includes(filters.occasion)) &&
       (!filters.minRating ||

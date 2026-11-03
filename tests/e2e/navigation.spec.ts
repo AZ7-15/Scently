@@ -4,7 +4,9 @@ test("every starter fragrance has a working product photograph", async ({
   page,
 }) => {
   await page.goto("/fragrances?view=community");
-  const photos = page.locator(".bottle-stage img");
+  const photos = page.locator(
+    '.product-card:has(button[aria-label^="Compare "]) .bottle-stage img',
+  );
   await expect(photos).toHaveCount(6);
   for (const photo of await photos.all()) {
     await photo.scrollIntoViewIfNeeded();
@@ -88,7 +90,7 @@ test("category, note, compare, region, and finder controls work", async ({
   await page.getByRole("link", { name: /Warm & Sweet/ }).click();
   await expect(page).toHaveURL(/family=warm/);
   await expect(page.locator('[data-app-ready="true"]')).toBeAttached();
-  await expect(page.getByRole("status")).toContainText("1 fragrances");
+  await expect(page.locator(".product-card").first()).toBeVisible();
   await page.getByRole("button", { name: "Reset filters" }).click();
   await page
     .getByRole("button", { name: "Compare Sauvage", exact: true })
@@ -111,6 +113,7 @@ test("category, note, compare, region, and finder controls work", async ({
     .getByRole("navigation", { name: "Main navigation" })
     .getByRole("link", { name: "AI Finder" })
     .click();
+  await page.locator('[data-app-ready="true"]').waitFor();
   await page
     .getByRole("button", { name: "I want a masculine vanilla fragrance." })
     .click();

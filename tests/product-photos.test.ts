@@ -101,3 +101,44 @@ it("uses a matching brand product fallback and rejects untrusted image hosts", a
   ]);
   expect(fetcher).toHaveBeenCalledTimes(2);
 });
+
+it.each([
+  ["Sauvage", "Dior"],
+  ["Bleu de Chanel", "Chanel"],
+  ["Naxos", "Xerjoff"],
+  ["Layton", "Parfums de Marly"],
+  ["Voyage", "Nautica"],
+  ["9PM", "Afnan"],
+  ["Club de Nuit Intense Man", "Armaf"],
+  ["Hawas", "Rasasi"],
+])("validates brand, flanker and concentration for %s by %s", (name, brand) => {
+  const html = page(name, brand, packShot);
+  expect(photosFromPage(html, name, brand, source)).toHaveLength(1);
+  expect(photosFromPage(html, name + " Intense", brand, source)).toEqual([]);
+  expect(photosFromPage(html, name, "Another house", source)).toEqual([]);
+  expect(photosFromPage(html, name, brand, source, "EDP")).toEqual([]);
+  const described = html.replace(
+    '"@type":"ProductGroup"',
+    '"description":"Eau de Parfum","@type":"ProductGroup"',
+  );
+  expect(photosFromPage(described, name, brand, source, "EDP")).toHaveLength(1);
+  expect(photosFromPage(described, name, brand, source, "EDT")).toEqual([]);
+  expect(photosFromPage(described, name, brand, source, "Parfum")).toEqual([]);
+});
+it("rejects ambiguous concentration evidence and wrong brand alt labels", () => {
+  const html = page("Bleu de Chanel", "Chanel", packShot).replace(
+    '"@type":"ProductGroup"',
+    '"description":"EDT and EDP","@type":"ProductGroup"',
+  );
+  expect(
+    photosFromPage(html, "Bleu de Chanel", "Chanel", source, "EDP"),
+  ).toEqual([]);
+  expect(
+    photosFromPage(
+      '<img alt="Another house Asad perfume bottle" src="' + packShot + '">',
+      "Asad",
+      "Lattafa",
+      source,
+    ),
+  ).toEqual([]);
+});

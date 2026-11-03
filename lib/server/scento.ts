@@ -7,7 +7,10 @@ const text = z.string().trim().min(1).max(250);
 const sourceUrl = z
   .string()
   .url()
-  .refine((url) => new URL(url).origin === "https://www.scento.com");
+  .refine(
+    (url) =>
+      URL.canParse(url) && new URL(url).origin === "https://www.scento.com",
+  );
 const cache = new Map<string, { value: unknown; expires: number }>();
 const pending = new Map<string, Promise<unknown>>();
 const cacheMilliseconds = 15 * 60 * 1000;
