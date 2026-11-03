@@ -40,3 +40,12 @@ Brand identifiers, material identifiers and accord/family filters are forwarded 
 The source listing and directory formats are public storefront interfaces, not the documented Perfume API contract; they can change. Responses are validated, request-coalesced, cached briefly in bounded memory and rate limited. There is no background crawl, persisted supplier catalog or full-catalog mirror. Failure leaves sourced local records available with an explicit notice. Candidate counts belong to the source and may exceed the matches shown after all local criteria.
 
 Supplier thumbnails are accepted only as HTTPS pack shots on the configured image CDN. Campaign art is excluded. Supplier metadata such as Fragrantica ratings or vote counts is deliberately not turned into Scently reviews or measured performance. Season categories are source guidance, not community votes. Actual source facts still need independent verification when a discrepancy is reported.
+
+
+## Fragrance stories and note portraits
+
+Individual source profiles now read the matching public product page to obtain its full disclosed note stages, description and pack shot. The Perfume API can return only a few signature materials. Product name and house must match before enrichment; malformed or unavailable pages retain the original profile. Only configured HTTPS product-image hosts are accepted, and campaign artwork is excluded. No supplier community ratings or performance votes are imported.
+
+The shared illustrated pyramid is also used on the six community detail pages. Every note links to the combined catalog filter. Descriptions explain general material/accord character and are editorial, rather than additional product ingredients. /api/notes/portrait resolves the specific note portrait from Scento's public note page; it rejects recommended-product pictures, different note names and external hosts. Note images load near the viewport. Missing imagery retains a labelled note with a neutral leaf marker.
+
+Source pages are fetched on demand with coalescing, short bounded caching, timeouts and rate limits. No complete catalog or note-image library is copied. Imagery remains credited to Scento and its respective rights holders. Illustrated notes can represent accords recreated with aroma materials; the images do not assert that the depicted raw ingredient was physically used in a bottle.

@@ -1,3 +1,4 @@
+import { NotePyramid } from "@/components/scently/note-pyramid";
 import Link from "@/components/scently/site-link";
 import { notFound } from "next/navigation";
 import {
@@ -57,7 +58,7 @@ export default async function Page({
         <span>/</span>
         <span>{f.name}</span>
       </nav>
-      <section className="detail-hero">
+      <section className="detail-hero community-story-hero">
         <div className={"detail-image tone-" + f.family}>
           <Bottle fragrance={f} large />
           <span className="image-caption">
@@ -149,50 +150,7 @@ export default async function Page({
             </div>
           ))}
         </div>
-        <div className="panel">
-          <h2>Fragrance pyramid</h2>
-          <p>A scent unfolds in layers.</p>
-          {(["top", "heart", "base", "unclassified"] as const)
-            .filter(
-              (stage) =>
-                stage !== "unclassified" ||
-                f.notes.some((n) => n.stage === stage),
-            )
-            .map((stage) => (
-              <div className="pyramid-stage" key={stage}>
-                <h3>
-                  {stage === "unclassified"
-                    ? "Additional disclosed notes"
-                    : stage + " notes"}
-                </h3>
-                <p>
-                  {stage === "top"
-                    ? "The first impression"
-                    : stage === "heart"
-                      ? "The central character"
-                      : stage === "base"
-                        ? "The lingering impression"
-                        : "The brand does not assign these notes to a pyramid."}
-                </p>
-                <div className="note-list">
-                  {f.notes
-                    .filter((n) => n.stage === stage)
-                    .map((n) => (
-                      <Link
-                        key={n.name}
-                        href={"/fragrances?note=" + encodeURIComponent(n.name)}
-                      >
-                        <Flower2 size={12} />
-                        {n.name}
-                      </Link>
-                    ))}
-                </div>
-                {!f.notes.some((n) => n.stage === stage) && (
-                  <p>Not classified by the source.</p>
-                )}
-              </div>
-            ))}
-        </div>
+        <NotePyramid notes={f.notes} compact />
       </section>
       <section id="performance" className="detail-section">
         <h2>How it wears</h2>
