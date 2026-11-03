@@ -58,3 +58,25 @@ it("coalesces refresh requests and keeps the licensed bundle when updates fail",
   );
   expect(await getOpenProfile("open:unknown-record")).toBeNull();
 });
+
+it("audits the full published snapshot for known duplicate names", () => {
+  const merged = mergeFragrances([], mapOpenCatalog(bundled));
+  for (const [brand, fragment] of [
+    ["Giorgio Armani", "stronger with you absolutely"],
+    ["Maison Margiela Fragrances", "by the fireplace"],
+    ["Maison Margiela Fragrances", "jazz club"],
+    ["Maison Margiela Fragrances", "beach walk"],
+    ["Le Labo", "noir 29"],
+    ["Jean Paul Gaultier", "divine"],
+  ]) {
+    const matches = merged.filter(
+      (f) =>
+        f.brand === brand &&
+        (f.name.toLowerCase().endsWith(fragment) ||
+          f.name.toLowerCase() === fragment + " givenchy"),
+    );
+    expect(matches, brand + ": " + fragment).toHaveLength(1);
+  }
+  expect(merged.some((f) => f.name === "Absolu Aventus")).toBe(true);
+  expect(merged.some((f) => f.name === "Aventus")).toBe(true);
+});

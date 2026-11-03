@@ -39,3 +39,21 @@ test("new-arrivals selection requests the live feed and preserves it in the URL"
     page.getByText(/A new arrival can be an older fragrance newly stocked/),
   ).toBeVisible();
 });
+
+test("Armani shows one card per Stronger With You edition", async ({
+  request,
+}) => {
+  const response = await request.get("/api/catalog?brand=Giorgio%20Armani");
+  expect(response.ok()).toBe(true);
+  const data = await response.json();
+  for (const edition of [
+    "stronger with you intensely",
+    "stronger with you absolutely",
+  ])
+    expect(
+      data.results.filter((f: { name: string }) =>
+        f.name.toLowerCase().endsWith(edition),
+      ),
+      edition,
+    ).toHaveLength(1);
+});

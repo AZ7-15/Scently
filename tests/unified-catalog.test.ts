@@ -162,3 +162,67 @@ it("does not create an extra edition from an Elixir marketing label", () => {
     mergeFragrances([base], [{ ...base, id: "open", concentration: "Elixir" }]),
   ).toEqual([base]);
 });
+
+it("merges house and collection labels without merging actual flankers", () => {
+  const base = curatedCatalog[0];
+  for (const [brand, a, b] of [
+    [
+      "Giorgio Armani",
+      "Emporio Armani Stronger With You Intensely",
+      "Stronger With You Intensely",
+    ],
+    [
+      "Giorgio Armani",
+      "Emporio Armani Stronger With You Absolutely",
+      "Stronger With You Absolutely",
+    ],
+    ["Maison Margiela Fragrances", "Replica Jazz Club", "Jazz Club"],
+    ["Acqua di Parma", "Blu Mediterraneo Arancia di Capri", "Arancia di Capri"],
+    ["Jean Paul Gaultier", "Gaultier Divine", "Divine"],
+    ["Le Labo", "Th\u00e9 Noir 29", "Noir 29"],
+    ["Givenchy", "Irresistible Givenchy", "Irresistible"],
+    ["Hugo Boss", "BOSS Bottled", "Bottled"],
+  ])
+    expect(
+      mergeFragrances(
+        [],
+        [
+          { ...base, id: "a", brand, name: a },
+          { ...base, id: "b", brand, name: b },
+        ],
+      ),
+    ).toHaveLength(1);
+  expect(
+    mergeFragrances(
+      [],
+      [
+        {
+          ...base,
+          brand: "Emporio Armani",
+          name: "Stronger With You Absolutely",
+        },
+        {
+          ...base,
+          id: "b",
+          brand: "Giorgio Armani",
+          name: "Emporio Armani Stronger With You Absolutely",
+        },
+      ],
+    ),
+  ).toHaveLength(1);
+  for (const [a, b] of [
+    ["Aventus", "Absolu Aventus"],
+    ["Poison", "Hypnotic Poison"],
+    ["Jazz Club", "Jazz Club Intense"],
+    ["Stronger With You Intensely", "Stronger With You Absolutely"],
+  ])
+    expect(
+      mergeFragrances(
+        [],
+        [
+          { ...base, id: "a", name: a },
+          { ...base, id: "b", name: b },
+        ],
+      ),
+    ).toHaveLength(2);
+});

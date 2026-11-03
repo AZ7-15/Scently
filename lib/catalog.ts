@@ -3,6 +3,7 @@ export function brandKey(brand: string) {
   const key = identityName(brand)
     .replace(/\bperfumes?\b/g, "")
     .trim();
+  if (["armani", "emporio armani"].includes(key)) return "giorgio armani";
   if (key === "maison margiela fragrances") return "maison margiela";
   return key === "christian dior" ? "dior" : key;
 }
@@ -45,7 +46,22 @@ export function photoConcentrationMatches(expected: string, evidence: string) {
 }
 type CatalogIdentity = Pick<Fragrance, "brand" | "name" | "concentration">;
 function editionName(fragrance: CatalogIdentity) {
-  return identityName(fragrance.name.replace(/&/g, " and "))
+  let name = identityName(fragrance.name.replace(/&/g, " and "));
+  const brand = brandKey(fragrance.brand);
+  const prefixes = [identityName(fragrance.brand), brand];
+  if (brand === "giorgio armani") prefixes.push("emporio armani", "armani");
+  if (brand === "maison margiela") prefixes.push("replica");
+  if (brand === "acqua di parma") prefixes.push("blu mediterraneo");
+  if (brand === "jean paul gaultier") prefixes.push("gaultier");
+  if (brand === "hugo boss") prefixes.push("boss");
+  // Strip house/collection labels only within their own house. Never strip
+  // arbitrary leading words: Absolu Aventus and Aventus are distinct editions.
+  for (const prefix of prefixes.sort((a, b) => b.length - a.length)) {
+    if (name.startsWith(prefix + " ")) name = name.slice(prefix.length + 1);
+    if (name.endsWith(" " + prefix)) name = name.slice(0, -prefix.length - 1);
+  }
+  if (brand === "le labo" && name === "noir 29") name = "the noir 29";
+  return name
     .replace(
       /\s+(?:eau de parfum|eau de toilette|eau de cologne|edp|edt|edc)$/,
       "",
