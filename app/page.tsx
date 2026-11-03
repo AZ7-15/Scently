@@ -2,238 +2,302 @@ import Link from "@/components/scently/site-link";
 import {
   ArrowRight,
   ArrowUpRight,
+  Sparkles,
   Compass,
   Flower2,
-  Leaf,
-  Moon,
-  ShieldCheck,
-  Sparkles,
-  Sun,
-  Trees,
-  Wind,
 } from "lucide-react";
 import { getCatalog } from "@/lib/server/catalog";
+import { searchUnifiedCatalog } from "@/lib/server/unified-catalog";
 import { ProductGrid } from "@/components/scently/product";
+import { ProductPhoto } from "@/components/scently/product-photo";
+import { NotePortrait } from "@/components/scently/note-portrait";
 import { SearchBox } from "@/components/scently/search";
+import { fragrancePath } from "@/lib/domain";
 export const dynamic = "force-dynamic";
 export default async function Home() {
   const catalog = await getCatalog();
+  const portrait =
+    catalog.find((f) => f.name === "Tobacco Vanille") || catalog[0];
+  let featured = catalog.slice(0, 6);
+  try {
+    const source = (await searchUnifiedCatalog("")).results.filter(
+      (f) => f.externalLookup,
+    );
+    if (source.length)
+      featured = [...catalog.slice(0, 3), ...source.slice(0, 3)];
+  } catch {
+    /* The sourced starter selection remains available. */
+  }
+  const portraitNote =
+    portrait?.notes.find((n) => n.name.toLowerCase() === "vanilla")?.name ||
+    portrait?.notes[0]?.name;
   return (
-    <main id="main">
-      <section className="hero container">
-        <div className="hero-copy">
-          <div className="eyebrow">
-            <span /> YOUR NEXT SIGNATURE SCENT STARTS HERE
-          </div>
+    <main id="main" className="landing-story">
+      <section className="landing-opening container">
+        <div className="landing-opening-copy">
+          <span className="eyebrow">SCENTLY / A WORLD OF FRAGRANCE</span>
           <h1>
-            Find your
+            Find your scent.
             <br />
-            perfect <em>fragrance.</em>
+            <em>Follow the feeling.</em>
           </h1>
-          <p className="hero-description">
-            Explore scents, discover what people really think,
-            <br className="desktop-break" /> and find the best price — all in
-            one place.
+          <p className="landing-introduction">
+            For the everyday you. The after-dark you. The version you
+            haven&apos;t met yet. Discover a fragrance that feels personal.
           </p>
           <SearchBox catalog={catalog} large />
-          <div className="search-examples">
-            <span>Try</span>
-            <Link href="/fragrances?q=vanilla">Vanilla</Link>
-            <Link href="/fragrances?season=winter">Winter scents</Link>
-            <Link href="/fragrances?q=sauvage">Dior Sauvage</Link>
+          <div className="landing-search-notes">
+            <span>A place to begin</span>
+            <Link href="/fragrances?note=Vanilla">Vanilla</Link>
+            <Link href="/fragrances?note=Rose">Rose</Link>
+            <Link href="/fragrances?brand=Lattafa">Lattafa</Link>
           </div>
-          <Link className="button primary" href="/finder">
-            <Sparkles size={17} /> Find My Fragrance with AI{" "}
-            <ArrowRight size={17} />
-          </Link>
-          <p className="hero-footnote">
-            A little guidance. A fragrance that feels like you.
+          <div className="landing-actions">
+            <Link className="button primary" href="/fragrances">
+              Explore the catalog <ArrowRight size={16} />
+            </Link>
+            <Link className="button secondary" href="/finder">
+              <Sparkles size={16} />
+              Find my fragrance
+            </Link>
+          </div>
+          <p className="landing-caption">
+            Real bottles. Notes you can picture. Room to discover.
           </p>
         </div>
-        <div className="hero-art">
-          {/* Local decorative asset; no remote image service is required. */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/fragrance-still-life.png"
-            alt="Amber fragrance bottles beside olive branches on sunlit stone"
-            fetchPriority="high"
-          />
-          <div className="hero-art-caption">
-            <span>THE ART OF FINDING YOUR SCENT</span>
-            <p>
-              Something personal.
-              <br />
-              Something unmistakably you.
-            </p>
-            <span className="art-arrow">
-              <ArrowUpRight size={24} />
-            </span>
+        {portrait && (
+          <div className="landing-portrait">
+            <div className="landing-portrait-top">
+              <span>THE SCENT EDIT</span>
+              <span>01 / A WARMER SIDE</span>
+            </div>
+            <div className="landing-portrait-orbit" aria-hidden="true" />
+            <div className="landing-portrait-product">
+              <ProductPhoto
+                name={portrait.name}
+                brand={portrait.brand}
+                concentration={portrait.concentration}
+                imageUrl={portrait.imageUrl}
+                sourceUrl={portrait.sourceUrl}
+                large
+              />
+            </div>
+            {portraitNote && (
+              <Link
+                className="landing-note-float"
+                href={
+                  "/fragrances?" + new URLSearchParams({ note: portraitNote })
+                }
+                aria-label={"Explore " + portraitNote + " fragrances"}
+              >
+                <NotePortrait name={portraitNote} />
+                <span>
+                  A note to know<strong>{portraitNote}</strong>
+                </span>
+                <ArrowUpRight size={15} />
+              </Link>
+            )}
+            <div className="landing-portrait-caption">
+              <div>
+                <span className="eyebrow">{portrait.brand}</span>
+                <Link href={fragrancePath(portrait)}>{portrait.name}</Link>
+              </div>
+              <Link
+                className="landing-portrait-link"
+                href={fragrancePath(portrait)}
+                aria-label={"Discover " + portrait.name}
+              >
+                <ArrowUpRight size={22} />
+              </Link>
+            </div>
           </div>
-        </div>
+        )}
       </section>
-      <div className="trust-strip">
-        <div className="container">
-          <span>
-            <Compass size={17} /> Discover with confidence
-          </span>
-          <span>
-            <Flower2 size={17} /> Understand every note
-          </span>
-          <span>
-            <ShieldCheck size={17} /> Clear sources. Honest insights.
-          </span>
-        </div>
+      <div className="landing-wayfinding container">
+        <span>
+          <Compass size={16} />
+          Explore every side of scent
+        </span>
+        <span>
+          <Flower2 size={16} />
+          See the notes. Understand the layers.
+        </span>
+        <Link href="/finder">
+          <Sparkles size={16} />A little guidance, when you need it{" "}
+          <ArrowRight size={14} />
+        </Link>
       </div>
-      <section className="section container">
+      <section className="section container landing-moods">
         <div className="section-heading">
           <div>
-            <div className="eyebrow">FOLLOW YOUR SENSES</div>
-            <h2>What’s your kind of scent?</h2>
+            <span className="eyebrow">START WITH A FEELING</span>
+            <h2>What are you drawn to?</h2>
           </div>
-          <p>No expertise needed. Start with a feeling.</p>
+          <p>
+            You don&apos;t need to know the names.
+            <br />
+            Just what makes you feel something.
+          </p>
         </div>
-        <div className="category-grid">
+        <div className="landing-mood-grid">
           {[
             {
               name: "Fresh & Clean",
-              desc: "A breath of fresh air.",
+              caption: "A breath of open air.",
               family: "fresh",
-              Icon: Wind,
+              note: "Bergamot",
+              tone: "fresh",
             },
             {
               name: "Warm & Sweet",
-              desc: "Comfort, bottled.",
+              caption: "A little comfort, bottled.",
               family: "warm",
-              Icon: Sun,
+              note: "Vanilla",
+              tone: "amber",
             },
             {
-              name: "Woody & Masculine",
-              desc: "Grounded. Quietly bold.",
+              name: "Woody & Grounded",
+              caption: "Quiet depth. Natural texture.",
               family: "woody",
-              Icon: Trees,
+              note: "Sandalwood",
+              tone: "woods",
             },
             {
-              name: "Dark & Spicy",
-              desc: "A little after-hours intrigue.",
-              family: "dark",
-              Icon: Moon,
+              name: "Soft & Floral",
+              caption: "Petals, with a point of view.",
+              family: "floral",
+              note: "Rose",
+              tone: "floral",
             },
-          ].map(({ name, desc, family, Icon }) => (
+          ].map(({ name, caption, family, note, tone }, i) => (
             <Link
-              className={"category category-" + family}
-              href={"/fragrances?family=" + family}
               key={family}
+              className={"landing-mood mood-" + tone}
+              href={"/fragrances?family=" + family}
             >
-              <Icon className="category-icon" strokeWidth={1} />
-              <div>
-                <h3>{name}</h3>
-                <p>{desc}</p>
-              </div>
+              <span className="landing-mood-number">0{i + 1}</span>
+              <NotePortrait name={note} />
+              <h3>{name}</h3>
+              <p>{caption}</p>
               <ArrowUpRight size={18} />
             </Link>
           ))}
         </div>
       </section>
-      <section className="section container featured">
+      <section className="section container landing-discoveries">
         <div className="section-heading">
           <div>
-            <div className="eyebrow">A GOOD PLACE TO START</div>
-            <h2>Scents worth discovering</h2>
+            <span className="eyebrow">A FEW PLACES TO BEGIN</span>
+            <h2>Meet your next possibility.</h2>
             <p>
-              A small, considered selection. Find the one that speaks to you.
+              Different houses. Different characters. One small invitation to
+              explore.
             </p>
           </div>
           <Link className="text-link" href="/fragrances">
-            Explore all fragrances <ArrowRight size={17} />
+            Explore all fragrances <ArrowRight size={16} />
           </Link>
         </div>
-        <ProductGrid fragrances={catalog.slice(0, 6)} />
-        <p className="quiet-note">
-          Curated picks, not a popularity ranking. Community ratings appear as
-          real reviews arrive.
-        </p>
+        <ProductGrid fragrances={featured} />
       </section>
-      <section className="finder-banner container">
-        <div className="finder-orbit" aria-hidden="true">
-          <div />
-          <div />
-          <div />
-          <Sparkles size={48} strokeWidth={1} />
-          <span>YOUR SCENT, FOUND.</span>
+      <section className="landing-note-story container">
+        <div className="landing-note-art">
+          <span className="eyebrow">A SCENT UNFOLDS IN LAYERS</span>
+          <div>
+            {["Bergamot", "Rose", "Sandalwood"].map((name, i) => (
+              <Link
+                href={"/fragrances?" + new URLSearchParams({ note: name })}
+                className={"landing-note-step note-step-" + i}
+                key={name}
+              >
+                <span>0{i + 1}</span>
+                <NotePortrait name={name} />
+                <strong>{name}</strong>
+                <small>
+                  {
+                    [
+                      "A first impression",
+                      "The central character",
+                      "A deeper texture",
+                    ][i]
+                  }
+                </small>
+              </Link>
+            ))}
+          </div>
+          <p>Three notes to explore. Every fragrance tells its own story.</p>
         </div>
-        <div>
-          <div className="eyebrow">MEET YOUR PERSONAL SCENT GUIDE</div>
+        <div className="landing-note-copy">
+          <span className="eyebrow">GET CLOSER TO THE COMPOSITION</span>
           <h2>
-            Describe your ideal fragrance.
+            More than a name
             <br />
-            <em>We’ll help you find it.</em>
+            <em>on a bottle.</em>
           </h2>
           <p>
-            Notes, moods, memories. Tell us what you love and
-            <br className="desktop-break" /> discover fragrances from our
-            carefully sourced catalog.
+            See the ingredients behind the impression. Explore illustrated note
+            pyramids, understand a scent&apos;s character, and follow the notes
+            you love into something new.
           </p>
-          <Link className="button cream" href="/finder">
-            Let’s find your fragrance <ArrowRight size={17} />
+          <Link
+            className="text-link"
+            href={portrait ? fragrancePath(portrait) : "/fragrances"}
+          >
+            Step inside a fragrance <ArrowRight size={16} />
           </Link>
         </div>
-        <Link
-          className="prompt-example"
-          href="/finder?prompt=I%20want%20a%20masculine%20vanilla%20fragrance%20for%20winter"
-        >
-          <Sparkles size={17} />
-          <p>
-            “Something warm, a little vanilla.
-            <br />
-            Made for cold evenings.”
-          </p>
-          <span>
-            Try this idea <ArrowUpRight size={15} />
-          </span>
-        </Link>
       </section>
-      <section className="section container discovery">
-        <div className="section-heading">
-          <div>
-            <div className="eyebrow">A SCENT FOR EVERY CHAPTER</div>
-            <h2>Make your next discovery</h2>
-          </div>
+      <section className="landing-guide container">
+        <div>
+          <span className="eyebrow">YOUR PERSONAL SCENT GUIDE</span>
+          <h2>
+            Start with a memory.
+            <br />
+            <em>Or just a maybe.</em>
+          </h2>
+          <p>
+            A cosy evening. A fresh start. Something with vanilla that
+            isn&apos;t too sweet. Tell us what you have in mind; we&apos;ll help
+            you explore.
+          </p>
+          <Link className="button primary" href="/finder">
+            Find a fragrance that feels like you <ArrowRight size={16} />
+          </Link>
         </div>
-        <div className="discovery-grid">
+        <div className="landing-guide-prompts">
+          <span className="eyebrow">A LITTLE INSPIRATION</span>
           {[
-            {
-              label: "Sunshine in a bottle",
-              caption: "Fresh picks for summer",
-              url: "season=summer",
-              Icon: Sun,
-            },
-            {
-              label: "Sweater-weather scents",
-              caption: "Warm picks for winter",
-              url: "season=winter",
-              Icon: Leaf,
-            },
-            {
-              label: "A little luxury, for less",
-              caption: "Verified offers under $100",
-              url: "budget=100",
-              Icon: Sparkles,
-            },
-            {
-              label: "Leave a lasting impression",
-              caption: "Community-reported longevity",
-              url: "hours=8",
-              Icon: Wind,
-            },
-          ].map(({ label, caption, url, Icon }) => (
-            <Link key={label} href={"/fragrances?" + url}>
-              <Icon strokeWidth={1.2} size={26} />
-              <h3>{label}</h3>
-              <p>{caption}</p>
-              <ArrowRight size={17} />
+            "Something warm, with vanilla, for winter evenings.",
+            "A fresh fragrance with bergamot for everyday wear.",
+            "A woody scent with sandalwood.",
+          ].map((prompt) => (
+            <Link
+              key={prompt}
+              href={"/finder?" + new URLSearchParams({ prompt })}
+            >
+              <span>{prompt}</span>
+              <ArrowUpRight size={16} />
             </Link>
           ))}
         </div>
+      </section>
+      <section className="landing-house-list container">
+        <span className="eyebrow">FOLLOW A HOUSE YOU LOVE</span>
+        <div>
+          {["Dior", "Le Labo", "Lattafa", "Xerjoff", "Armaf", "Amouage"].map(
+            (brand) => (
+              <Link
+                key={brand}
+                href={"/fragrances?" + new URLSearchParams({ brand })}
+              >
+                {brand}
+              </Link>
+            ),
+          )}
+        </div>
+        <Link className="text-link" href="/fragrances">
+          Discover more houses <ArrowRight size={16} />
+        </Link>
       </section>
     </main>
   );

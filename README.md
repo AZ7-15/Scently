@@ -95,3 +95,8 @@ Append migrations instead of changing applied SQL files. SQLite/libSQL migration
 All source records use the same name, brand and concentration checks. Search results are re-filtered locally because the upstream provider can return unrelated suggestions. External profile links carry the expected identity; a different source profile is withheld. Photo requests and cache keys include concentration. A known concentration needs explicit, unambiguous matching evidence from the photo source, otherwise the photo remains unavailable.
 
 These checks prevent identity mismatches; they do not independently verify every provider fact or guarantee a photo for every record. The cross-brand audit and its scope are recorded in [accuracy audit](docs/accuracy-audit.md).
+
+
+## Shared visual system
+
+The landing page and catalog use the same bottle and note imagery, typography, controls and surface styles as the detail pages. Both detail routes render components/scently/fragrance-story.tsx, including all saved records and source-backed profiles. Real community actions remain available for saved records. See [design consistency](docs/design-system.md) before changing a detail layout.

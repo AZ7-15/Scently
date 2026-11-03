@@ -9,6 +9,7 @@ export function ProductPhoto({
   sourceUrl,
   imageUrl,
   large = false,
+  creditLabel = "Photo source",
 }: {
   name: string;
   brand: string;
@@ -16,6 +17,7 @@ export function ProductPhoto({
   sourceUrl: string;
   imageUrl?: string | null;
   large?: boolean;
+  creditLabel?: string;
 }) {
   const [result, setResult] = useState<ProductPhotoResult | null>(
     imageUrl ? { images: [{ url: imageUrl, sourceUrl }] } : null,
@@ -91,7 +93,9 @@ export function ProductPhoto({
               target="_blank"
               rel="noopener noreferrer"
             >
-              Photo source
+              {!providedBroken && photo.url === imageUrl
+                ? creditLabel
+                : "Photo source"}
             </a>
           )}
         </>

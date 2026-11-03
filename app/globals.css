@@ -2993,3 +2993,719 @@ a {
     transition: none;
   }
 }
+
+/* Shared visual language for discovery, the catalog, and every fragrance story. */
+:root {
+  --radius-card: 14px;
+  --radius-panel: 18px;
+  --radius-control: 8px;
+  --surface-warm: #f2ebdd;
+  --border-warm: #e2dfd4;
+}
+.button {
+  border-radius: var(--radius-control);
+  min-height: 44px;
+}
+.panel,
+.filter-panel,
+.empty-state {
+  border-radius: var(--radius-panel);
+  border-color: var(--border-warm);
+}
+.search-box {
+  border-radius: 10px;
+  border-color: var(--border-warm);
+}
+.field input,
+.field select {
+  border-radius: var(--radius-control);
+}
+.product-card {
+  border-radius: var(--radius-card);
+  border-color: var(--border-warm);
+  background: #fffdf9;
+}
+.product-visual {
+  border-radius: 13px 13px 0 0;
+  background: #efeee5;
+}
+.product-visual .product-photo img {
+  mix-blend-mode: multiply;
+}
+.product-copy h3 {
+  letter-spacing: -0.025em;
+}
+.accord-tags > a {
+  border-radius: 5px;
+  background: #f0ecdf;
+}
+.page-intro h1 {
+  letter-spacing: -0.035em;
+}
+.fragrance-story-nav {
+  flex-wrap: wrap;
+}
+.fragrance-character :is(span, a) {
+  background: var(--story-wash);
+  color: var(--story-ink);
+  border-radius: 5px;
+  padding: 6px 11px;
+  font-size: 11px;
+  text-transform: capitalize;
+}
+.fragrance-character a:hover {
+  outline: 1px solid var(--story-accent);
+}
+.story-actions {
+  margin-top: 20px;
+}
+.story-actions .detail-actions {
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+.story-review-summary {
+  font-size: 12px;
+  color: var(--muted);
+}
+.fragrance-editorial > .detail-section {
+  margin-top: 60px;
+}
+.landing-story {
+  padding-bottom: 30px;
+}
+.landing-opening {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  align-items: center;
+  gap: clamp(35px, 5vw, 80px);
+  padding-top: 65px;
+  padding-bottom: 55px;
+}
+.landing-opening h1 {
+  font-size: clamp(48px, 5.4vw, 76px);
+  line-height: 1.08;
+  letter-spacing: -0.05em;
+  margin: 24px 0;
+}
+.landing-opening h1 em {
+  font-weight: normal;
+  color: #8c704a;
+}
+.landing-introduction {
+  max-width: 43ch;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.85;
+  margin-bottom: 28px;
+}
+.landing-opening .hero-search {
+  max-width: 560px;
+  margin: 0;
+}
+.landing-opening .search-box {
+  background: #fffdf9;
+  min-height: 62px;
+  padding: 8px 10px 8px 18px;
+}
+.landing-opening .search-box button {
+  width: 40px;
+  height: 40px;
+  background: var(--green);
+  color: white;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+}
+.landing-search-notes {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  margin: 13px 0 26px;
+}
+.landing-search-notes > span {
+  color: var(--muted);
+  margin-right: 4px;
+}
+.landing-search-notes a {
+  border: 1px solid var(--border-warm);
+  border-radius: 30px;
+  padding: 4px 11px;
+}
+.landing-search-notes a:hover {
+  background: var(--surface-warm);
+}
+.landing-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.landing-caption {
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 17px;
+}
+.landing-portrait {
+  position: relative;
+  height: 570px;
+  border-radius: 160px 160px 15px 15px;
+  border: 1px solid #e1d8c6;
+  background: radial-gradient(ellipse at 48% 30%, #fffdf6, #ede3ce);
+  isolation: isolate;
+}
+.landing-portrait-top {
+  position: absolute;
+  top: 55px;
+  left: 30px;
+  right: 30px;
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  color: #8c7957;
+}
+.landing-portrait-top span + span {
+  border-left: 1px solid #c4b38e;
+  padding-left: 18px;
+}
+.landing-portrait-orbit {
+  position: absolute;
+  width: 310px;
+  height: 310px;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 1px solid #fff8;
+  border-radius: 50%;
+  box-shadow: 0 0 0 30px #fff2;
+}
+.landing-portrait-product {
+  position: absolute;
+  inset: 88px 45px 115px;
+}
+.landing-portrait-product .product-photo {
+  height: 100%;
+  min-height: 0;
+}
+.landing-portrait-product .product-photo img {
+  padding: 12px;
+  mix-blend-mode: multiply;
+}
+.landing-portrait-product .photo-credit {
+  font-size: 8px;
+  background: #fff9;
+  bottom: 0;
+}
+.landing-portrait-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: absolute;
+  bottom: 26px;
+  left: 30px;
+  right: 30px;
+}
+.landing-portrait-caption > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.landing-portrait-caption > div > a {
+  font: 30px var(--serif);
+}
+.landing-portrait-link {
+  display: grid;
+  place-items: center;
+  height: 44px;
+  width: 44px;
+  border: 1px solid #c9baa0;
+  border-radius: 50%;
+}
+.landing-note-float {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  bottom: 118px;
+  left: -27px;
+  padding: 11px 16px 11px 10px;
+  background: #fffdf7;
+  border: 1px solid var(--border-warm);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px #66501e0b;
+}
+.landing-note-float .note-portrait {
+  width: 55px;
+  height: 55px;
+  margin: 0;
+}
+.landing-note-float .note-portrait img {
+  width: 60px;
+  height: 60px;
+}
+.landing-note-float > span {
+  font-size: 10px;
+  color: var(--muted);
+}
+.landing-note-float strong {
+  display: block;
+  font-size: 15px;
+  font-family: var(--serif);
+  color: var(--ink);
+  font-weight: normal;
+  margin-top: 3px;
+}
+.landing-wayfinding {
+  border-block: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-block: 22px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.landing-wayfinding :is(span, a) {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.landing-wayfinding svg {
+  color: #8d7854;
+  flex-shrink: 0;
+}
+.landing-story .section {
+  padding-top: 70px;
+  padding-bottom: 0;
+}
+.landing-story .section-heading {
+  margin-bottom: 28px;
+  align-items: end;
+}
+.landing-story .section-heading h2 {
+  font-size: clamp(30px, 3.5vw, 42px);
+  margin: 10px 0 0;
+  letter-spacing: -0.03em;
+}
+.landing-story .section-heading p {
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--muted);
+}
+.landing-story .text-link {
+  display: inline-flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 12px;
+}
+.landing-mood-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 17px;
+}
+.landing-mood {
+  position: relative;
+  padding: 24px;
+  border: 1px solid var(--border-warm);
+  border-radius: var(--radius-card);
+  background: #f2eee2;
+  transition:
+    transform 0.2s,
+    border-color 0.2s;
+}
+.landing-mood:hover {
+  transform: translateY(-4px);
+  border-color: #af9d7c;
+}
+.landing-mood.mood-fresh {
+  background: #edf0e6;
+}
+.landing-mood.mood-amber {
+  background: #f1e8d8;
+}
+.landing-mood.mood-woods {
+  background: #e7eadd;
+}
+.landing-mood.mood-floral {
+  background: #f2e7e8;
+}
+.landing-mood-number {
+  position: absolute;
+  top: 20px;
+  left: 22px;
+  font-family: var(--serif);
+  color: #8c836d;
+  font-size: 12px;
+}
+.landing-mood .note-portrait {
+  margin: 8px auto 24px;
+  background: #fff7;
+  width: 105px;
+  height: 105px;
+}
+.landing-mood .note-portrait img {
+  width: 108px;
+  height: 108px;
+}
+.landing-mood h3 {
+  font-size: 24px;
+  font-family: var(--serif);
+  font-weight: normal;
+  margin: 0 0 8px;
+}
+.landing-mood p {
+  color: var(--muted);
+  font-size: 11px;
+  margin: 0;
+}
+.landing-mood > svg {
+  position: absolute;
+  bottom: 25px;
+  right: 20px;
+}
+.landing-note-story {
+  margin-top: 80px;
+  padding: 45px;
+  display: grid;
+  grid-template-columns: 1fr 0.9fr;
+  gap: 70px;
+  background: #eeeee5;
+  border: 1px solid var(--border-warm);
+  border-radius: var(--radius-panel);
+  align-items: center;
+}
+.landing-note-art {
+  text-align: center;
+  padding: 15px 0;
+}
+.landing-note-art > div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 11px;
+  margin: 27px 0 17px;
+}
+.landing-note-step {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  border: 1px solid #e0dfd0;
+  background: #fffdf7;
+  border-radius: 70px 70px 10px 10px;
+  padding: 22px 8px;
+}
+.landing-note-step > span:first-child {
+  font: 12px var(--serif);
+  color: #938262;
+  margin-bottom: 18px;
+}
+.landing-note-step .note-portrait {
+  width: 80px;
+  height: 80px;
+  background: #f2efe3;
+}
+.landing-note-step strong {
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: normal;
+  margin-bottom: 7px;
+}
+.landing-note-step small {
+  font-size: 9px;
+  color: var(--muted);
+}
+.landing-note-art > p {
+  font-size: 10px;
+  color: var(--muted);
+}
+.landing-note-copy h2,
+.landing-guide h2 {
+  font-size: clamp(32px, 3.5vw, 44px);
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+  margin: 17px 0;
+}
+.landing-note-copy h2 em,
+.landing-guide h2 em {
+  color: #806c49;
+  font-weight: normal;
+}
+.landing-note-copy > p,
+.landing-guide p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.95;
+  margin-bottom: 24px;
+  max-width: 48ch;
+}
+.landing-guide {
+  display: grid;
+  grid-template-columns: 1fr 0.85fr;
+  gap: 90px;
+  padding: 80px 0;
+  align-items: center;
+}
+.landing-guide-prompts {
+  padding: 28px;
+  background: #f0eadc;
+  border: 1px solid var(--border-warm);
+  border-radius: var(--radius-panel);
+}
+.landing-guide-prompts > .eyebrow {
+  display: block;
+  margin-bottom: 20px;
+}
+.landing-guide-prompts > a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  background: #fffdf8;
+  border: 1px solid #e7e0d1;
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 10px;
+  font: 17px/1.6 var(--serif);
+}
+.landing-guide-prompts > a svg {
+  flex-shrink: 0;
+}
+.landing-guide-prompts > a:hover {
+  border-color: #b5a585;
+}
+.landing-house-list {
+  text-align: center;
+  padding: 35px 0 60px;
+  border-top: 1px solid var(--line);
+}
+.landing-house-list > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 24px 45px;
+  margin: 27px 0;
+}
+.landing-house-list > div a {
+  font: 24px var(--serif);
+}
+@media (max-width: 1000px) {
+  .landing-opening {
+    gap: 32px;
+    padding-top: 45px;
+  }
+  .landing-portrait {
+    height: 520px;
+  }
+  .landing-note-float {
+    left: -15px;
+  }
+  .landing-mood {
+    padding: 22px 15px;
+  }
+  .landing-mood h3 {
+    font-size: 21px;
+  }
+  .landing-note-story {
+    gap: 30px;
+    padding: 30px;
+  }
+  .landing-note-step .note-portrait {
+    width: 65px;
+    height: 65px;
+  }
+  .landing-note-step .note-portrait img {
+    width: 70px;
+    height: 70px;
+  }
+  .landing-note-step strong {
+    font-size: 14px;
+  }
+  .landing-guide {
+    gap: 40px;
+  }
+}
+@media (max-width: 700px) {
+  .landing-opening {
+    grid-template-columns: 1fr;
+    padding-top: 38px;
+    padding-bottom: 32px;
+    gap: 32px;
+  }
+  .landing-opening h1 {
+    font-size: clamp(43px, 10.5vw, 58px);
+    margin: 20px 0;
+  }
+  .landing-introduction {
+    font-size: 14px;
+  }
+  .landing-opening .search-box {
+    min-height: 58px;
+  }
+  .landing-opening .search-box input {
+    font-size: 12px;
+  }
+  .landing-actions {
+    gap: 8px;
+  }
+  .landing-actions .button {
+    padding: 11px 15px;
+    font-size: 12px;
+  }
+  .landing-portrait {
+    width: 100%;
+    max-width: 440px;
+    height: 445px;
+    margin: auto;
+    border-radius: 110px 110px 14px 14px;
+  }
+  .landing-portrait-top {
+    top: 40px;
+    font-size: 8px;
+    gap: 12px;
+  }
+  .landing-portrait-top span + span {
+    padding-left: 12px;
+  }
+  .landing-portrait-product {
+    inset: 70px 25px 96px;
+  }
+  .landing-portrait-orbit {
+    width: 240px;
+    height: 240px;
+    top: 90px;
+  }
+  .landing-note-float {
+    bottom: 90px;
+    left: 12px;
+    padding: 7px 10px;
+    gap: 8px;
+  }
+  .landing-note-float .note-portrait {
+    height: 40px;
+    width: 40px;
+  }
+  .landing-note-float .note-portrait img {
+    height: 44px;
+    width: 44px;
+  }
+  .landing-note-float > span {
+    font-size: 9px;
+  }
+  .landing-note-float strong {
+    font-size: 13px;
+  }
+  .landing-portrait-caption {
+    left: 20px;
+    right: 20px;
+    bottom: 19px;
+  }
+  .landing-portrait-caption > div > a {
+    font-size: 26px;
+  }
+  .landing-wayfinding {
+    padding-block: 18px;
+    align-items: start;
+    gap: 12px;
+    flex-direction: column;
+    font-size: 10px;
+  }
+  .landing-story .section {
+    padding-top: 48px;
+  }
+  .landing-story .section-heading {
+    align-items: start;
+    gap: 15px;
+    flex-direction: column;
+  }
+  .landing-story .section-heading h2 {
+    font-size: 33px;
+  }
+  .landing-mood-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .landing-mood {
+    padding: 18px 13px 28px;
+  }
+  .landing-mood .note-portrait {
+    width: 82px;
+    height: 82px;
+    margin-bottom: 18px;
+  }
+  .landing-mood .note-portrait img {
+    width: 87px;
+    height: 87px;
+  }
+  .landing-mood h3 {
+    font-size: 20px;
+  }
+  .landing-mood p {
+    font-size: 10px;
+    max-width: 15ch;
+  }
+  .landing-mood-number {
+    left: 15px;
+    top: 13px;
+    font-size: 10px;
+  }
+  .landing-mood > svg {
+    width: 14px;
+    bottom: 15px;
+    right: 12px;
+  }
+  .landing-note-story {
+    margin-top: 48px;
+    grid-template-columns: 1fr;
+    padding: 24px 15px;
+    gap: 15px;
+  }
+  .landing-note-copy {
+    padding: 15px 5px;
+  }
+  .landing-note-copy h2 {
+    font-size: 34px;
+  }
+  .landing-note-step {
+    padding: 19px 5px;
+  }
+  .landing-note-step small {
+    font-size: 8px;
+  }
+  .landing-note-art > p {
+    font-size: 9px;
+  }
+  .landing-guide {
+    grid-template-columns: 1fr;
+    gap: 25px;
+    padding: 48px 0;
+  }
+  .landing-guide h2 {
+    font-size: 36px;
+  }
+  .landing-guide-prompts {
+    padding: 22px 16px;
+  }
+  .landing-guide-prompts > a {
+    font-size: 16px;
+    padding: 16px;
+  }
+  .landing-house-list {
+    padding-bottom: 30px;
+  }
+  .landing-house-list > div {
+    gap: 20px 30px;
+  }
+  .landing-house-list > div a {
+    font-size: 22px;
+  }
+  .fragrance-story-nav {
+    gap: 12px 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-mood {
+    transition: none;
+  }
+}

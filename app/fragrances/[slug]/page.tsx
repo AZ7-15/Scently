@@ -1,19 +1,9 @@
-import { NotePyramid } from "@/components/scently/note-pyramid";
-import Link from "@/components/scently/site-link";
+import { FragranceStory } from "@/components/scently/fragrance-story";
 import { notFound } from "next/navigation";
-import {
-  Clock,
-  Wind,
-  Users,
-  Flower2,
-  Sun,
-  Leaf,
-  Snowflake,
-  ArrowUpRight,
-} from "lucide-react";
+import { Clock, Wind, Users } from "lucide-react";
 import { getCatalog, getReviews } from "@/lib/server/catalog";
 import { identity } from "@/lib/server/security";
-import { Bottle, ProductGrid } from "@/components/scently/product";
+import { ProductGrid } from "@/components/scently/product";
 import { DetailActions, Prices } from "@/components/scently/detail";
 import { ReviewSection } from "@/components/scently/reviews";
 import photos from "@/data/photo-sources.json";
@@ -52,106 +42,29 @@ export default async function Page({
     )
     .slice(0, 4);
   return (
-    <main id="main" className="container page">
-      <nav className="breadcrumb" aria-label="Breadcrumb">
-        <Link href="/fragrances">Fragrances</Link>
-        <span>/</span>
-        <span>{f.name}</span>
-      </nav>
-      <section className="detail-hero community-story-hero">
-        <div className={"detail-image tone-" + f.family}>
-          <Bottle fragrance={f} large />
-          <span className="image-caption">
-            {f.imageUrl ? (
-              photos.some(
-                (photo) =>
-                  photo.id === f.id &&
-                  f.imageUrl === "/images/products/" + photo.file,
-              ) ? (
-                <a
-                  href={photos.find((photo) => photo.id === f.id)!.source}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Product photo · manufacturer source
-                </a>
-              ) : (
-                "Product photo"
-              )
-            ) : (
-              "Product photo lookup"
-            )}
-          </span>
-        </div>
-        <div className="detail-copy">
-          <div className="eyebrow">{f.brand}</div>
-          <h1>{f.name}</h1>
-          <div className="detail-meta">
-            <span>{f.concentration}</span>
-            {f.year && <span>{f.year}</span>}
-            {f.perfumer && <span>By {f.perfumer}</span>}
-          </div>
-          <p>{f.description}</p>
-          <div className="rating">
+    <FragranceStory
+      profile={{ ...f, seasons: f.editorialSeasons }}
+      community
+      photoCreditLabel={
+        photos.some(
+          (photo) =>
+            photo.id === f.id &&
+            f.imageUrl === "/images/products/" + photo.file,
+        )
+          ? "Product photo \u00b7 manufacturer source"
+          : undefined
+      }
+      actions={
+        <>
+          <p className="story-review-summary">
             {f.rating
-              ? `${f.rating.toFixed(1)} / 5 · ${f.reviewCount} reviews`
+              ? f.rating.toFixed(1) + " / 5 - " + f.reviewCount + " reviews"
               : "A new discovery. Be the first to review."}
-          </div>
-          <div className="accord-tags">
-            {f.accords.map((a) => (
-              <Link key={a} href={"/fragrances?note=" + encodeURIComponent(a)}>
-                {a}
-              </Link>
-            ))}
-          </div>
+          </p>
           <DetailActions fragrance={f} />
-          <a
-            className="source-link"
-            href={f.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {f.sourceName} <ArrowUpRight size={12} />
-          </a>
-          <p className="info-line">
-            Facts checked{" "}
-            {new Date(f.checkedAt).toLocaleDateString("en-CA", {
-              timeZone: "UTC",
-            })}
-            . Description and scent categories are editorial summaries.
-          </p>
-        </div>
-      </section>
-      <nav className="detail-nav" aria-label="Fragrance sections">
-        {[
-          ["Scent profile", "profile"],
-          ["Performance", "performance"],
-          ["Reviews", "reviews"],
-          ["Where to buy", "prices"],
-        ].map(([s, id]) => (
-          <a key={id} href={"#" + id}>
-            {s}
-          </a>
-        ))}
-      </nav>
-      <section id="profile" className="detail-grid">
-        <div className="panel">
-          <h2>The scent, simply.</h2>
-          <p>
-            Editorial accord order, based on the listed composition. Bar lengths
-            show order, not measured strength.
-          </p>
-          {f.accords.map((a, i) => (
-            <div className="accord-row" key={a}>
-              <span>{a}</span>
-              <div className="accord-bar" aria-hidden="true">
-                <div style={{ width: 100 - i * 15 + "%" }} />
-              </div>
-            </div>
-          ))}
-        </div>
-        <NotePyramid notes={f.notes} compact />
-      </section>
+        </>
+      }
+    >
       <section id="performance" className="detail-section">
         <h2>How it wears</h2>
         <div className="metrics">
@@ -194,43 +107,6 @@ export default async function Page({
           </div>
         </div>
       </section>
-      <section className="detail-section">
-        <h2>A season for this scent</h2>
-        <div className="season-row">
-          {[
-            { s: "spring", Icon: Flower2 },
-            { s: "summer", Icon: Sun },
-            { s: "fall", Icon: Leaf },
-            { s: "winter", Icon: Snowflake },
-          ].map(({ s, Icon }) => (
-            <div
-              key={s}
-              className={
-                "season " +
-                (f.editorialSeasons.includes(s as never) ? "picked" : "")
-              }
-            >
-              <Icon size={26} />
-              <h3>{s}</h3>
-              <p>
-                {f.editorialSeasons.includes(s as never)
-                  ? "Editorial pick"
-                  : "Explore on your own terms"}
-              </p>
-              <p>{f.seasonVotes[s] || 0} community mentions</p>
-            </div>
-          ))}
-        </div>
-        <p className="info-line">
-          Season preferences are subjective. Editorial picks are not voting
-          percentages.
-        </p>
-        {f.occasions.length > 0 && (
-          <p className="info-line">
-            Editorial occasions: {f.occasions.join(" · ")}
-          </p>
-        )}
-      </section>
       <section id="reviews" className="detail-section">
         <h2>Real experiences. Personal impressions.</h2>
         <ReviewSection initialReviews={reviews} fragranceId={f.id} />
@@ -246,6 +122,6 @@ export default async function Page({
           <ProductGrid fragrances={similar} />
         </section>
       )}
-    </main>
+    </FragranceStory>
   );
 }
