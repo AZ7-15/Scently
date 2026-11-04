@@ -25,6 +25,14 @@ The app now runs on **Next.js / Node.js**. Render production uses an external **
 5. Deploy. `/api/health` initializes and checks database migrations. Starter records insert only when missing. Existing edits are preserved.
 6. Create a Scently account and visit `/api/me` while signed in. Add `user.id` to Render's `ADMIN_USER_IDS`, then restart/redeploy to access `/admin`. Empty denies all admin access.
 
+### Enable Gemini AI
+
+1. Create a Gemini API key in [Google AI Studio](https://aistudio.google.com/api-keys). Restrict it to the Gemini API.
+2. In Render, open **Scently → Environment → Add Environment Variable**. Set `GEMINI_API_KEY` to the key. Optionally set `GEMINI_MODEL`; the default is `gemini-3.8-flash`.
+3. Save changes and let Render redeploy. The finder calls Gemini from the server; the key is never sent to the browser.
+
+For local development, paste the key into `.env.local` as `GEMINI_API_KEY=...`. Never commit `.env.local` or paste the key into chat/source code.
+
 Manual Web Service settings:
 
 | Setting            | Value                                    |
@@ -57,7 +65,7 @@ The previous Sites deployment remains independent. Its D1 data and ChatGPT accou
 
 See `.env.example`. Render requires both Turso variables for account/community storage and refuses ephemeral local storage. Public browsing supports missing-configuration mode as described above. Local development uses `SCENTLY_DB_PATH` unless Turso is configured. `NEXT_PUBLIC_SITE_URL` optionally overrides the canonical URL; Render's assigned URL is otherwise detected automatically. `CONTACT_EMAIL` sets the operator contact address.
 
-`OPENAI_API_KEY` and `OPENAI_MODEL` optionally enable AI interpretation. Without them, the finder parses explicit preferences and can still use external fragrance-editorial guidance. Retailer feeds, Google OAuth, email verification and email-based password recovery are not configured. Passwords use salted scrypt hashes. Caller-supplied platform identity headers are ignored.
+`GEMINI_API_KEY` enables Gemini preference interpretation; `GEMINI_MODEL` optionally selects a model and defaults to `gemini-3.8-flash`. Without a key, the finder uses its rule-based interpretation and external fragrance-editorial guidance. The finder is currently the app's only generative-AI feature; all model calls use Gemini. The 10ML Fragrance Index remains a separate editorial data source, not an AI provider. Retailer feeds, Google OAuth, email verification and email-based password recovery are not configured. Passwords use salted scrypt hashes. Caller-supplied platform identity headers are ignored.
 
 ## Validation
 

@@ -45,7 +45,7 @@ const external = {
   offers: [],
 };
 beforeEach(() => {
-  vi.stubEnv("OPENAI_API_KEY", "");
+  vi.stubEnv("GEMINI_API_KEY", "");
   source.browse.mockReset().mockResolvedValue({
     results: [external],
     continuation: "browse:2",

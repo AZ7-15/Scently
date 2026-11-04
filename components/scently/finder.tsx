@@ -113,8 +113,8 @@ export function Finder({ configured }: { configured: boolean }) {
         </p>
         <span className="mode-badge">
           {configured
-            ? "AI interpretation and external fragrance research"
-            : "External editorial finder; AI key not connected"}
+            ? "Gemini AI and external fragrance research"
+            : "External editorial finder; Gemini key not connected"}
         </span>
         <p className="quiet-note">
           Your preferences search the same source catalog as{" "}
