@@ -127,8 +127,7 @@ export function mergeFragrances(local: Fragrance[], incoming: Fragrance[]) {
     for (const item of selected) {
       const evidence = group.find(
         (candidate) =>
-          (candidate.bestsellerRank != null ||
-            candidate.popularityRank != null) &&
+          candidate.popularityRank != null &&
           fragranceKey(item) === fragranceKey(candidate),
       );
       const donor =
@@ -146,9 +145,6 @@ export function mergeFragrances(local: Fragrance[], incoming: Fragrance[]) {
               imageUrl: donor.imageUrl,
               imageSourceUrl: donor.imageSourceUrl || donor.sourceUrl,
             }
-          : {}),
-        ...(item.bestsellerRank == null && evidence?.bestsellerRank != null
-          ? { bestsellerRank: evidence.bestsellerRank }
           : {}),
         ...(item.popularityRank == null && evidence?.popularityRank != null
           ? { popularityRank: evidence.popularityRank }

@@ -46,17 +46,6 @@ test("saved, live and published profiles expose the same detail sections", async
     fullPage: true,
   });
 });
-test("performance guidance credits its source and does not turn a score into hours", async ({
-  page,
-}) => {
-  await page.goto("/fragrances/dior-sauvage-eau-de-parfum");
-  const wear = page.locator("#performance");
-  await expect(
-    wear.getByRole("link", { name: "10ML Fragrance Index" }),
-  ).toBeVisible();
-  await expect(wear).toContainText("4 / 5 editorial score");
-  await expect(wear).not.toContainText("4 hours");
-});
 test("a failed photo lookup can be retried without reloading the profile", async ({
   page,
 }) => {

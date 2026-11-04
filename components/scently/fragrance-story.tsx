@@ -1,6 +1,5 @@
 import { concentrationKey } from "@/lib/catalog";
 import { WearPerformance } from "./wear-performance";
-import { researchedPerformance } from "@/lib/server/performance-research";
 import type { WearEvidence } from "@/lib/wear-evidence";
 import type { ReactNode } from "react";
 import type { Note } from "@/lib/domain";
@@ -195,7 +194,7 @@ export function FragranceStory({
         </div>
       </section>
       <WearPerformance
-        evidence={[...researchedPerformance(f), ...(f.wearEvidence || [])]}
+        evidence={f.wearEvidence || []}
         community={community ? f : undefined}
       />
       {children}

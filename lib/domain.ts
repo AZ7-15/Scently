@@ -24,8 +24,6 @@ export interface Fragrance {
   externalLookup?: string;
   niche?: boolean | null;
   isNewArrival?: boolean;
-  /** Rank 1 is most ordered in the dated 10ML bestseller snapshot. */
-  bestsellerRank?: number | null;
   /** Publisher's rank 1 is the best-known fragrance in the licensed catalog. */
   popularityRank?: number | null;
   id: string;

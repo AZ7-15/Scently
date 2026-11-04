@@ -469,9 +469,8 @@ export function Explorer({
         . Fields are normalized for Scently; image rights remain separate.
       </p>
       <p className="quiet-note">
-        Popularity order uses a dated 10ML most-ordered list and Scento's
-        published best-known rank. Items without a matching source rank follow
-        the catalog's existing order.
+        Popularity order uses Scento's published best-known rank when available.
+        Items without a matching rank follow the catalog's existing order.
       </p>
       <p className="quiet-note">
         Seasons and scent families are editorial suggestions. Performance and

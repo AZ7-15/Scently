@@ -46,7 +46,7 @@ const pages: Record<
       },
       {
         title: "Performance research",
-        text: "Detail pages distinguish source research from Scently reviews. The 3 November 2026 research snapshot checked 6,018 profiles in the free 10ML Fragrance Index and found 481 editorial performance assessments; 288 match editions in the shipped catalog. Scores use the publisher's 1-5 scale and are not hours or Scently votes. Missing or conflicting editions stay unknown. Matched Scento product pages may supply additional, separately credited longevity and sillage categories. Sillage describes scent trail, not a measured projection distance. Each displayed assessment links to its source and date.",
+        text: "Detail pages distinguish source-reported wear information from Scently community reviews. Some product profiles include longevity and sillage categories from Scento product pages. Sillage describes scent trail, not a measured projection distance. Missing wear details are not guessed.",
       },
       {
         title: "Community evidence",

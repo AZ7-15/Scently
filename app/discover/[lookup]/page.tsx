@@ -10,7 +10,6 @@ import { sameFragrance } from "@/lib/catalog";
 import { FragranceStory } from "@/components/scently/fragrance-story";
 import { slugify, type Fragrance, type Note } from "@/lib/domain";
 import Link from "@/components/scently/site-link";
-import { findExactEditorialProfile } from "@/lib/server/10ml-profile";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Fragrance profile" };
 export default async function Page({
@@ -51,9 +50,7 @@ export default async function Page({
   if (expectedIdentity && profile && !sameFragrance(expectedIdentity, profile))
     profile = null;
   if (!profile && expectedIdentity) {
-    profile = await findExactEditorialProfile(expectedIdentity);
-    if (profile && !sameFragrance(expectedIdentity, profile)) profile = null;
-    if (!profile && !loadError)
+    if (!loadError)
       loadError = new FragranceSourceError(
         "The matching fragrance edition was not found in the available sources.",
         404,
@@ -118,10 +115,7 @@ export default async function Page({
         <h2>Real experiences. Personal impressions.</h2>
         <div className="story-community-placeholder">
           <p>This edition has no Scently community reviews yet.</p>
-          <p>
-            Published research appears in How it wears above, with its own
-            source credits.
-          </p>
+            <p>Wear information appears when a source provides it.</p>
         </div>
       </section>
       <Prices fragrance={record} />

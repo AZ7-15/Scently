@@ -113,7 +113,7 @@ The full published Scento Open Dataset (bundled edition: 1,479 records dated 202
 
 Search a house or a range such as Club de Nuit, Le Male or Libre to discover its indexed editions. Known concentrations and differently named flankers remain distinct. New arrivals queries the live source feed, refreshed through its short cache; it means newly added to the supplier catalog, not necessarily newly launched worldwide. No free source guarantees every house, edition or latest global release.
 
-Catalog search defaults to popularity order, combining dated 10ML sales positions and Scento's published best-known rank as equal-weight percentiles. House, edition and concentration are matched before a rank is applied. Unmatched or ambiguous editions stay unranked and follow the catalog's existing order. Sources and limits: [popularity ranking snapshot](data/10ml-bestsellers.SOURCES.md).
+Catalog search defaults to popularity order using Scento's published best-known rank when available. Unranked editions follow the catalog's existing order.
 
 Catalog duplicate audit: run `npx tsx scripts/audit-catalog.ts` to check every shipped record and write `outputs/catalog-duplicate-audit.json`. House and collection aliases (such as Emporio Armani and Replica) share edition identities; actual flankers and known concentration variants remain separate.
 
@@ -121,4 +121,4 @@ Catalog duplicate audit: run `npx tsx scripts/audit-catalog.ts` to check every s
 
 All profile routes use the same composition, seasons, wear, reviews, retailer and related-fragrance sections. Source-only records explain unavailable community features; matching starter profiles redirect to their canonical community page. Bottle images survive duplicate merging with separate source credits. Image lookup understands house and collection aliases, matched product-page metadata, explicit manufacturer/retailer CDN hosts and retryable transient capacity failures. Missing images can be retried.
 
-The [performance research snapshot](data/performance-research.SOURCES.md) checks every shipped edition against the 10ML Fragrance Index. Its 1-5 editorial scores are separate from community hours and votes; Scento product-page longevity/sillage categories are separately attributed when available. Unknown or conflicting editions do not receive guessed values. Run `npx tsx scripts/audit-performance.ts` for `outputs/performance-coverage.json`. Research scores are dated, not an automatic global wear-test feed.
+Scently shows longevity and sillage only when supplied by a fragrance source or reported by the community. Missing wear details are not guessed.
