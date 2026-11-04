@@ -186,8 +186,10 @@ export function parseCriteria(
   for (const s of ["spring", "summer", "fall", "winter"] as const)
     if (text.includes(s)) c.season = s;
   if (text.includes("autumn")) c.season = "fall";
-  if (/masculine|\b(men|male|man)\b/.test(text)) c.style = "masculine";
-  if (/feminine|\b(women|female|woman)\b/.test(text)) c.style = "feminine";
+  if (/masculine|\b(men|mens|male|man|him)\b|for him/.test(text))
+    c.style = "masculine";
+  if (/feminine|\b(women|womens|female|woman|her)\b|for her/.test(text))
+    c.style = "feminine";
   if (/unisex|any gender/.test(text)) c.style = null;
   if (text.includes("very strong")) c.projection = "very strong";
   else if (text.includes("strong projection")) c.projection = "strong";
@@ -262,10 +264,19 @@ export function recommend(
     )
   )
     return [];
+  const audienceTier = (fragrance: Fragrance) => {
+    const gender = signals.get(fragrance.id)?.gender;
+    if (criteria.style === "masculine")
+      return fragrance.style === "masculine" || gender === "men" ? 0 : 1;
+    if (criteria.style === "feminine")
+      return fragrance.style === "feminine" || gender === "women" ? 0 : 1;
+    return 0;
+  };
   return catalog
     .filter((f) => {
       if (criteria.style === "masculine")
         return (
+          signals.get(f.id)?.gender !== "women" &&
           f.style !== "feminine" &&
           (f.style === "masculine" ||
             f.style === "all" ||
@@ -273,6 +284,7 @@ export function recommend(
         );
       if (criteria.style === "feminine")
         return (
+          signals.get(f.id)?.gender !== "men" &&
           f.style !== "masculine" &&
           (f.style === "feminine" ||
             f.style === "all" ||
@@ -432,6 +444,7 @@ export function recommend(
           ? (b.fragrance.longevity ?? -1) - (a.fragrance.longevity ?? -1)
           : 0) ||
         b.score - a.score ||
+        audienceTier(a.fragrance) - audienceTier(b.fragrance) ||
         (signals.get(a.fragrance.id)?.rank ?? Number.POSITIVE_INFINITY) -
           (signals.get(b.fragrance.id)?.rank ?? Number.POSITIVE_INFINITY) ||
         comparePopularity(a.fragrance, b.fragrance),
