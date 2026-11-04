@@ -10,6 +10,7 @@ import { sameFragrance } from "@/lib/catalog";
 import { FragranceStory } from "@/components/scently/fragrance-story";
 import { slugify, type Fragrance, type Note } from "@/lib/domain";
 import Link from "@/components/scently/site-link";
+import { findExactEditorialProfile } from "@/lib/server/10ml-profile";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Fragrance profile" };
 export default async function Page({
@@ -24,45 +25,42 @@ export default async function Page({
   }>;
 }) {
   const { lookup } = await params;
-  const load = lookup.startsWith("open:")
-    ? getOpenProfile(lookup).then((value) => {
-        if (!value)
-          throw new FragranceSourceError(
-            "This published profile is unavailable.",
-            404,
-          );
-        return value;
-      })
-    : getLiveFragrance(lookup);
-  const result = await load.then(
-    (value) => ({ value, error: null }),
-    (error: unknown) => ({ value: null, error }),
-  );
-  if (!result.value) return <ProfileFailure error={result.error} />;
   const expected = await searchParams;
-  if (
-    expected.name &&
-    expected.brand &&
-    !sameFragrance(
-      {
-        name: expected.name,
-        brand: expected.brand,
-        concentration: expected.concentration,
-      },
-      result.value,
-    )
-  )
-    return (
-      <ProfileFailure
-        error={
-          new FragranceSourceError(
-            "The source returned a different fragrance or concentration. Its details have been withheld.",
-            404,
-          )
+  const expectedIdentity =
+    expected.name && expected.brand
+      ? {
+          name: expected.name,
+          brand: expected.brand,
+          concentration: expected.concentration,
         }
-      />
-    );
-  const f = await detailedProfile(result.value);
+      : null;
+  let profile: Awaited<ReturnType<typeof getLiveFragrance>> | null = null;
+  let loadError: unknown = null;
+  try {
+    profile = lookup.startsWith("open:")
+      ? await getOpenProfile(lookup)
+      : await getLiveFragrance(lookup);
+    if (!profile && lookup.startsWith("open:"))
+      loadError = new FragranceSourceError(
+        "This published profile is unavailable.",
+        404,
+      );
+  } catch (error) {
+    loadError = error;
+  }
+  if (expectedIdentity && profile && !sameFragrance(expectedIdentity, profile))
+    profile = null;
+  if (!profile && expectedIdentity) {
+    profile = await findExactEditorialProfile(expectedIdentity);
+    if (profile && !sameFragrance(expectedIdentity, profile)) profile = null;
+    if (!profile && !loadError)
+      loadError = new FragranceSourceError(
+        "The matching fragrance edition was not found in the available sources.",
+        404,
+      );
+  }
+  if (!profile) return <ProfileFailure error={loadError} />;
+  const f = await detailedProfile(profile);
   const local = curatedCatalog.find(
     (item) => !!f.concentration && sameFragrance(item, f),
   );

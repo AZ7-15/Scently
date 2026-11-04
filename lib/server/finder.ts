@@ -179,15 +179,30 @@ export async function findFragrances(
         mergeFragrances(catalog, [...open, ...retrieval.catalog]),
       )
     : new Map();
+  const editorialMatchesAvailable =
+    externalResearch.available && signals.size > 0;
+  const generalFallback =
+    !hasStructuredPreferences && !editorialMatchesAvailable;
+  const recommendationPool =
+    !hasStructuredPreferences && editorialMatchesAvailable && retrieval
+      ? retrieval.catalog.filter((fragrance) => signals.has(fragrance.id))
+      : retrieval?.catalog || [];
   const rankedMatches = retrieval
-    ? recommend(retrieval.catalog, criteria, region, signals)
+    ? recommend(recommendationPool, criteria, region, signals)
     : [];
-  const matches =
-    !hasStructuredPreferences && externalResearch.available
-      ? rankedMatches.filter((match) => signals.has(match.fragrance.id))
-      : !hasStructuredPreferences && !externalResearch.available
-        ? []
-        : rankedMatches;
+  const matches = generalFallback
+    ? rankedMatches.map((match) => ({
+        ...match,
+        exact: false,
+        reasons: [
+          "Popular catalog starting point. External mood matching is temporarily unavailable, so this is not a tailored match.",
+        ],
+        gaps: [
+          ...match.gaps,
+          "A tailored editorial match could not be verified for this description.",
+        ],
+      }))
+    : rankedMatches;
   if (retrieval)
     notice +=
       " Searching the source catalog; " +
@@ -215,10 +230,12 @@ export async function findFragrances(
       }),
     message: !meaningful
       ? "Tell me a note, season, budget, or performance preference so I can narrow the catalog."
-      : !matches.length
-        ? "No catalog records match these preferences. Try another note or remove an exclusion."
-        : matches.some((m) => m.exact)
-          ? "Here are the catalog records that fit your preferences."
-          : "I couldn’t verify every preference. These are near matches, with the missing evidence shown below.",
+      : generalFallback && matches.length
+        ? "I couldn't verify a tailored match for that description, so here are popular catalog starting points while editorial search is unavailable."
+        : !matches.length
+          ? "No catalog records match these preferences. Try another note or remove an exclusion."
+          : matches.some((m) => m.exact)
+            ? "Here are the catalog records that fit your preferences."
+            : "I couldn’t verify every preference. These are near matches, with the missing evidence shown below.",
   };
 }
