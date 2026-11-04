@@ -6,30 +6,30 @@ const stages = {
   top: {
     number: "01",
     title: "top notes",
-    subtitle: "The first impression",
+    subtitle: "First to smell",
     description:
-      "The opening introduces the scent: the first textures you notice as it meets your skin.",
+      "These are the first notes you smell after spraying. They fade before the other notes.",
   },
   heart: {
     number: "02",
     title: "heart notes",
-    subtitle: "The central character",
+    subtitle: "Main part of the scent",
     description:
-      "As the opening softens, the heart reveals the character at the centre of the composition.",
+      "These make up the main smell as the first notes fade.",
   },
   base: {
     number: "03",
     title: "base notes",
-    subtitle: "The lingering impression",
+    subtitle: "Lasts the longest",
     description:
-      "The deeper textures of the composition shape its dry-down and the impression it leaves.",
+      "These notes stay on your skin after the other notes fade.",
   },
   unclassified: {
     number: "+",
     title: "Additional disclosed notes",
     subtitle: "More of the composition",
     description:
-      "These notes are listed by the source without a specific pyramid stage.",
+      "The source lists these notes without saying when they appear.",
   },
 };
 export function NotePyramid({
@@ -46,13 +46,9 @@ export function NotePyramid({
     >
       <div className="composition-heading">
         <div>
-          <span className="eyebrow">THE ANATOMY OF A SCENT</span>
+          <span className="eyebrow">FRAGRANCE NOTES</span>
           <h2>Fragrance pyramid</h2>
         </div>
-        <p>
-          A first impression. A deeper connection.
-          <br />A trace that feels like you.
-        </p>
       </div>
       <div className="illustrated-pyramid">
         {(Object.keys(stages) as (keyof typeof stages)[])
@@ -109,8 +105,7 @@ export function NotePyramid({
           })}
       </div>
       <p className="pyramid-footnote">
-        Tap a note to find more fragrances with that character. Note
-        descriptions describe the material or accord; your experience can vary.
+        Select a note to find more fragrances with it.
       </p>
       <details className="ingredient-credits">
         <summary>About the note imagery</summary>

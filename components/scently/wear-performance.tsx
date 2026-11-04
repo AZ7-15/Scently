@@ -18,7 +18,7 @@ export function WearPerformance({
   const measuredProjection = measured && !!community?.projection;
   return (
     <section id="performance" className="detail-section wear-story">
-      <span className="eyebrow">THE HOURS AFTER THE FIRST SPRAY</span>
+      <span className="eyebrow">PERFORMANCE</span>
       <h2>How it wears</h2>
       <p className="info-line">
         Skin, weather, application and formulation affect performance. These are

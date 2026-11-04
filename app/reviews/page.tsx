@@ -8,12 +8,8 @@ export default async function Page() {
   return (
     <main id="main" className="container page">
       <div className="page-intro">
-        <div className="eyebrow">THE HUMAN SIDE OF SCENT</div>
-        <h1>
-          Every fragrance.
-          <br />
-          <em>A different experience.</em>
-        </h1>
+        <div className="eyebrow">COMMUNITY REVIEWS</div>
+        <h1>Fragrance reviews</h1>
         <p>
           Honest impressions from people who have worn it. No fabricated
           ratings, no paid popularity.

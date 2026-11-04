@@ -291,7 +291,7 @@ export function Shell({
               <Sprout size={23} />
               {brandConfig.name.toLowerCase()}.
             </Link>
-            <p>A little clarity. A scent that feels like you.</p>
+            <p>Browse fragrances and save your favorites.</p>
           </div>
           <nav aria-label="Footer">
             {[

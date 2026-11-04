@@ -10,15 +10,9 @@ export default async function Page() {
   return (
     <main id="main" className="container page">
       <div className="page-intro">
-        <div className="eyebrow">YOUR PERSONAL SCENT STORY</div>
-        <h1>
-          A shelf of <em>possibilities.</em>
-        </h1>
-        <p>
-          {user
-            ? `Welcome, ${user.name}. Keep your favorites close, and your next discoveries closer.`
-            : "A place for the scents you love, the ones you’ve tried, and everything you want to explore."}
-        </p>
+        <div className="eyebrow">YOUR ACCOUNT</div>
+        <h1>Saved fragrances</h1>
+        <p>{user ? `Welcome, ${user.name}. Manage your saved fragrances and collection.` : "Sign in to save fragrances and manage your collection."}</p>
       </div>
       {user ? (
         <>
@@ -37,7 +31,7 @@ export default async function Page() {
         </>
       ) : (
         <div className="empty-state">
-          <h2>Your scent story starts with you.</h2>
+          <h2>Sign in to view your saved fragrances.</h2>
           <p>
             {databaseConfigured()
               ? "Sign in to save your wishlist and collection securely across visits."

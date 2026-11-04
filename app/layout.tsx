@@ -10,11 +10,11 @@ import { Ready } from "@/components/scently/ready";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: {
-    default: brandConfig.name + " — Discover your next signature scent",
+    default: brandConfig.name + " — Fragrance catalog and discovery",
     template: "%s | " + brandConfig.name,
   },
   description:
-    "Discover fragrance notes, compare scents, read authentic community reviews, and find your next signature scent with a personal fragrance finder.",
+    "Explore fragrance notes, compare fragrances, read community reviews, and use the fragrance finder.",
   metadataBase: new URL(brandConfig.origin),
   icons: { icon: "/favicon.svg" },
   openGraph: {

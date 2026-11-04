@@ -36,12 +36,8 @@ export default async function Page({
   return (
     <main id="main" className="container page">
       <div className="page-intro">
-        <div className="eyebrow">FOLLOW YOUR CURIOSITY</div>
-        <h1>
-          A world of scent.
-          <br />
-          <em>A place to start.</em>
-        </h1>
+        <div className="eyebrow">FRAGRANCES</div>
+        <h1>Explore fragrances</h1>
         <p>
           Search fragrances and brands, from everyday favorites to designer,
           niche, and Arabian houses. Search a range such as Le Male, Libre or

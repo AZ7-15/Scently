@@ -9,7 +9,7 @@ const pages: Record<
   { title: string; sections: { title: string; text: string }[] }
 > = {
   about: {
-    title: "A little clarity. A world of scent.",
+    title: "About Scently",
     sections: [
       {
         title: "Discover thoughtfully",
@@ -22,7 +22,7 @@ const pages: Record<
     ],
   },
   "data-sources": {
-    title: "Know what’s behind the notes.",
+    title: "Data sources and licensing",
     sections: [
       {
         title: "Published catalog and license",
@@ -170,7 +170,7 @@ export default async function Page({
   const contact = setting("CONTACT_EMAIL");
   return (
     <main id="main" className="container page prose">
-      <div className="eyebrow">{brandConfig.name} · THOUGHTFUL BY DESIGN</div>
+      <div className="eyebrow">{brandConfig.name}</div>
       <h1>{p.title}</h1>
       {p.sections.map((s) => (
         <section key={s.title}>

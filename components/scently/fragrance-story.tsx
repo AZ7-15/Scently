@@ -83,7 +83,6 @@ export function FragranceStory({
       </nav>
       <section className="fragrance-story-hero">
         <div className="fragrance-bottle-scene">
-          <span className="scene-kicker">A SCENT TO REMEMBER</span>
           <span className="scene-orbit" aria-hidden="true" />
           <div className="scene-product">
             <ProductPhoto
@@ -117,7 +116,6 @@ export function FragranceStory({
             {f.perfumer && <span>By {f.perfumer}</span>}
             <span>{count} listed notes</span>
           </div>
-          <p className="fragrance-mood-line">{mood.title}</p>
           <p className="fragrance-introduction">{f.description}</p>
           <div className="fragrance-character">
             {f.accords
@@ -133,12 +131,9 @@ export function FragranceStory({
               ))}
           </div>
           <a href="#composition" className="button primary composition-button">
-            Explore the composition <ArrowDown size={16} />
+            View fragrance notes <ArrowDown size={16} />
           </a>
           {actions && <div className="story-actions">{actions}</div>}
-          <p className="story-small-print">
-            An invitation to explore. Let your own skin tell the rest.
-          </p>
         </div>
       </section>
       <nav className="fragrance-story-nav" aria-label="Fragrance sections">
@@ -152,21 +147,20 @@ export function FragranceStory({
       <NotePyramid notes={f.notes} />
       <section id="season-story" className="season-story">
         <div>
-          <span className="eyebrow">FIND YOUR MOMENT</span>
-          <h2>A feeling for the seasons.</h2>
+          <span className="eyebrow">SEASON SUGGESTIONS</span>
+          <h2>When to wear it</h2>
           <p>
-            Some scents feel like sunshine. Others feel like a favourite
-            sweater. Start with the source&apos;s suggestions, then make it your
-            own.
+            The source suggests seasons for this fragrance. Use them as a guide;
+            wear it when you like.
           </p>
         </div>
         <div>
           <div className="season-story-grid">
             {[
-              { name: "spring", icon: Flower2, label: "Fresh starts" },
-              { name: "summer", icon: Sun, label: "Sunlit days" },
-              { name: "fall", icon: Leaf, label: "Golden hours" },
-              { name: "winter", icon: Snowflake, label: "Cosy evenings" },
+              { name: "spring", icon: Flower2, label: "Mild weather" },
+              { name: "summer", icon: Sun, label: "Warm weather" },
+              { name: "fall", icon: Leaf, label: "Cool weather" },
+              { name: "winter", icon: Snowflake, label: "Cold weather" },
             ].map(({ name, icon: Icon, label }) => {
               const active =
                 f.seasons.includes(name) ||
@@ -207,13 +201,13 @@ export function FragranceStory({
       {children}
       <section id="fragrance-sources" className="fragrance-story-footer">
         <div>
-          <span className="eyebrow">KEEP FOLLOWING YOUR CURIOSITY</span>
-          <h2>There is more to discover.</h2>
+          <span className="eyebrow">MORE FROM {f.brand.toUpperCase()}</span>
+          <h2>More from {f.brand}</h2>
           <Link
             className="text-link"
             href={"/fragrances?" + new URLSearchParams({ brand: f.brand })}
           >
-            Explore more from {f.brand} <ArrowUpRight size={16} />
+            Browse {f.brand} fragrances <ArrowUpRight size={16} />
           </Link>
           {communityLink && (
             <p>

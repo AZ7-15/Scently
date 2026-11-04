@@ -147,24 +147,24 @@ export function scentMood(family: string) {
   if (/sweet|amber|resin|warm|spic/i.test(family))
     return {
       tone: "amber",
-      title: "A warmer kind of escape.",
-      caption: "Sweetness, texture, and a little intrigue.",
+      title: "Warm and sweet",
+      caption: "Warm and sweet notes.",
     };
   if (/wood|dark|leather|smok/i.test(family))
     return {
       tone: "woods",
-      title: "Find your quieter intensity.",
-      caption: "Depth, texture, and a grounded kind of presence.",
+      title: "Woody and rich",
+      caption: "Woody notes with depth.",
     };
   if (/flor|bloom|petal/i.test(family))
     return {
       tone: "floral",
-      title: "A softer kind of statement.",
-      caption: "Petal-like textures and a feeling of lightness.",
+      title: "Floral",
+      caption: "Floral notes.",
     };
   return {
     tone: "fresh",
-    title: "Follow a new feeling.",
-    caption: "A composition to explore, one note at a time.",
+    title: "Fresh",
+    caption: "Fresh notes.",
   };
 }

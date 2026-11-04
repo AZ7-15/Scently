@@ -102,7 +102,7 @@ export function Finder({ configured }: { configured: boolean }) {
       <header className="finder-header">
         <Sparkles size={32} strokeWidth={1.2} />
         <div className="eyebrow centered">
-          A LITTLE GUIDANCE. SOMETHING YOU.
+          FRAGRANCE FINDER
         </div>
         <h1>
           Let’s find <em>your fragrance.</em>

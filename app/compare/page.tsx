@@ -6,10 +6,8 @@ export default async function Page() {
   return (
     <main id="main" className="container page">
       <div className="page-intro">
-        <div className="eyebrow">A LITTLE PERSPECTIVE</div>
-        <h1>
-          Find your <em>point of difference.</em>
-        </h1>
+        <div className="eyebrow">COMPARE</div>
+        <h1>Compare fragrances</h1>
         <p>
           Compare up to three fragrances. Highlighted rows make the differences
           easier to spot.

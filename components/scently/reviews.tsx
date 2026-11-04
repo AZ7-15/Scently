@@ -235,7 +235,7 @@ export function ReviewSection({
           ))}
           {!reviews.length && (
             <div className="empty-state">
-              <h2>Make the first impression.</h2>
+              <h2>Write a fragrance review.</h2>
               <p>
                 There are no reviews yet. Share your own experience to help the
                 next curious nose.

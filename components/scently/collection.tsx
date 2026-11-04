@@ -49,12 +49,12 @@ export function Collection({ catalog }: { catalog: Fragrance[] }) {
         </div>
       ) : (
         <div className="empty-state">
-          <h2>A little space for your next discovery.</h2>
+          <h2>No fragrances saved yet.</h2>
           <p>
             Save a fragrance, then move it between your lists as you explore.
           </p>
           <Link href="/fragrances" className="button primary">
-            Find your next scent
+          Browse fragrances
           </Link>
         </div>
       )}

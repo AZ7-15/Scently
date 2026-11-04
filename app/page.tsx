@@ -35,19 +35,19 @@ export default async function Home() {
     <main id="main" className="landing-story">
       <section className="landing-opening container">
         <div className="landing-opening-copy">
-          <span className="eyebrow">SCENTLY / A WORLD OF FRAGRANCE</span>
+          <span className="eyebrow">SCENTLY</span>
           <h1>
-            Find your scent.
+            Find your fragrance.
             <br />
             <em>Follow the feeling.</em>
           </h1>
           <p className="landing-introduction">
-            For the everyday you. The after-dark you. The version you
-            haven&apos;t met yet. Discover a fragrance that feels personal.
+            Search by fragrance, brand, or note, or tell the Finder what you
+            want.
           </p>
           <SearchBox catalog={catalog} large />
           <div className="landing-search-notes">
-            <span>A place to begin</span>
+            <span>Browse by</span>
             <Link href="/fragrances?note=Vanilla">Vanilla</Link>
             <Link href="/fragrances?note=Rose">Rose</Link>
             <Link href="/fragrances?brand=Lattafa">Lattafa</Link>
@@ -61,15 +61,11 @@ export default async function Home() {
               Find my fragrance
             </Link>
           </div>
-          <p className="landing-caption">
-            Real bottles. Notes you can picture. Room to discover.
-          </p>
         </div>
         {portrait && (
           <div className="landing-portrait">
             <div className="landing-portrait-top">
-              <span>THE SCENT EDIT</span>
-              <span>01 / A WARMER SIDE</span>
+              <span>FEATURED FRAGRANCE</span>
             </div>
             <div className="landing-portrait-orbit" aria-hidden="true" />
             <div className="landing-portrait-product">
@@ -92,7 +88,7 @@ export default async function Home() {
               >
                 <NotePortrait name={portraitNote} />
                 <span>
-                  A note to know<strong>{portraitNote}</strong>
+                  Note<strong>{portraitNote}</strong>
                 </span>
                 <ArrowUpRight size={15} />
               </Link>
@@ -120,56 +116,50 @@ export default async function Home() {
         </Link>
         <span>
           <Flower2 size={16} />
-          See the notes. Understand the layers.
+          Learn about fragrance notes
         </span>
         <Link href="/finder">
-          <Sparkles size={16} />A little guidance, when you need it{" "}
+          <Sparkles size={16} />Find a fragrance{" "}
           <ArrowRight size={14} />
         </Link>
       </div>
       <section className="section container landing-moods">
         <div className="section-heading">
           <div>
-            <span className="eyebrow">START WITH A FEELING</span>
-            <h2>What are you drawn to?</h2>
+            <span className="eyebrow">BROWSE BY SCENT STYLE</span>
+            <h2>What kind of scent do you like?</h2>
           </div>
           <p>
-            You don&apos;t need to know the names.
-            <br />
-            Just what makes you feel something.
+            Choose a style to narrow the catalog.
           </p>
         </div>
         <div className="landing-mood-grid">
           {[
             {
               name: "Fresh & Clean",
-              caption: "A breath of open air.",
               family: "fresh",
               note: "Bergamot",
               tone: "fresh",
             },
             {
               name: "Warm & Sweet",
-              caption: "A little comfort, bottled.",
               family: "warm",
               note: "Vanilla",
               tone: "amber",
             },
             {
               name: "Woody & Grounded",
-              caption: "Quiet depth. Natural texture.",
               family: "woody",
               note: "Sandalwood",
               tone: "woods",
             },
             {
               name: "Soft & Floral",
-              caption: "Petals, with a point of view.",
               family: "floral",
               note: "Rose",
               tone: "floral",
             },
-          ].map(({ name, caption, family, note, tone }, i) => (
+          ].map(({ name, family, note, tone }, i) => (
             <Link
               key={family}
               className={"landing-mood mood-" + tone}
@@ -178,7 +168,6 @@ export default async function Home() {
               <span className="landing-mood-number">0{i + 1}</span>
               <NotePortrait name={note} />
               <h3>{name}</h3>
-              <p>{caption}</p>
               <ArrowUpRight size={18} />
             </Link>
           ))}
@@ -187,12 +176,8 @@ export default async function Home() {
       <section className="section container landing-discoveries">
         <div className="section-heading">
           <div>
-            <span className="eyebrow">A FEW PLACES TO BEGIN</span>
-            <h2>Meet your next possibility.</h2>
-            <p>
-              Different houses. Different characters. One small invitation to
-              explore.
-            </p>
+            <span className="eyebrow">FEATURED FRAGRANCES</span>
+            <h2>Explore different brands.</h2>
           </div>
           <Link className="text-link" href="/fragrances">
             Explore all fragrances <ArrowRight size={16} />
@@ -202,7 +187,7 @@ export default async function Home() {
       </section>
       <section className="landing-note-story container">
         <div className="landing-note-art">
-          <span className="eyebrow">A SCENT UNFOLDS IN LAYERS</span>
+          <span className="eyebrow">TOP, HEART & BASE NOTES</span>
           <div>
             {["Bergamot", "Rose", "Sandalwood"].map((name, i) => (
               <Link
@@ -216,56 +201,53 @@ export default async function Home() {
                 <small>
                   {
                     [
-                      "A first impression",
-                      "The central character",
-                      "A deeper texture",
+                      "Top notes",
+                      "Heart notes",
+                      "Base notes",
                     ][i]
                   }
                 </small>
               </Link>
             ))}
           </div>
-          <p>Three notes to explore. Every fragrance tells its own story.</p>
         </div>
         <div className="landing-note-copy">
-          <span className="eyebrow">GET CLOSER TO THE COMPOSITION</span>
+          <span className="eyebrow">FRAGRANCE NOTES</span>
           <h2>
-            More than a name
+            How a fragrance
             <br />
-            <em>on a bottle.</em>
+            changes over time
           </h2>
           <p>
-            See the ingredients behind the impression. Explore illustrated note
-            pyramids, understand a scent&apos;s character, and follow the notes
-            you love into something new.
+            Top notes smell strongest first. Heart notes form the main scent.
+            Base notes last the longest.
           </p>
           <Link
             className="text-link"
             href={portrait ? fragrancePath(portrait) : "/fragrances"}
           >
-            Step inside a fragrance <ArrowRight size={16} />
+            Explore a fragrance profile <ArrowRight size={16} />
           </Link>
         </div>
       </section>
       <section className="landing-guide container">
         <div>
-          <span className="eyebrow">YOUR PERSONAL SCENT GUIDE</span>
+          <span className="eyebrow">FRAGRANCE FINDER</span>
           <h2>
-            Start with a memory.
+            Tell us what
             <br />
-            <em>Or just a maybe.</em>
+            you&apos;re looking for.
           </h2>
           <p>
-            A cosy evening. A fresh start. Something with vanilla that
-            isn&apos;t too sweet. Tell us what you have in mind; we&apos;ll help
-            you explore.
+            Describe the notes, mood, budget, or occasion you want. The Finder
+            will suggest fragrances from the catalog.
           </p>
           <Link className="button primary" href="/finder">
-            Find a fragrance that feels like you <ArrowRight size={16} />
+            Find a fragrance <ArrowRight size={16} />
           </Link>
         </div>
         <div className="landing-guide-prompts">
-          <span className="eyebrow">A LITTLE INSPIRATION</span>
+          <span className="eyebrow">EXAMPLE REQUESTS</span>
           {[
             "Something warm, with vanilla, for winter evenings.",
             "A fresh fragrance with bergamot for everyday wear.",
@@ -282,7 +264,7 @@ export default async function Home() {
         </div>
       </section>
       <section className="landing-house-list container">
-        <span className="eyebrow">FOLLOW A HOUSE YOU LOVE</span>
+        <span className="eyebrow">BROWSE BY BRAND</span>
         <div>
           {["Dior", "Le Labo", "Lattafa", "Xerjoff", "Armaf", "Amouage"].map(
             (brand) => (

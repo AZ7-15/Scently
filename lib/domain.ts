@@ -220,7 +220,7 @@ export const slugify = (s: string) =>
     .replace(/^-|-$/g, "");
 export const brandConfig = {
   name: "Scently",
-  tagline: "Discover your next signature scent.",
+  tagline: "Search fragrances by name, brand, or note.",
   origin:
     process.env.NEXT_PUBLIC_SITE_URL ||
     process.env.RENDER_EXTERNAL_URL ||
