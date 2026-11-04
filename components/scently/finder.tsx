@@ -113,8 +113,8 @@ export function Finder({ configured }: { configured: boolean }) {
         </p>
         <span className="mode-badge">
           {configured
-            ? "Gemini AI and external fragrance research"
-            : "External editorial finder; Gemini key not connected"}
+            ? "Gemini AI with Fragrantica and brand research"
+            : "Fragrantica and brand research; Gemini key not connected"}
         </span>
         <p className="quiet-note">
           Your preferences search the same source catalog as{" "}
@@ -174,6 +174,18 @@ export function Finder({ configured }: { configured: boolean }) {
                               <li key={r}>{r}</li>
                             ))}
                           </ul>
+                          {m.sources?.length ? (
+                            <p className="source-links">
+                              Sources: {m.sources.map((source, sourceIndex) => (
+                                <span key={source.url}>
+                                  {sourceIndex > 0 ? " · " : ""}
+                                  <a href={source.url} target="_blank" rel="noopener noreferrer">
+                                    {source.title}
+                                  </a>
+                                </span>
+                              ))}
+                            </p>
+                          ) : null}
                           {m.gaps.length > 0 && (
                             <>
                               <strong>Keep in mind</strong>
@@ -274,11 +286,10 @@ export function Finder({ configured }: { configured: boolean }) {
         </button>
       )}
       <p className="quiet-note">
-        Date-night and mood suggestions use attributed editorial guidance from{" "}
-        <a href="https://10ml.com" target="_blank" rel="noopener noreferrer">
-          the 10ML Fragrance Index
-        </a>
-        . Only matching fragrances already in Scently's catalog are shown.
+        Date-night and mood suggestions use Gemini with grounded Google Search,
+        prioritizing Fragrantica fragrance pages and official brand product pages.
+        Only matching fragrances already in Scently's catalog are shown; source
+        links appear with supported matches.
         Fragrance is personal; check current retailer totals before purchasing.
       </p>
     </div>

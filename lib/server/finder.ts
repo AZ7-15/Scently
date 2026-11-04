@@ -6,9 +6,7 @@ import { setting } from "./security";
 import { getDb } from "@/db";
 import { aiUsage } from "@/db/schema";
 import { databaseConfigured } from "./configuration";
-import { getOpenCatalog } from "./open-catalog";
-import { mergeFragrances } from "@/lib/catalog";
-import { matchExternalIdeas, searchExternalIdeas } from "./external-finder";
+import { searchExternalIdeas } from "./external-finder";
 
 // The model interprets preferences only. Retrieval, ranking and factual explanations
 // remain deterministic and never consume model-authored product records.
@@ -181,26 +179,25 @@ export async function findFragrances(
     criteria.niche ||
     criteria.sortLongevity;
   const meaningful = hasStructuredPreferences || message.trim().length >= 4;
-  const [retrieval, externalResearch, open] = meaningful
-    ? await Promise.all([
-        finderCandidates(criteria, catalog, continuation, seen),
-        searchExternalIdeas(message, criteria),
-        getOpenCatalog(),
-      ])
-    : ([null, { available: false, ideas: [] }, []] as const);
-  const signals = retrieval
-    ? matchExternalIdeas(
-        externalResearch.ideas,
-        retrieval.catalog,
-        mergeFragrances(catalog, [...open, ...retrieval.catalog]),
+  const retrieval = meaningful
+    ? await finderCandidates(criteria, catalog, continuation, seen)
+    : null;
+  const baseline = retrieval
+    ? recommend(retrieval.catalog, criteria, region)
+    : [];
+  const externalResearch = retrieval
+    ? await searchExternalIdeas(
+        message,
+        criteria,
+        baseline.map((match) => match.fragrance),
       )
-    : new Map();
-  const editorialMatchesAvailable =
-    externalResearch.available && signals.size > 0;
+    : { available: false, signals: new Map() };
+  const signals = externalResearch.signals;
+  const researchMatchesAvailable = externalResearch.available && signals.size > 0;
   const generalFallback =
-    !hasStructuredPreferences && !editorialMatchesAvailable;
+    !hasStructuredPreferences && !researchMatchesAvailable;
   const recommendationPool =
-    !hasStructuredPreferences && editorialMatchesAvailable && retrieval
+    !hasStructuredPreferences && researchMatchesAvailable && retrieval
       ? retrieval.catalog.filter((fragrance) => signals.has(fragrance.id))
       : retrieval?.catalog || [];
   const rankedMatches = retrieval
@@ -215,7 +212,7 @@ export async function findFragrances(
         ],
         gaps: [
           ...match.gaps,
-          "A tailored editorial match could not be verified for this description.",
+          "A tailored Fragrantica or brand-source match could not be verified for this description.",
         ],
       }))
     : rankedMatches;
@@ -226,8 +223,8 @@ export async function findFragrances(
       " candidate records assessed on this page. " +
       (retrieval.notice || "") +
       (externalResearch.available
-        ? ` 10ML Fragrance Index editorial guidance matched ${signals.size} catalog records.`
-        : " External editorial search is unavailable right now; only established catalog audience labels are used.");
+        ? ` Grounded Fragrantica or official brand research matched ${signals.size} catalog records.`
+        : " Grounded Fragrantica and official brand research is unavailable right now; catalog attributes are used.");
   return {
     criteria,
     matches,
@@ -247,7 +244,7 @@ export async function findFragrances(
     message: !meaningful
       ? "Tell me a note, season, budget, or performance preference so I can narrow the catalog."
       : generalFallback && matches.length
-        ? "I couldn't verify a tailored match for that description, so here are popular catalog starting points while editorial search is unavailable."
+        ? "I couldn't verify a tailored match from Fragrantica or official brand sources, so here are popular catalog starting points."
         : !matches.length
           ? "No catalog records match these preferences. Try another note or remove an exclusion."
           : matches.some((m) => m.exact)

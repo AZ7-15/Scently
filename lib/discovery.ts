@@ -240,12 +240,14 @@ export interface Match {
   reasons: string[];
   gaps: string[];
   exact: boolean;
+  sources?: { title: string; url: string }[];
 }
 export interface RecommendationSignal {
   rank: number;
   gender: "men" | "women" | "unisex" | null;
   occasions: string[];
   styles: string[];
+  sources?: { title: string; url: string }[];
 }
 export function recommend(
   catalog: Fragrance[],
@@ -364,7 +366,7 @@ export function recommend(
               identityName(occasion) === identityName(criteria.occasion!),
           ) || !!editorOccasion,
           editorOccasion
-            ? `10ML Fragrance Index editors list it for ${criteria.occasion}.`
+            ? `Fragrance research lists it for ${criteria.occasion}.`
             : "Matches your occasion.",
           "No sourced occasion recommendation is available.",
         );
@@ -400,20 +402,16 @@ export function recommend(
           weights.style,
           f.style === criteria.style || f.style === "all" || editorMatch,
           editorMatch
-            ? `10ML Fragrance Index lists it as marketed for ${editorAudience === "unisex" ? "all genders" : editorAudience}.`
+            ? `Fragrance research lists it as marketed for ${editorAudience === "unisex" ? "all genders" : editorAudience}.`
             : `A ${criteria.style} fragrance match; anyone can wear it.`,
           "The catalog does not establish this style preference.",
         );
       }
       const signal = signals.get(f.id);
       if (signal)
-        reasons.push(
-          "Included in the 10ML Fragrance Index editorial results for your description.",
-        );
+        reasons.push("Selected from Fragrantica or official brand research for your description.");
       if (signal?.styles.some((style) => identityName(style) === "sensual"))
-        reasons.push(
-          "10ML Fragrance Index editors describe its style as sensual.",
-        );
+        reasons.push("Fragrance sources describe its style as sensual.");
       if (criteria.niche && f.niche !== true)
         gaps.push(
           "The source does not establish a niche classification for this brand.",
@@ -424,6 +422,7 @@ export function recommend(
         reasons,
         gaps,
         exact: gaps.length === 0,
+        sources: signal?.sources,
       };
     })
     .filter(
