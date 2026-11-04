@@ -160,8 +160,10 @@ const records: Omit<Fragrance, "imageUrl">[] = [
     sourceUrl: "https://www.lelabofragrances.com/our-creations.html",
   },
 ];
-export const curatedCatalog: Fragrance[] = records.map((record) => ({
-  ...record,
-  imageUrl:
-    "/images/products/" + photos.find((photo) => photo.id === record.id)!.file,
-}));
+export const curatedCatalog: Fragrance[] = records.map((record) => {
+  const photo = photos.find((candidate) => candidate.id === record.id)!;
+  return {
+    ...record,
+    imageUrl: "/images/products/" + photo.file,
+  };
+});

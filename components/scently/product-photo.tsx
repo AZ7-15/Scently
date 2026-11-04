@@ -91,6 +91,9 @@ export function ProductPhoto({
     excludedImages,
   ]);
   const photo = result?.images[index];
+  const isTransparentCutout = !!photo?.url.match(
+    /\/images\/products\/(?:sauvage-edp-cutout|santal-33-cutout|another-13-cutout|tobacco-vanille|wood-sage-sea-salt)\.png(?:$|\?)/i,
+  );
   useEffect(() => {
     const element = imageElement.current;
     let cancelled = false;
@@ -105,7 +108,11 @@ export function ProductPhoto({
     };
   }, [photo?.url]);
   return (
-    <div ref={container} className="product-photo" aria-busy={result === null}>
+    <div
+      ref={container}
+      className={"product-photo" + (isTransparentCutout ? " photo-cutout" : "")}
+      aria-busy={result === null}
+    >
       {photo ? (
         <>
           {/* Source-matched product images use ordinary image fallback handling. */}

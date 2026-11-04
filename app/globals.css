@@ -3028,9 +3028,17 @@ a {
 .product-visual {
   border-radius: 13px 13px 0 0;
   background: #efeee5;
+  isolation: isolate;
 }
 .product-visual .product-photo img {
   mix-blend-mode: multiply;
+}
+.product-photo img {
+  mix-blend-mode: multiply;
+}
+.product-photo.photo-cutout img {
+  mix-blend-mode: normal;
+  filter: drop-shadow(0 14px 12px #1d211c24);
 }
 .product-copy h3 {
   letter-spacing: -0.025em;
