@@ -26,7 +26,7 @@ const profileSchema = z.object({
 });
 const responseSchema = z.object({
   source: z.literal("10ML Fragrance Index"),
-  results: z.array(profileSchema).max(20),
+  results: z.array(z.unknown()).max(20),
 });
 export type ExternalIdea = z.infer<typeof profileSchema>;
 type SearchResult = { available: boolean; ideas: ExternalIdea[] };
@@ -89,7 +89,13 @@ export async function searchExternalIdeas(
       if (text.length > 1_000_000) throw new Error("10ML response too large");
       const parsed = responseSchema.safeParse(JSON.parse(text));
       if (!parsed.success) throw new Error("Unexpected 10ML response");
-      const value = { available: true, ideas: parsed.data.results };
+      const value = {
+        available: true,
+        ideas: parsed.data.results.flatMap((result) => {
+          const profile = profileSchema.safeParse(result);
+          return profile.success ? [profile.data] : [];
+        }),
+      };
       if (cache.size >= 128) cache.delete(cache.keys().next().value!);
       cache.set(path, { value, expires: Date.now() + 15 * 60_000 });
       return value;
