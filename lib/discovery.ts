@@ -186,8 +186,8 @@ export function parseCriteria(
   for (const s of ["spring", "summer", "fall", "winter"] as const)
     if (text.includes(s)) c.season = s;
   if (text.includes("autumn")) c.season = "fall";
-  if (/masculine|\bmen\b/.test(text)) c.style = "masculine";
-  if (/feminine|\bwomen\b/.test(text)) c.style = "feminine";
+  if (/masculine|\b(men|male|man)\b/.test(text)) c.style = "masculine";
+  if (/feminine|\b(women|female|woman)\b/.test(text)) c.style = "feminine";
   if (/unisex|any gender/.test(text)) c.style = null;
   if (text.includes("very strong")) c.projection = "very strong";
   else if (text.includes("strong projection")) c.projection = "strong";
@@ -239,10 +239,17 @@ export interface Match {
   gaps: string[];
   exact: boolean;
 }
+export interface RecommendationSignal {
+  rank: number;
+  gender: "men" | "women" | "unisex" | null;
+  occasions: string[];
+  styles: string[];
+}
 export function recommend(
   catalog: Fragrance[],
   criteria: Criteria,
   region = "CA",
+  signals: Map<string, RecommendationSignal> = new Map(),
 ): Match[] {
   if (
     criteria.notes.length &&
@@ -256,6 +263,23 @@ export function recommend(
   )
     return [];
   return catalog
+    .filter((f) => {
+      if (criteria.style === "masculine")
+        return (
+          f.style !== "feminine" &&
+          (f.style === "masculine" ||
+            f.style === "all" ||
+            ["men", "unisex"].includes(signals.get(f.id)?.gender || ""))
+        );
+      if (criteria.style === "feminine")
+        return (
+          f.style !== "masculine" &&
+          (f.style === "feminine" ||
+            f.style === "all" ||
+            ["women", "unisex"].includes(signals.get(f.id)?.gender || ""))
+        );
+      return true;
+    })
     .map((f) => {
       let earned = 0,
         possible = 0;
@@ -314,13 +338,25 @@ export function recommend(
           `Editorial pick for ${criteria.season}; not a community consensus.`,
           `Not an editorial pick for ${criteria.season}.`,
         );
-      if (criteria.occasion)
+      if (criteria.occasion) {
+        const editorOccasion = signals
+          .get(f.id)
+          ?.occasions.some(
+            (occasion) =>
+              identityName(occasion) === identityName(criteria.occasion!),
+          );
         check(
           weights.season,
-          f.occasions.includes(criteria.occasion),
-          "Matches your occasion.",
+          f.occasions.some(
+            (occasion) =>
+              identityName(occasion) === identityName(criteria.occasion!),
+          ) || !!editorOccasion,
+          editorOccasion
+            ? `10ML Fragrance Index editors list it for ${criteria.occasion}.`
+            : "Matches your occasion.",
           "No sourced occasion recommendation is available.",
         );
+      }
       if (criteria.budget)
         check(
           weights.budget,
@@ -341,12 +377,30 @@ export function recommend(
           `From ${f.brand}.`,
           `Not from ${criteria.brand}.`,
         );
-      if (criteria.style)
+      if (criteria.style) {
+        const editorAudience = signals.get(f.id)?.gender;
+        const editorMatch =
+          (criteria.style === "masculine" &&
+            ["men", "unisex"].includes(editorAudience || "")) ||
+          (criteria.style === "feminine" &&
+            ["women", "unisex"].includes(editorAudience || ""));
         check(
           weights.style,
-          f.style === criteria.style,
-          `A ${criteria.style} style preference match; anyone can wear it.`,
+          f.style === criteria.style || f.style === "all" || editorMatch,
+          editorMatch
+            ? `10ML Fragrance Index lists it as marketed for ${editorAudience === "unisex" ? "all genders" : editorAudience}.`
+            : `A ${criteria.style} fragrance match; anyone can wear it.`,
           "The catalog does not establish this style preference.",
+        );
+      }
+      const signal = signals.get(f.id);
+      if (signal)
+        reasons.push(
+          "Included in the 10ML Fragrance Index editorial results for your description.",
+        );
+      if (signal?.styles.some((style) => identityName(style) === "sensual"))
+        reasons.push(
+          "10ML Fragrance Index editors describe its style as sensual.",
         );
       if (criteria.niche && f.niche !== true)
         gaps.push(
@@ -378,6 +432,8 @@ export function recommend(
           ? (b.fragrance.longevity ?? -1) - (a.fragrance.longevity ?? -1)
           : 0) ||
         b.score - a.score ||
+        (signals.get(a.fragrance.id)?.rank ?? Number.POSITIVE_INFINITY) -
+          (signals.get(b.fragrance.id)?.rank ?? Number.POSITIVE_INFINITY) ||
         comparePopularity(a.fragrance, b.fragrance),
     )
     .slice(0, 5);

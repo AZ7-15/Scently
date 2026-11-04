@@ -24,6 +24,7 @@ type Result = {
   catalogHref: string;
 };
 const examples = [
+  "Find me something warm and memorable for an evening out.",
   "Find me a sweet winter fragrance.",
   "I want a masculine vanilla fragrance.",
   "Find a fragrance like Dior Sauvage but cheaper.",
@@ -112,8 +113,8 @@ export function Finder({ configured }: { configured: boolean }) {
         </p>
         <span className="mode-badge">
           {configured
-            ? "AI-assisted finder · grounded in our catalog"
-            : "Rule-based finder · AI not connected"}
+            ? "AI interpretation and external fragrance research"
+            : "External editorial finder; AI key not connected"}
         </span>
         <p className="quiet-note">
           Your preferences search the same source catalog as{" "}
@@ -273,9 +274,12 @@ export function Finder({ configured }: { configured: boolean }) {
         </button>
       )}
       <p className="quiet-note">
-        Fragrance is personal. Rankings use documented preferences and available
-        evidence, not invented match percentages. Verify current retailer totals
-        before purchasing.
+        Date-night and mood suggestions use attributed editorial guidance from{" "}
+        <a href="https://10ml.com" target="_blank" rel="noopener noreferrer">
+          the 10ML Fragrance Index
+        </a>
+        . Only matching fragrances already in Scently's catalog are shown.
+        Fragrance is personal; check current retailer totals before purchasing.
       </p>
     </div>
   );
