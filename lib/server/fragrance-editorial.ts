@@ -1,4 +1,4 @@
-import { canonicalProductUrl } from "./open-catalog";
+import { canonicalProductUrl, supplementLiveProfile } from "./open-catalog";
 import { sourceWearEvidence, type WearEvidence } from "@/lib/wear-evidence";
 import { getLiveFragrance } from "./scento";
 import type { LiveProfile } from "@/lib/live-catalog";
@@ -213,9 +213,11 @@ export async function detailedProfile(profile: LiveProfile) {
           url = candidate;
       }
     }
-    const result = enrichProfile(
-      { ...profile, sourceUrl: url.href },
-      await sourceMarkup(url.pathname),
+    const result = await supplementLiveProfile(
+      enrichProfile(
+        { ...profile, sourceUrl: url.href },
+        await sourceMarkup(url.pathname),
+      ),
     );
     return {
       ...result,
@@ -223,6 +225,7 @@ export async function detailedProfile(profile: LiveProfile) {
       detailSourceUrl: result.detailed ? url.href : undefined,
     };
   } catch {
-    return enrichProfile(profile, "");
+    const result = enrichProfile(profile, "");
+    return supplementLiveProfile(result).catch(() => result);
   }
 }

@@ -27,6 +27,11 @@ export type LiveProfile = {
   sourceUrl: string;
   checkedAt: string;
   source: string;
+  supplementarySource?: {
+    name: string;
+    url: string;
+    checkedAt: string;
+  };
 };
 export function liveProfilePath(fragrance: Pick<LiveFragrance, "lookup">) {
   return "/discover/" + encodeURIComponent(fragrance.lookup);

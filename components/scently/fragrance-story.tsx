@@ -37,6 +37,11 @@ export type StoryProfile = {
   longevity?: number | null;
   projection?: string | null;
   performanceVotes?: number;
+  supplementarySource?: {
+    name: string;
+    url: string;
+    checkedAt: string;
+  };
 };
 export function FragranceStory({
   profile: f,
@@ -242,6 +247,42 @@ export function FragranceStory({
                 Scento product profile
               </a>
               .
+            </p>
+          )}
+          {f.supplementarySource && (
+            <p>
+              Additional edition details adapted from the published fragrance
+              index:{" "}
+              <a
+                href={f.supplementarySource.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {f.supplementarySource.name}
+              </a>
+              . Retrieved {f.supplementarySource.checkedAt.slice(0, 10)}.
+              {f.supplementarySource.name.includes("Open Dataset") && (
+                <>
+                  {" "}
+                  Dataset:{" "}
+                  <a
+                    href="https://huggingface.co/datasets/scento/perfume-database"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Scento perfume database
+                  </a>
+                  , licensed under{" "}
+                  <a
+                    href="https://creativecommons.org/licenses/by/4.0/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    CC BY 4.0
+                  </a>
+                  .
+                </>
+              )}
             </p>
           )}
           {f.sourceName.includes("Open Dataset") && (

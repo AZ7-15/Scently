@@ -193,6 +193,104 @@ export async function getOpenProfile(
   };
 }
 
+/** Fill absent live-profile fields from an exact edition in the published index. */
+export async function supplementLiveProfile<T extends LiveProfile>(
+  profile: T,
+): Promise<T & LiveProfile> {
+  const matches = (await getOpenCatalog()).filter((fragrance) =>
+    matchingCatalogEdition(
+      {
+        name: profile.name,
+        brand: profile.brand,
+        concentration: profile.concentration || "Not provided",
+      },
+      fragrance,
+    ),
+  );
+  const strengths = new Set(
+    matches.map((fragrance) => concentrationKey(fragrance.concentration)),
+  );
+  if (!matches.length || (!profile.concentration && strengths.size > 1))
+    return profile;
+
+  const exactStrength = profile.concentration
+    ? matches.filter(
+        (fragrance) =>
+          concentrationKey(fragrance.concentration) ===
+          concentrationKey(profile.concentration),
+      )
+    : [];
+  const source = (exactStrength.length ? exactStrength : matches)[0];
+  let supplemented = false;
+  const take = <T>(
+    current: T | null | undefined,
+    value: T | null | undefined,
+  ) => {
+    if (current !== null && current !== undefined && current !== "")
+      return current;
+    if (value !== null && value !== undefined && value !== "") {
+      supplemented = true;
+      return value;
+    }
+    return current;
+  };
+  const stages = ["top", "heart", "base"] as const;
+  const pyramid = Object.fromEntries(
+    stages.map((stage) => {
+      const current = profile.pyramid[stage];
+      const value = current.length
+        ? current
+        : source.notes
+            .filter((note) => note.stage === stage)
+            .map((note) => note.name);
+      if (!current.length && value.length) supplemented = true;
+      return [stage, value];
+    }),
+  ) as LiveProfile["pyramid"];
+  const notes = [
+    ...new Set([
+      ...profile.notes,
+      ...source.notes
+        .filter((note) => note.stage === "unclassified")
+        .map((note) => note.name),
+    ]),
+  ];
+  if (notes.length > profile.notes.length) supplemented = true;
+  const seasons = profile.seasons.length
+    ? profile.seasons
+    : source.editorialSeasons;
+  if (!profile.seasons.length && seasons.length) supplemented = true;
+  const family =
+    profile.family === "Not provided" ? source.family : profile.family;
+  if (family !== profile.family) supplemented = true;
+  const description =
+    profile.description === "The source has not provided a scent description."
+      ? source.description
+      : profile.description;
+  if (description !== profile.description) supplemented = true;
+
+  return {
+    ...profile,
+    year: take(profile.year, source.year) ?? null,
+    perfumer: take(profile.perfumer, source.perfumer) ?? null,
+    concentration: take(profile.concentration, source.concentration) ?? null,
+    family,
+    description,
+    pyramid,
+    notes,
+    seasons,
+    ...(supplemented
+      ? {
+          supplementarySource: {
+            name: source.sourceName,
+            url: source.sourceUrl,
+            checkedAt: source.checkedAt,
+          },
+        }
+      : {}),
+  };
+}
+
 export async function canonicalProductUrl(identity: {
   name: string;
   brand: string;
