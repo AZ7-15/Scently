@@ -444,9 +444,9 @@ export function recommend(
           ? (b.fragrance.longevity ?? -1) - (a.fragrance.longevity ?? -1)
           : 0) ||
         b.score - a.score ||
-        audienceTier(a.fragrance) - audienceTier(b.fragrance) ||
         (signals.get(a.fragrance.id)?.rank ?? Number.POSITIVE_INFINITY) -
           (signals.get(b.fragrance.id)?.rank ?? Number.POSITIVE_INFINITY) ||
+        audienceTier(a.fragrance) - audienceTier(b.fragrance) ||
         comparePopularity(a.fragrance, b.fragrance),
     )
     .slice(0, 5);
