@@ -47,5 +47,26 @@
     "source": "https://www.armani.com/en-fr/emporio-armani/stronger-with-you-powerfully-100-ml-eau-de-parfum-cod-LG206300-NLP-100ML/",
     "image": "https://assets-cf.armani.com/image/upload/f_auto%2Cq_auto%3Abest%2Car_4%3A5%2Cw_1350%2Cc_fill/LG206300_NLP_100ML_D_FW2025.jpg",
     "checkedAt": "2026-11-04"
+  },
+  {
+    "id": "annick-goutal-eau-dhadrien",
+    "file": "goutal-eau-dhadrien.png",
+    "source": "https://escentual.com/products/goutal-eau-dhadrien-eau-de-parfum-spray",
+    "image": "https://cdn.shopify.com/s/files/1/0853/1863/1748/files/Goutal_Eau_d_Hadrien_Eau_de_Parfum_Spray_50ml.png?v=1784722299",
+    "checkedAt": "2026-11-05"
+  },
+  {
+    "id": "annick-goutal-petite-cherie",
+    "file": "goutal-petite-cherie.png",
+    "source": "https://escentual.com/products/goutal-petite-cherie-eau-de-parfum-spray",
+    "image": "https://cdn.shopify.com/s/files/1/0853/1863/1748/files/Annick_Goutal_Petite_Cherie_Eau_de_Parfum_Spray_50ml.png?v=1784724023",
+    "checkedAt": "2026-11-05"
+  },
+  {
+    "id": "annick-goutal-un-matin-dorage",
+    "file": "goutal-un-matin-dorage.png",
+    "source": "https://escentual.com/products/goutal-un-matin-dorage-eau-de-parfum-spray",
+    "image": "https://cdn.shopify.com/s/files/1/0853/1863/1748/files/Annick_Goutal_Un_Matin_d_Orage_Eau_de_Parfum_Spray_50ml.png?v=1784731810",
+    "checkedAt": "2026-11-05"
   }
 ]

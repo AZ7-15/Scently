@@ -375,8 +375,8 @@ export function Admin({
       <section className="panel detail-section">
         <h2>Data quality & operations</h2>
         <p>
-          {catalog.filter((f) => !f.imageUrl).length} records use illustrated
-          placeholders. {catalog.filter((f) => !f.reviewCount).length} records
+          {catalog.filter((f) => !f.imageUrl).length} records have no stored
+          product photo. {catalog.filter((f) => !f.reviewCount).length} records
           have no community evidence.{" "}
           {catalog.filter((f) => !f.offers.length).length} records have no
           retailer offers.

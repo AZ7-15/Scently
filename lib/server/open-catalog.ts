@@ -1,5 +1,6 @@
 import { z } from "zod";
 import bundled from "@/data/scento-open-catalog.json";
+import photoSources from "@/data/photo-sources.json";
 import {
   catalogFamily,
   concentrationKey,
@@ -35,6 +36,7 @@ const rowSchema = z.object({
 });
 const rowsSchema = z.array(rowSchema).min(1).max(10000);
 type Row = z.infer<typeof rowSchema>;
+const photoById = new Map(photoSources.map((photo) => [photo.id, photo]));
 const labels: Record<string, string> = {
   edp: "Eau de Parfum",
   edt: "Eau de Toilette",
@@ -49,6 +51,7 @@ export function mapOpenCatalog(
 ): Fragrance[] {
   const sourceRows = rowsSchema.parse(rows);
   const fragrances = sourceRows.map((r: Row) => {
+    const photo = photoById.get(r.id);
     const notes: Note[] = (["top", "heart", "base"] as const).flatMap((stage) =>
       r[(stage + "_notes") as "top_notes" | "heart_notes" | "base_notes"].map(
         (name) => ({ name, stage }),
@@ -73,7 +76,8 @@ export function mapOpenCatalog(
       family: catalogFamily(r.family),
       color: "#b7a47d",
       shape: "round",
-      imageUrl: null,
+      imageUrl: photo ? "/images/products/" + photo.file : null,
+      imageSourceUrl: photo?.source,
       popularityRank: r.popularity_rank ?? null,
       accords: [
         ...new Set(

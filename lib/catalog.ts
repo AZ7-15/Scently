@@ -4,6 +4,11 @@ export function brandKey(brand: string) {
     .replace(/\bperfumes?\b/g, "")
     .trim();
   if (["armani", "emporio armani"].includes(key)) return "giorgio armani";
+  if (["annick goutal paris", "goutal", "goutal paris"].includes(key))
+    return "annick goutal";
+  if (key === "armaf store") return "armaf";
+  if (key === "lattafa india") return "lattafa";
+  if (key === "the house of amouage") return "amouage";
   if (key === "maison margiela fragrances") return "maison margiela";
   return key === "christian dior" ? "dior" : key;
 }
@@ -62,6 +67,7 @@ function editionName(fragrance: CatalogIdentity) {
   if (brand === "acqua di parma") prefixes.push("blu mediterraneo");
   if (brand === "jean paul gaultier") prefixes.push("gaultier");
   if (brand === "hugo boss") prefixes.push("boss");
+  if (brand === "annick goutal") prefixes.push("goutal", "goutal paris");
   // Strip house/collection labels only within their own house. Never strip
   // arbitrary leading words: Absolu Aventus and Aventus are distinct editions.
   for (const prefix of prefixes.sort((a, b) => b.length - a.length)) {

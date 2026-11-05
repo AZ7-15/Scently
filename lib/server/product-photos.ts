@@ -69,7 +69,7 @@ function productLabel(value: string, brand: string) {
   return catalogNameKey(
     identityName(label)
       .replace(
-        /\b(eau de parfum|eau de toilette|eau de cologne|perfume bottle|perfume|perfumes|spray|bottle|luxury fragrance|luxury|fragrance|by)\b/g,
+        /\b(eau de parfum|eau de toilette|eau de cologne|perfume bottle|perfume|perfumes|spray|bottle|luxury fragrance|luxury|fragrance|by|unisex)\b/g,
         " ",
       )
       .replace(/\s+/g, " ")
@@ -226,13 +226,25 @@ async function retailerPhoto(
   concentration: string,
   excluded: string[] = [],
 ): Promise<ProductPhoto[]> {
+  const officialStore: Record<string, string> = {
+    "annick goutal": "https://www.annickgoutal.com",
+    armaf: "https://armaf.com",
+    afnan: "https://us.afnan.com",
+    lattafa: "https://www.lattafaindia.com",
+    "parfums de marly": "https://us.parfums-de-marly.com",
+    amouage: "https://amouage.com",
+    creed: "https://creedboutique.com",
+  };
   const stores = [
+    "https://escentual.com",
+    officialStore[brandKey(brand)],
     "https://fragrancelord.com",
     "https://www.decantx.com",
     "https://www.scentdecant.com",
-  ];
+    "https://twistedlily.com",
+  ].filter((store): store is string => !!store);
   for (const store of stores) {
-    if (!memoryLimit("photo:retailers", 60, 60)) return [];
+    if (!memoryLimit("photo:retailers", 240, 60)) return [];
     try {
       const url = new URL("/search/suggest.json", store);
       url.search = new URLSearchParams({
@@ -273,7 +285,14 @@ async function retailerPhoto(
           ? safeImage(new URL(rawImage, store).href)
           : null;
         const sourceUrl = new URL(product.url, store);
-        if (image && !excluded.includes(image) && sourceUrl.origin === store)
+        if (
+          image &&
+          !excluded.includes(image) &&
+          sourceUrl.origin === store &&
+          !/\b(?:echantillon|sample|gift-set|body-lotion|shower-gel)\b/i.test(
+            sourceUrl.pathname,
+          )
+        )
           return [
             { url: image, sourceUrl: sourceUrl.origin + sourceUrl.pathname },
           ];
