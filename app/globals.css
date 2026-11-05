@@ -1353,8 +1353,22 @@ input[type="checkbox"] {
 }
 .review-layout {
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 30px;
+  align-items: stretch;
+}
+.review-list-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 440px;
+}
+.review-empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: transparent;
+  border: 0;
 }
 .review-card {
   padding: 24px;

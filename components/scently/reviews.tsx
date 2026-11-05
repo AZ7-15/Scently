@@ -145,7 +145,7 @@ export function ReviewSection({
         </p>
       )}
       <div className="review-layout">
-        <div>
+        <div className="panel review-list-panel">
           {sorted.slice(0, limit).map((r) => (
             <article className="review-card" key={r.id}>
               <header>
@@ -236,7 +236,7 @@ export function ReviewSection({
             </article>
           ))}
           {!reviews.length && (
-            <div className="empty-state">
+            <div className="empty-state review-empty-state">
               <h2>Write a fragrance review.</h2>
               <p>
                 There are no reviews yet. Share your own experience to help the
