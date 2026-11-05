@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { ImageOff } from "lucide-react";
+import { BottleIllustration } from "./bottle-illustration";
 import type { ProductPhotoResult } from "@/lib/product-photos";
 export function ProductPhoto({
   name,
@@ -23,6 +23,8 @@ export function ProductPhoto({
     imageUrl ? { images: [{ url: imageUrl, sourceUrl }] } : null,
   );
   const [index, setIndex] = useState(0);
+  const [photoLoaded, setPhotoLoaded] = useState(false);
+  const [photoFailed, setPhotoFailed] = useState(false);
   const [providedBroken, setProvidedBroken] = useState(false);
   const [retry, setRetry] = useState(0);
   const failedUrls = useRef(new Set<string>());
@@ -91,6 +93,11 @@ export function ProductPhoto({
     excludedImages,
   ]);
   const photo = result?.images[index];
+  const imageSrc = photo?.url.match(
+    /^https:\/\/(?:imagedelivery\.net|cdn\.shopify\.com)\//i,
+  )
+    ? "/api/catalog/image?url=" + encodeURIComponent(photo.url)
+    : photo?.url;
   const isTransparentCutout = !!photo?.url.match(
     /\/images\/products\/(?:sauvage-edp-cutout|santal-33-cutout|another-13-cutout|tobacco-vanille|wood-sage-sea-salt)\.png(?:$|\?)/i,
   );
@@ -107,22 +114,35 @@ export function ProductPhoto({
       cancelled = true;
     };
   }, [photo?.url]);
+  useEffect(() => {
+    setPhotoLoaded(false);
+    setPhotoFailed(false);
+  }, [photo?.url]);
   return (
     <div
       ref={container}
       className={"product-photo" + (isTransparentCutout ? " photo-cutout" : "")}
       aria-busy={result === null}
     >
-      {photo ? (
+      <div
+        className={"photo-illustration-wrap" + (photoLoaded ? " photo-hidden" : "")}
+        aria-hidden={photoLoaded}
+      >
+        <BottleIllustration name={name} brand={brand} />
+      </div>
+      {photo && imageSrc && !photoFailed ? (
         <>
           {/* Source-matched product images use ordinary image fallback handling. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             ref={imageElement}
-            src={photo.url}
+            src={imageSrc}
             alt={`${brand} ${name} bottle`}
             loading={large ? "eager" : "lazy"}
+            onLoad={() => setPhotoLoaded(true)}
             onError={() => {
+              setPhotoLoaded(false);
+              setPhotoFailed(true);
               failedUrls.current.add(photo.url);
               if (index + 1 < (result?.images.length || 0))
                 setIndex((value) => value + 1);
@@ -147,30 +167,21 @@ export function ProductPhoto({
             </a>
           )}
         </>
-      ) : (
-        <div className="photo-unavailable">
-          <ImageOff size={28} strokeWidth={1} />
-          <span>
-            {result === null
-              ? "Finding product photo…"
-              : "Product photo unavailable"}
-          </span>
-          {result !== null && (
-            <button
-              type="button"
-              className="photo-retry"
-              onClick={() => {
-                setIndex(0);
-                setResult(null);
-                failedUrls.current.clear();
-                setExcludedImages([]);
-                setRetry((n) => n + 1);
-              }}
-            >
-              Try photo again
-            </button>
-          )}
-        </div>
+      ) : null}
+      {result !== null && !photo && (
+        <button
+          type="button"
+          className="photo-retry"
+          onClick={() => {
+            setIndex(0);
+            setResult(null);
+            failedUrls.current.clear();
+            setExcludedImages([]);
+            setRetry((n) => n + 1);
+          }}
+        >
+          Retry product photo
+        </button>
       )}
     </div>
   );
