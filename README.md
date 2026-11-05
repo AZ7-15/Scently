@@ -83,6 +83,8 @@ In another terminal, set `$env:E2E_BASE_URL='http://localhost:4180'` and run `np
 
 ## Catalog and photos
 
+If the Render server cannot complete a free Open Beauty Facts lookup, the browser tries the public API directly for a still-missing photo. Browser lookups are limited to 20 per minute and keep the same exact-edition checks.
+
 `/fragrances` is one catalog with one search and filter panel. Search any fragrance or brand to combine local records with on-demand results from the free [Scento Perfume API](https://www.scento.com/developers/perfume-api). Matching records are deduplicated by brand, name and concentration; local reviews are preserved. Distinct concentration variants remain separate. “Load more” follows the source cursor. The default listing browses the source catalog through pagination; choosing brand, note or family sends the filter upstream and each page is validated against the combined criteria. Brand options come from the full source directory rather than loaded cards. Unknown performance and prices do not pass evidence-based filters. The provider does not cover every fragrance worldwide.
 
 Read-only JSON endpoints are `/api/discovery/search?q=Lattafa` (optionally `continuation`) and `/api/discovery/fragrance/khamrah-lattafa`. Lookups use a bounded 128-answer, 15-minute cache, request coalescing, timeout and upstream rate limits. The live API is not crawled. A separately published, licensed export is also bundled and refreshed with attribution. Use follows the [source API terms](https://www.scento.com/terms-of-service#perfume-api).

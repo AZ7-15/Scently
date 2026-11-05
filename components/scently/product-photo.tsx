@@ -1,7 +1,41 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { ImageOff } from "lucide-react";
-import type { ProductPhotoResult } from "@/lib/product-photos";
+import type { ProductPhoto, ProductPhotoResult } from "@/lib/product-photos";
+import { openBeautySearchUrl, photosFromOpenBeautyFacts } from "@/lib/open-beauty-photos";
+
+const beautyRequests = new Map<string, Promise<ProductPhoto[]>>();
+const beautyRequestTimes: number[] = [];
+
+function browserBeautyPhotos(name: string, brand: string, concentration: string, excluded: string[]) {
+  const key = [brand, name, concentration, ...excluded].join("|");
+  const cached = beautyRequests.get(key);
+  if (cached) return cached;
+  const now = Date.now();
+  while (beautyRequestTimes.length && beautyRequestTimes[0] < now - 60_000)
+    beautyRequestTimes.shift();
+  if (beautyRequestTimes.length >= 20) return Promise.resolve([]);
+  beautyRequestTimes.push(now);
+  const request = (async () => {
+    try {
+      const response = await fetch(openBeautySearchUrl(name, brand), {
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(20_000),
+      });
+      if (!response.ok || Number(response.headers.get("content-length") || 0) > 250_000)
+        return [];
+      const body = await response.text();
+      if (body.length > 250_000) return [];
+      return photosFromOpenBeautyFacts(JSON.parse(body), name, brand, concentration, excluded);
+    } catch {
+      return [];
+    }
+  })();
+  if (beautyRequests.size >= 128) beautyRequests.delete(beautyRequests.keys().next().value!);
+  beautyRequests.set(key, request);
+  return request;
+}
+
 export function ProductPhoto({
   name,
   brand,
@@ -46,19 +80,24 @@ export function ProductPhoto({
     const load = () => {
       void fetch("/api/catalog/photo?" + params, { signal: controller.signal })
         .then((response) => response.json() as Promise<ProductPhotoResult>)
-        .then((data) => {
+        .then(async (data) => {
           if (controller.signal.aborted) return;
           if (data.retryAfter && attempts++ < 3) {
             retryTimer = setTimeout(load, Math.min(10, data.retryAfter) * 1000);
           } else {
+            const images = Array.isArray(data.images) ? data.images : [];
+            const resolved = images.length
+              ? images
+              : await browserBeautyPhotos(name, brand, concentration, excludedImages);
+            if (controller.signal.aborted) return;
             setIndex(0);
-            setResult({
-              images: Array.isArray(data.images) ? data.images : [],
-            });
+            setResult({ images: resolved });
           }
         })
-        .catch(() => {
-          if (!controller.signal.aborted) setResult({ images: [] });
+        .catch(async () => {
+          if (controller.signal.aborted) return;
+          const images = await browserBeautyPhotos(name, brand, concentration, excludedImages);
+          if (!controller.signal.aborted) setResult({ images });
         });
     };
     let observer: IntersectionObserver | undefined;
