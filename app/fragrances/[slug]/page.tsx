@@ -1,19 +1,30 @@
 import { FragranceStory } from "@/components/scently/fragrance-story";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getCatalog, getReviews } from "@/lib/server/catalog";
 import { identity } from "@/lib/server/security";
 import { RelatedFragrances } from "@/components/scently/related-fragrances";
 import { DetailActions, Prices } from "@/components/scently/detail";
 import { ReviewSection } from "@/components/scently/reviews";
 import photos from "@/data/photo-sources.json";
+import { fragrancePath } from "@/lib/domain";
 export const dynamic = "force-dynamic";
+function decodeSlug(value: string) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const f = (await getCatalog()).find((f) => f.slug === slug);
+  const decodedSlug = decodeSlug(slug);
+  const f = (await getCatalog()).find(
+    (item) => item.slug === slug || decodeSlug(item.slug) === decodedSlug,
+  );
   return {
     title: f ? `${f.brand} ${f.name}` : "Fragrance not found",
     description: f?.description,
@@ -26,8 +37,12 @@ export default async function Page({
 }) {
   const { slug } = await params,
     catalog = await getCatalog(),
-    f = catalog.find((f) => f.slug === slug);
+    decodedSlug = decodeSlug(slug),
+    f = catalog.find(
+      (item) => item.slug === slug || decodeSlug(item.slug) === decodedSlug,
+    );
   if (!f) notFound();
+  if (f.externalLookup) redirect(fragrancePath(f));
   const user = await identity(),
     reviews = await getReviews(user?.id, f.id);
   return (

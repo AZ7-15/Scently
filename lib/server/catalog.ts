@@ -6,6 +6,7 @@ import { curatedCatalog } from "@/data/catalog";
 import { databaseConfigured } from "./configuration";
 import {
   slugify,
+  storedExternalLookup,
   type Fragrance,
   type Note,
   type Offer,
@@ -169,6 +170,7 @@ export async function getCatalog(): Promise<Fragrance[]> {
       : null;
     return {
       ...f,
+      externalLookup: storedExternalLookup(f.id, f.slug),
       brand: bs.find((b) => b.id === f.brandId)!.name,
       sourceUrl: source.url,
       sourceName: source.name,

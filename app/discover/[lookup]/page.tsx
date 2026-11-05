@@ -21,7 +21,12 @@ import {
   saveFragrance,
 } from "@/lib/server/catalog";
 import { databaseConfigured } from "@/lib/server/configuration";
-import { slugify, type Fragrance, type Note } from "@/lib/domain";
+import {
+  fragrancePath,
+  slugify,
+  type Fragrance,
+  type Note,
+} from "@/lib/domain";
 import Link from "@/components/scently/site-link";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Fragrance profile" };
@@ -70,7 +75,7 @@ export default async function Page({
     const saved = (await getCatalog().catch(() => curatedCatalog)).find(
       (candidate) => matchingCatalogEdition(expectedIdentity, candidate),
     );
-    if (saved) redirect("/fragrances/" + saved.slug);
+    if (saved) redirect(fragrancePath(saved));
 
     const indexed = (await getOpenCatalog()).find((candidate) =>
       matchingCatalogEdition(expectedIdentity, candidate),
