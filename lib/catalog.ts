@@ -2,6 +2,7 @@ import { normalize, type Fragrance } from "./domain";
 export function brandKey(brand: string) {
   const key = identityName(brand)
     .replace(/\bperfumes?\b/g, "")
+    .replace(/\s+/g, " ")
     .trim();
   if (["armani", "emporio armani"].includes(key)) return "giorgio armani";
   if (["annick goutal paris", "goutal", "goutal paris"].includes(key))
@@ -11,6 +12,7 @@ export function brandKey(brand: string) {
   if (key === "the house of amouage") return "amouage";
   if (key.startsWith("ajmals manufacturing") || key.startsWith("m s ajmals manufacturing"))
     return "ajmal";
+  if (key === "ajmal usa") return "ajmal";
   if (key === "maison margiela fragrances") return "maison margiela";
   return key === "christian dior" ? "dior" : key;
 }
