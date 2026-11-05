@@ -234,6 +234,7 @@ async function retailerPhoto(
     "parfums de marly": "https://us.parfums-de-marly.com",
     amouage: "https://amouage.com",
     creed: "https://creedboutique.com",
+    ajmal: "https://uk.ajmal.com",
   };
   const stores = [
     "https://escentual.com",
@@ -242,13 +243,18 @@ async function retailerPhoto(
     "https://www.decantx.com",
     "https://www.scentdecant.com",
     "https://twistedlily.com",
+    "https://perfumeshops.co.uk",
   ].filter((store): store is string => !!store);
   for (const store of stores) {
     if (!memoryLimit("photo:retailers", 240, 60)) return [];
     try {
       const url = new URL("/search/suggest.json", store);
       url.search = new URLSearchParams({
-        q: name,
+        q: ["https://escentual.com", "https://perfumeshops.co.uk"].includes(
+          store,
+        )
+          ? brand + " " + name
+          : name,
         "resources[type]": "product",
         "resources[limit]": "10",
         "resources[options][fields]": "title",

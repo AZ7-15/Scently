@@ -9,6 +9,8 @@ export function brandKey(brand: string) {
   if (key === "armaf store") return "armaf";
   if (key === "lattafa india") return "lattafa";
   if (key === "the house of amouage") return "amouage";
+  if (key.startsWith("ajmals manufacturing") || key.startsWith("m s ajmals manufacturing"))
+    return "ajmal";
   if (key === "maison margiela fragrances") return "maison margiela";
   return key === "christian dior" ? "dior" : key;
 }
