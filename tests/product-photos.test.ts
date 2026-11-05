@@ -6,10 +6,7 @@ import {
   photosFromPage,
   resolveProductPhotos,
 } from "../lib/server/product-photos";
-afterEach(() => {
-  vi.unstubAllGlobals();
-  vi.unstubAllEnvs();
-});
+afterEach(() => vi.unstubAllGlobals());
 const source = "https://www.scento.com/perfumes/asad-lattafa";
 const packShot = "https://imagedelivery.net/account/asad/public";
 function page(name: string, brand: string, image: unknown) {
@@ -44,27 +41,29 @@ it("matches Kilian Paris to a Kilian retailer bottle without matching a flanker"
   ]);
   expect(photosFromPage(page("Kilian Angels' Share Paradis Eau de Parfum", "Kilian", packShot), "Angels' Share", "Kilian Paris", source, "Eau de Parfum")).toEqual([]);
 });
-it("uses the licensed photo fallback only for an exact source match", async () => {
-  vi.stubEnv("FRAGELLA_API_KEY", "test-key");
-  const image = "https://cdn.fragella.com/images/kilian-sacred-wood.jpg";
+it("uses the free Open Beauty Facts image when the source page has none", async () => {
+  const image = "https://images.openbeautyfacts.org/images/products/843/541/501/2669/front_en.7.400.jpg";
   const fetcher = vi.fn(async (input: string | URL | Request) => {
     const url = String(input);
-    if (url === "https://www.scento.com/brand/kilian")
+    if (url === "https://www.scento.com/brand/jean-paul-gaultier")
       return new Response("<html></html>");
-    if (url.startsWith("https://api.fragella.com/api/v1/fragrances?"))
-      return Response.json([{
-        Name: "Kilian Sacred Wood",
-        Brand: "By Kilian",
-        OilType: "Eau de Parfum",
-        "Image URL": image,
-      }]);
+    if (url.startsWith("https://world.openbeautyfacts.org/cgi/search.pl?"))
+      return Response.json({ products: [{
+        code: "8435415012669",
+        product_name: "J.P. Gaultier Le Male - Eau de Toilette 125 ml",
+        brands: "Jean Paul Gaultier",
+        image_front_url: image,
+      }] });
     throw Error("Unexpected external request: " + url);
   });
   vi.stubGlobal("fetch", fetcher);
   const result = await resolveProductPhotos(
-    "Sacred Wood", "Kilian Paris", "https://www.scento.com/brand/kilian", "Eau de Parfum",
+    "Le Male", "Jean Paul Gaultier", "https://www.scento.com/brand/jean-paul-gaultier", "Eau de Toilette",
   );
-  expect(result.images).toEqual([{ url: image, sourceUrl: "https://api.fragella.com/" }]);
+  expect(result.images).toEqual([{
+    url: image,
+    sourceUrl: "https://world.openbeautyfacts.org/product/8435415012669",
+  }]);
   expect(fetcher).toHaveBeenCalledTimes(2);
 });
 it("rejects other flankers, other brands, brand covers, and untrusted images", () => {

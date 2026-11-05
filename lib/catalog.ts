@@ -15,6 +15,7 @@ export function brandKey(brand: string) {
   if (key === "ajmal usa") return "ajmal";
   if (key === "maison margiela fragrances") return "maison margiela";
   if (["kilian paris", "by kilian"].includes(key)) return "kilian";
+  if (key === "j p gaultier") return "jean paul gaultier";
   return key === "christian dior" ? "dior" : key;
 }
 export function identityName(value: string) {
@@ -70,7 +71,7 @@ function editionName(fragrance: CatalogIdentity) {
   if (brand === "giorgio armani") prefixes.push("emporio armani", "armani");
   if (brand === "maison margiela") prefixes.push("replica");
   if (brand === "acqua di parma") prefixes.push("blu mediterraneo");
-  if (brand === "jean paul gaultier") prefixes.push("gaultier");
+  if (brand === "jean paul gaultier") prefixes.push("gaultier", "j p gaultier");
   if (brand === "hugo boss") prefixes.push("boss");
   if (brand === "annick goutal") prefixes.push("goutal", "goutal paris");
   // Strip house/collection labels only within their own house. Never strip

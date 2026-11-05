@@ -12,7 +12,7 @@ import {
 import type { ProductPhoto, ProductPhotoResult } from "@/lib/product-photos";
 import { getLiveFragrance } from "./scento";
 import { memoryLimit } from "./memory-limits";
-import { fragellaPhotos } from "./fragella-photos";
+import { openBeautyPhotos } from "./open-beauty-photos";
 
 const pages = new Map<string, Promise<string>>();
 const photos = new Map<
@@ -23,7 +23,7 @@ const pending = new Map<string, Promise<ProductPhotoResult>>();
 const cdnHosts = new Set([
   "imagedelivery.net",
   "cdn.shopify.com",
-  "cdn.fragella.com",
+  "images.openbeautyfacts.org",
   "www.scento.com",
   "www.lattafaindia.com",
   "lattafaindia.com",
@@ -413,18 +413,15 @@ export async function resolveProductPhotos(
       images = (await brandPhoto(name, brand, concentration)).filter(
         (image) => !excluded.includes(image.url),
       );
-    let licensedPhoto = false;
-    if (!images.length) {
-      images = await fragellaPhotos(name, brand, concentration, excluded);
-      licensedPhoto = images.length > 0;
-    }
+    if (!images.length)
+      images = await openBeautyPhotos(name, brand, concentration, excluded);
     if (!images.length)
       images = await retailerPhoto(name, brand, concentration, excluded);
     const result = { images };
     if (photos.size >= 512) photos.delete(photos.keys().next().value!);
     photos.set(key, {
       result,
-      expires: Date.now() + (images.length ? (licensedPhoto ? 24 : 7 * 24) * 3600000 : 30000),
+      expires: Date.now() + (images.length ? 7 * 24 * 3600000 : 30000),
     });
     return result;
   })().finally(() => pending.delete(key));
