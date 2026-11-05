@@ -91,7 +91,11 @@ export default async function Page({
         expectedIdentity.name + " " + expectedIdentity.brand,
       ).catch(() => null);
       const matches = (alternate?.matches || []).filter((candidate) =>
-        matchingCatalogEdition(expectedIdentity, candidate),
+        matchingCatalogEdition(expectedIdentity, {
+          name: candidate.name,
+          brand: candidate.brand,
+          concentration: null,
+        }),
       );
       const verified = await Promise.all(
         matches.slice(0, 5).map(async (candidate) => {

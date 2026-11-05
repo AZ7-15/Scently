@@ -48,7 +48,11 @@ export function photoConcentrationMatches(expected: string, evidence: string) {
   const found = new Set(mentions.map(concentrationKey));
   return found.size === 1 && found.has(wanted);
 }
-type CatalogIdentity = Pick<Fragrance, "brand" | "name" | "concentration">;
+type CatalogIdentity = {
+  brand: string;
+  name: string;
+  concentration?: string | null;
+};
 function editionName(fragrance: CatalogIdentity) {
   let name = identityName(fragrance.name.replace(/&/g, " and "));
   const brand = brandKey(fragrance.brand);
