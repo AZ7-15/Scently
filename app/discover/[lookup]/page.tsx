@@ -12,6 +12,7 @@ import {
 import { detailedProfile } from "@/lib/server/fragrance-editorial";
 import { curatedCatalog } from "@/data/catalog";
 import photoSources from "@/data/photo-sources.json";
+import retailerPhotos from "@/data/retailer-photos.json";
 import { matchingCatalogEdition } from "@/lib/catalog";
 import { FragranceStory } from "@/components/scently/fragrance-story";
 import { ReviewSection } from "@/components/scently/reviews";
@@ -160,10 +161,14 @@ export default async function Page({
   const storedPhoto = photoSources.find(
     (photo) => photoLookup === "open:" + photo.id,
   );
+  const retailerPhoto = retailerPhotos.find(
+    (photo) => photoLookup === "open:" + photo.id,
+  );
   const photoUrl =
-    f.imageUrl || (storedPhoto ? "/images/products/" + storedPhoto.file : null);
+    (storedPhoto ? "/images/products/" + storedPhoto.file : null) ||
+    retailerPhoto?.url || f.imageUrl;
   const photoSourceUrl =
-    f.imageSourceUrl || storedPhoto?.source || f.sourceUrl;
+    storedPhoto?.source || retailerPhoto?.source || f.imageSourceUrl || f.sourceUrl;
   const local = curatedCatalog.find(
     (item) => !!f.concentration && matchingCatalogEdition(item, f),
   );

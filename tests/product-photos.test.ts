@@ -33,6 +33,14 @@ it("selects a product-specific pack shot and retains attribution", () => {
   );
   expect(result[0]).toEqual({ url: packShot, sourceUrl: source });
 });
+it("matches Kilian Paris to a Kilian retailer bottle without matching a flanker", () => {
+  expect(photosFromPage(page("Kilian Angels' Share", "Kilian", packShot), "Angels' Share", "Kilian Paris", source, "Eau de Parfum")).toEqual([]);
+  const withStrength = page("Kilian Angels' Share Eau de Parfum", "Kilian", packShot);
+  expect(photosFromPage(withStrength, "Angels' Share", "Kilian Paris", source, "Eau de Parfum")).toEqual([
+    { url: packShot, sourceUrl: source },
+  ]);
+  expect(photosFromPage(page("Kilian Angels' Share Paradis Eau de Parfum", "Kilian", packShot), "Angels' Share", "Kilian Paris", source, "Eau de Parfum")).toEqual([]);
+});
 it("rejects other flankers, other brands, brand covers, and untrusted images", () => {
   expect(
     photosFromPage(

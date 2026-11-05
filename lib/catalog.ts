@@ -14,6 +14,7 @@ export function brandKey(brand: string) {
     return "ajmal";
   if (key === "ajmal usa") return "ajmal";
   if (key === "maison margiela fragrances") return "maison margiela";
+  if (["kilian paris", "by kilian"].includes(key)) return "kilian";
   return key === "christian dior" ? "dior" : key;
 }
 export function identityName(value: string) {

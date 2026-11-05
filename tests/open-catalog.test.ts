@@ -6,16 +6,19 @@ afterEach(() => {
   vi.unstubAllGlobals();
   vi.resetModules();
 });
-it("maps every published record without inventing pictures, ratings, prices or dates", () => {
+it("maps published records with verified photos and without invented ratings or prices", () => {
   const records = mapOpenCatalog(bundled);
   expect(records).toHaveLength(1479);
   expect(records.filter((f) => f.brand === "Armaf")).toHaveLength(189);
   expect(records.filter((f) => f.brand === "Afnan")).toHaveLength(53);
-  expect(
-    records.every(
-      (f) => f.rating === null && f.imageUrl === null && f.offers.length === 0,
-    ),
-  ).toBe(true);
+  expect(records.every((f) => f.rating === null && f.offers.length === 0)).toBe(true);
+  expect(records.find((f) => f.slug === "kilian-angels-share")?.imageUrl).toBe(
+    "/images/products/kilian-angels-share.png",
+  );
+  expect(records.find((f) => f.slug === "creed-aventus")?.imageUrl).toMatch(
+    /^https:\/\/cdn\.shopify\.com\//,
+  );
+  expect(records.find((f) => f.slug === "kilian-dark-lord")?.imageUrl).toBeNull();
   expect(records.every((f) => f.checkedAt.startsWith("2026-10-29"))).toBe(true);
 });
 it("keeps flankers and concentration editions distinct", () => {
