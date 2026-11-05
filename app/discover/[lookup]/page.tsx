@@ -11,6 +11,7 @@ import {
 } from "@/lib/server/scento";
 import { detailedProfile } from "@/lib/server/fragrance-editorial";
 import { curatedCatalog } from "@/data/catalog";
+import photoSources from "@/data/photo-sources.json";
 import { matchingCatalogEdition } from "@/lib/catalog";
 import { FragranceStory } from "@/components/scently/fragrance-story";
 import { ReviewSection } from "@/components/scently/reviews";
@@ -149,12 +150,20 @@ export default async function Page({
   }
   if (!profile) return <ProfileFailure error={loadError} />;
   const f = await detailedProfile(profile);
-  const openPhoto = lookup.startsWith("open:")
-    ? (await getOpenCatalog()).find((item) => item.externalLookup === lookup)
-    : null;
-  const photoUrl = f.imageUrl || openPhoto?.imageUrl || null;
+  const photoLookup = (() => {
+    try {
+      return decodeURIComponent(lookup);
+    } catch {
+      return lookup;
+    }
+  })();
+  const storedPhoto = photoSources.find(
+    (photo) => photoLookup === "open:" + photo.id,
+  );
+  const photoUrl =
+    f.imageUrl || (storedPhoto ? "/images/products/" + storedPhoto.file : null);
   const photoSourceUrl =
-    f.imageSourceUrl || openPhoto?.imageSourceUrl || f.sourceUrl;
+    f.imageSourceUrl || storedPhoto?.source || f.sourceUrl;
   const local = curatedCatalog.find(
     (item) => !!f.concentration && matchingCatalogEdition(item, f),
   );
