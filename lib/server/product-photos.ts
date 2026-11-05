@@ -414,9 +414,9 @@ export async function resolveProductPhotos(
         (image) => !excluded.includes(image.url),
       );
     if (!images.length)
-      images = await openBeautyPhotos(name, brand, concentration, excluded);
-    if (!images.length)
       images = await retailerPhoto(name, brand, concentration, excluded);
+    if (!images.length)
+      images = await openBeautyPhotos(name, brand, concentration, excluded);
     const result = { images };
     if (photos.size >= 512) photos.delete(photos.keys().next().value!);
     photos.set(key, {

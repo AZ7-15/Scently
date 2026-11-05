@@ -64,7 +64,9 @@ it("uses the free Open Beauty Facts image when the source page has none", async 
     url: image,
     sourceUrl: "https://world.openbeautyfacts.org/product/8435415012669",
   }]);
-  expect(fetcher).toHaveBeenCalledTimes(2);
+  expect(fetcher.mock.calls.some(([input]) =>
+    String(input).startsWith("https://world.openbeautyfacts.org/cgi/search.pl?"),
+  )).toBe(true);
 });
 it("rejects other flankers, other brands, brand covers, and untrusted images", () => {
   expect(

@@ -94,7 +94,7 @@ export function ProductPhoto({
   const photo = result?.images[index];
   const photoFailed = !!photo && failedPhotoUrl === photo.url;
   const imageSrc = photo?.url.match(
-    /^https:\/\/(?:imagedelivery\.net|cdn\.shopify\.com|images\.openbeautyfacts\.org)\//i,
+    /^https:\/\/(?:imagedelivery\.net|cdn\.shopify\.com)\//i,
   )
     ? "/api/catalog/image?url=" + encodeURIComponent(photo.url)
     : photo?.url;
@@ -152,7 +152,7 @@ export function ProductPhoto({
               {!providedBroken && photo.url === imageUrl
                 ? creditLabel
                 : photo.sourceUrl.startsWith("https://world.openbeautyfacts.org/product/")
-                  ? "Open Beauty Facts · CC BY-SA"
+                  ? "Open Beauty Facts (CC BY-SA)"
                   : "Photo source"}
             </a>
           )}

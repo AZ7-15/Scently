@@ -84,7 +84,7 @@ export async function openBeautyPhotos(
         Accept: "application/json",
         "User-Agent": `Scently/1.0 (${process.env.CONTACT_EMAIL || "https://scently.onrender.com"})`,
       },
-      signal: AbortSignal.timeout(7000),
+      signal: AbortSignal.timeout(18000),
       redirect: "error",
     });
     if (!response.ok || Number(response.headers.get("content-length") || 0) > 250_000)

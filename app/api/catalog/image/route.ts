@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
-const imageHosts = new Set(["imagedelivery.net", "cdn.shopify.com", "images.openbeautyfacts.org"]);
+const imageHosts = new Set(["imagedelivery.net", "cdn.shopify.com"]);
 const empty = (status: number) =>
   new Response(null, {
     status,
