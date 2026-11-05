@@ -8,7 +8,7 @@ import { getLiveFragrance, searchLiveFragrances } from "./scento";
 import { searchCatalog, correctQuery } from "@/lib/discovery";
 import {
   catalogFamily,
-  matchingCatalogEdition,
+  fragranceKey,
   sameFragrance,
   mergeFragrances,
 } from "@/lib/catalog";
@@ -41,8 +41,8 @@ export async function searchUnifiedCatalog(
       if (databaseConfigured()) {
         const sourceProfiles = source.results.filter(
           (candidate) =>
-            !saved.some((existing) =>
-              matchingCatalogEdition(existing, candidate),
+            !saved.some(
+              (existing) => fragranceKey(existing) === fragranceKey(candidate),
             ),
         );
         for (let start = 0; start < sourceProfiles.length; start += 3)
