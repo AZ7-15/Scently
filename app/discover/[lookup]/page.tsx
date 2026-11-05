@@ -8,6 +8,10 @@ import { detailedProfile } from "@/lib/server/fragrance-editorial";
 import { curatedCatalog } from "@/data/catalog";
 import { sameFragrance } from "@/lib/catalog";
 import { FragranceStory } from "@/components/scently/fragrance-story";
+import { ReviewSection } from "@/components/scently/reviews";
+import { identity } from "@/lib/server/security";
+import { getReviews, saveFragrance } from "@/lib/server/catalog";
+import { databaseConfigured } from "@/lib/server/configuration";
 import { slugify, type Fragrance, type Note } from "@/lib/domain";
 import Link from "@/components/scently/site-link";
 export const dynamic = "force-dynamic";
@@ -100,6 +104,11 @@ export default async function Page({
     seasonVotes: {},
     offers: [],
   };
+  // Persist source-verified editions when a database is configured so their
+  // community reviews have a stable fragrance record to attach to.
+  if (databaseConfigured()) await saveFragrance(record, false);
+  const user = await identity();
+  const reviews = await getReviews(user?.id, record.id);
   return (
     <FragranceStory
       profile={{
@@ -113,10 +122,20 @@ export default async function Page({
     >
       <section id="reviews" className="detail-section">
         <h2>Real experiences. Personal impressions.</h2>
-        <div className="story-community-placeholder">
-          <p>This edition has no Scently community reviews yet.</p>
-            <p>Wear information appears when a source provides it.</p>
-        </div>
+        <ReviewSection
+          initialReviews={reviews}
+          fragranceId={record.id}
+          returnTo={
+            "/discover/" +
+            encodeURIComponent(lookup) +
+            "?" +
+            new URLSearchParams({
+              name: f.name,
+              brand: f.brand,
+              concentration: f.concentration || "",
+            })
+          }
+        />
       </section>
       <Prices fragrance={record} />
       <RelatedFragrances fragrance={record} />

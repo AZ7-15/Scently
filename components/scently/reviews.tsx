@@ -13,10 +13,12 @@ export function ReviewSection({
   initialReviews,
   fragranceId,
   catalog = [],
+  returnTo = "/reviews",
 }: {
   initialReviews: Review[];
   fragranceId?: string;
   catalog?: Fragrance[];
+  returnTo?: string;
 }) {
   const { user, notify } = useScently(),
     [reviews, setReviews] = useState(initialReviews),
@@ -369,7 +371,7 @@ export function ReviewSection({
               </p>
               <a
                 className="button primary"
-                href={"/login?return_to=" + encodeURIComponent("/reviews")}
+                href={"/login?return_to=" + encodeURIComponent(returnTo)}
                 target="_top"
               >
                 Sign in

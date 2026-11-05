@@ -60,7 +60,11 @@ export default async function Page({
     >
       <section id="reviews" className="detail-section">
         <h2>Real experiences. Personal impressions.</h2>
-        <ReviewSection initialReviews={reviews} fragranceId={f.id} />
+        <ReviewSection
+          initialReviews={reviews}
+          fragranceId={f.id}
+          returnTo={"/fragrances/" + f.slug}
+        />
       </section>
       <Prices fragrance={f} />
       <RelatedFragrances fragrance={f} />

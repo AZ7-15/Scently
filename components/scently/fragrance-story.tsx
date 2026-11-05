@@ -194,7 +194,9 @@ export function FragranceStory({
         </div>
       </section>
       <WearPerformance
-        evidence={f.wearEvidence || []}
+        evidence={(f.wearEvidence || []).filter(
+          (item) => item.source !== "Scento product profile",
+        )}
         community={community ? f : undefined}
       />
       {children}
