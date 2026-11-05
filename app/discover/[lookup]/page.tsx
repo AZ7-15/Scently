@@ -3,14 +3,23 @@ import { Prices } from "@/components/scently/detail";
 import { CatalogDetailActions } from "@/components/scently/catalog-detail-actions";
 import { RelatedFragrances } from "@/components/scently/related-fragrances";
 import { getOpenProfile } from "@/lib/server/open-catalog";
-import { getLiveFragrance, FragranceSourceError } from "@/lib/server/scento";
+import { getOpenCatalog } from "@/lib/server/open-catalog";
+import {
+  getLiveFragrance,
+  searchLiveFragrances,
+  FragranceSourceError,
+} from "@/lib/server/scento";
 import { detailedProfile } from "@/lib/server/fragrance-editorial";
 import { curatedCatalog } from "@/data/catalog";
-import { sameFragrance } from "@/lib/catalog";
+import { matchingCatalogEdition } from "@/lib/catalog";
 import { FragranceStory } from "@/components/scently/fragrance-story";
 import { ReviewSection } from "@/components/scently/reviews";
 import { identity } from "@/lib/server/security";
-import { getReviews, saveFragrance } from "@/lib/server/catalog";
+import {
+  getCatalog,
+  getReviews,
+  saveFragrance,
+} from "@/lib/server/catalog";
 import { databaseConfigured } from "@/lib/server/configuration";
 import { slugify, type Fragrance, type Note } from "@/lib/domain";
 import Link from "@/components/scently/site-link";
@@ -51,19 +60,74 @@ export default async function Page({
   } catch (error) {
     loadError = error;
   }
-  if (expectedIdentity && profile && !sameFragrance(expectedIdentity, profile))
+  if (
+    expectedIdentity &&
+    profile &&
+    !matchingCatalogEdition(expectedIdentity, profile)
+  )
     profile = null;
   if (!profile && expectedIdentity) {
-    if (!loadError)
-      loadError = new FragranceSourceError(
-        "The matching fragrance edition was not found in the available sources.",
-        404,
+    const saved = (await getCatalog().catch(() => curatedCatalog)).find(
+      (candidate) => matchingCatalogEdition(expectedIdentity, candidate),
+    );
+    if (saved) redirect("/fragrances/" + saved.slug);
+
+    const indexed = (await getOpenCatalog()).find((candidate) =>
+      matchingCatalogEdition(expectedIdentity, candidate),
+    );
+    if (indexed?.externalLookup) {
+      const query = new URLSearchParams({
+        name: indexed.name,
+        brand: indexed.brand,
+        concentration: indexed.concentration,
+      });
+      redirect(
+        "/discover/" + encodeURIComponent(indexed.externalLookup) + "?" + query,
       );
+    }
+
+    if (!lookup.startsWith("open:")) {
+      const alternate = await searchLiveFragrances(
+        expectedIdentity.name + " " + expectedIdentity.brand,
+      ).catch(() => null);
+      const matches = (alternate?.matches || []).filter((candidate) =>
+        matchingCatalogEdition(expectedIdentity, candidate),
+      );
+      const verified = await Promise.all(
+        matches.slice(0, 5).map(async (candidate) => {
+          const result = await getLiveFragrance(candidate.lookup).catch(
+            () => null,
+          );
+          return result && matchingCatalogEdition(expectedIdentity, result)
+            ? { candidate, profile: result }
+            : null;
+        }),
+      );
+      const match = verified.find((candidate) => !!candidate);
+      if (match && match.candidate.lookup !== lookup) {
+        const query = new URLSearchParams({
+          name: expectedIdentity.name,
+          brand: expectedIdentity.brand,
+          concentration: expectedIdentity.concentration || "",
+        });
+        redirect(
+          "/discover/" +
+            encodeURIComponent(match.candidate.lookup) +
+            "?" +
+            query,
+        );
+      }
+      if (match) profile = match.profile;
+    }
+    loadError ||= new FragranceSourceError(
+      "The matching fragrance edition was not found in the available sources.",
+      404,
+    );
   }
   if (!profile) return <ProfileFailure error={loadError} />;
   const f = await detailedProfile(profile);
   const local = curatedCatalog.find(
-    (item) => !!f.concentration && sameFragrance(item, f),
+    (item) => !!f.concentration && matchingCatalogEdition(item, f),
   );
   if (local) redirect("/fragrances/" + local.slug);
   const notes: Note[] = (["top", "heart", "base"] as const).flatMap((stage) =>
