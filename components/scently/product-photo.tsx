@@ -23,7 +23,7 @@ export function ProductPhoto({
     imageUrl ? { images: [{ url: imageUrl, sourceUrl }] } : null,
   );
   const [index, setIndex] = useState(0);
-  const [photoFailed, setPhotoFailed] = useState(false);
+  const [failedPhotoUrl, setFailedPhotoUrl] = useState<string | null>(null);
   const [providedBroken, setProvidedBroken] = useState(false);
   const [retry, setRetry] = useState(0);
   const failedUrls = useRef(new Set<string>());
@@ -92,8 +92,9 @@ export function ProductPhoto({
     excludedImages,
   ]);
   const photo = result?.images[index];
+  const photoFailed = !!photo && failedPhotoUrl === photo.url;
   const imageSrc = photo?.url.match(
-    /^https:\/\/(?:imagedelivery\.net|cdn\.shopify\.com)\//i,
+    /^https:\/\/(?:imagedelivery\.net|cdn\.shopify\.com|cdn\.fragella\.com)\//i,
   )
     ? "/api/catalog/image?url=" + encodeURIComponent(photo.url)
     : photo?.url;
@@ -113,7 +114,6 @@ export function ProductPhoto({
       cancelled = true;
     };
   }, [photo?.url]);
-  useEffect(() => setPhotoFailed(false), [photo?.url]);
   return (
     <div
       ref={container}
@@ -130,7 +130,7 @@ export function ProductPhoto({
             alt={`${brand} ${name} bottle`}
             loading={large ? "eager" : "lazy"}
             onError={() => {
-              setPhotoFailed(true);
+              setFailedPhotoUrl(photo.url);
               failedUrls.current.add(photo.url);
               if (index + 1 < (result?.images.length || 0))
                 setIndex((value) => value + 1);
@@ -168,6 +168,7 @@ export function ProductPhoto({
                 setIndex(0);
                 setResult(null);
                 failedUrls.current.clear();
+                setFailedPhotoUrl(null);
                 setExcludedImages([]);
                 setRetry((n) => n + 1);
               }}

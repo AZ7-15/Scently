@@ -6,7 +6,10 @@ import {
   photosFromPage,
   resolveProductPhotos,
 } from "../lib/server/product-photos";
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
+});
 const source = "https://www.scento.com/perfumes/asad-lattafa";
 const packShot = "https://imagedelivery.net/account/asad/public";
 function page(name: string, brand: string, image: unknown) {
@@ -40,6 +43,29 @@ it("matches Kilian Paris to a Kilian retailer bottle without matching a flanker"
     { url: packShot, sourceUrl: source },
   ]);
   expect(photosFromPage(page("Kilian Angels' Share Paradis Eau de Parfum", "Kilian", packShot), "Angels' Share", "Kilian Paris", source, "Eau de Parfum")).toEqual([]);
+});
+it("uses the licensed photo fallback only for an exact source match", async () => {
+  vi.stubEnv("FRAGELLA_API_KEY", "test-key");
+  const image = "https://cdn.fragella.com/images/kilian-sacred-wood.jpg";
+  const fetcher = vi.fn(async (input: string | URL | Request) => {
+    const url = String(input);
+    if (url === "https://www.scento.com/brand/kilian")
+      return new Response("<html></html>");
+    if (url.startsWith("https://api.fragella.com/api/v1/fragrances?"))
+      return Response.json([{
+        Name: "Kilian Sacred Wood",
+        Brand: "By Kilian",
+        OilType: "Eau de Parfum",
+        "Image URL": image,
+      }]);
+    throw Error("Unexpected external request: " + url);
+  });
+  vi.stubGlobal("fetch", fetcher);
+  const result = await resolveProductPhotos(
+    "Sacred Wood", "Kilian Paris", "https://www.scento.com/brand/kilian", "Eau de Parfum",
+  );
+  expect(result.images).toEqual([{ url: image, sourceUrl: "https://api.fragella.com/" }]);
+  expect(fetcher).toHaveBeenCalledTimes(2);
 });
 it("rejects other flankers, other brands, brand covers, and untrusted images", () => {
   expect(
