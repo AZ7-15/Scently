@@ -82,7 +82,7 @@ export async function fragellaPhotos(
   if (!memoryLimit("photo:fragella", limit, 30 * 24 * 3600)) return [];
   try {
     const url = new URL("https://api.fragella.com/api/v1/fragrances");
-    url.search = new URLSearchParams({ search: name, limit: "10" }).toString();
+    url.search = new URLSearchParams({ search: brand + " " + name, limit: "10" }).toString();
     const response = await fetch(url, {
       headers: { "x-api-key": key, Accept: "application/json" },
       signal: AbortSignal.timeout(7000),
