@@ -159,6 +159,33 @@ const records: Omit<Fragrance, "imageUrl">[] = [
     sourceName: "Le Labo · Our Creations",
     sourceUrl: "https://www.lelabofragrances.com/our-creations.html",
   },
+  {
+    ...base,
+    id: "stronger-with-you-powerfully",
+    slug: "emporio-armani-stronger-with-you-powerfully",
+    name: "Stronger With You Powerfully",
+    brand: "Emporio Armani",
+    concentration: "Eau de Parfum",
+    style: "masculine",
+    family: "warm",
+    color: "#8b2628",
+    shape: "round",
+    description:
+      "A sweet, smoky take on the Stronger With You signature, pairing cherry and mandarin with lavender, spice, sugared chestnut, vanilla, and amberywood.",
+    accords: ["Cherry", "Citrus", "Lavender", "Chestnut", "Vanilla", "Woody"],
+    notes: [
+      ...notes("top", ["Cherry accord", "Mandarin", "Bergamot"]),
+      ...notes("heart", ["Diva lavender", "Woody spice accord"]),
+      ...notes("base", ["Vanilla", "Amberywood", "Sugared chestnut accord"]),
+    ],
+    editorialSeasons: ["fall", "winter"],
+    checkedAt: "2026-11-04T22:00:00.000Z",
+    sourceName: "Armani Beauty UK · official product information",
+    sourceUrl:
+      "https://www.armanibeauty.co.uk/perfume/mens-perfumes/stronger-with-you/emporio-armani-stronger-with-you-powerfully/3614274747058.html",
+    imageSourceUrl:
+      "https://www.armani.com/en-fr/emporio-armani/stronger-with-you-powerfully-100-ml-eau-de-parfum-cod-LG206300-NLP-100ML/",
+  },
 ];
 export const curatedCatalog: Fragrance[] = records.map((record) => {
   const photo = photos.find((candidate) => candidate.id === record.id)!;

@@ -54,9 +54,10 @@ export async function searchUnifiedCatalog(
       };
     }
   }
+  let liveSourceUnavailable = false;
   const remote = await searchLiveFragrances(sourceQuery, continuation).catch(
-    (error) => {
-      if (!indexed.length) throw error;
+    () => {
+      liveSourceUnavailable = true;
       return { matches: [], continuation: null, total: 0 };
     },
   );
@@ -131,8 +132,9 @@ export async function searchUnifiedCatalog(
     ),
     continuation: remote.continuation,
     providerTotal: remote.total,
-    notice:
-      q.length > 0 && searchCatalog(records, { q }).length < records.length
+    notice: liveSourceUnavailable
+      ? "The live fragrance source is unavailable. Showing matching fragrances from the published catalog."
+      : q.length > 0 && searchCatalog(records, { q }).length < records.length
         ? "Unrelated source suggestions were excluded. The source may not contain the fragrance you searched for."
         : "",
   };
