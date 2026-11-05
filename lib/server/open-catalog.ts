@@ -79,7 +79,11 @@ export function mapOpenCatalog(
       family: catalogFamily(r.family),
       color: "#b7a47d",
       shape: "round",
-      imageUrl: photo ? "/images/products/" + photo.file : retailerPhoto?.url || null,
+      imageUrl: photo
+        ? "/images/products/" + photo.file
+        : retailerPhoto
+          ? "/images/products/" + retailerPhoto.file
+          : null,
       imageSourceUrl: photo?.source || retailerPhoto?.source,
       popularityRank: r.popularity_rank ?? null,
       accords: [

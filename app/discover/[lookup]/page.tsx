@@ -166,7 +166,7 @@ export default async function Page({
   );
   const photoUrl =
     (storedPhoto ? "/images/products/" + storedPhoto.file : null) ||
-    retailerPhoto?.url || f.imageUrl;
+    (retailerPhoto ? "/images/products/" + retailerPhoto.file : null) || f.imageUrl;
   const photoSourceUrl =
     storedPhoto?.source || retailerPhoto?.source || f.imageSourceUrl || f.sourceUrl;
   const local = curatedCatalog.find(

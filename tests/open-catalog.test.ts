@@ -15,8 +15,8 @@ it("maps published records with verified photos and without invented ratings or 
   expect(records.find((f) => f.slug === "kilian-angels-share")?.imageUrl).toBe(
     "/images/products/kilian-angels-share.png",
   );
-  expect(records.find((f) => f.slug === "creed-aventus")?.imageUrl).toMatch(
-    /^https:\/\/cdn\.shopify\.com\//,
+  expect(records.find((f) => f.slug === "creed-aventus")?.imageUrl).toBe(
+    "/images/products/retailer-creed-aventus.jpg",
   );
   expect(records.find((f) => f.slug === "kilian-dark-lord")?.imageUrl).toBeNull();
   expect(records.every((f) => f.checkedAt.startsWith("2026-10-29"))).toBe(true);
