@@ -56,21 +56,10 @@ export interface Fragrance {
   seasonVotes: Record<string, number>;
   offers: Offer[];
 }
-export function storedExternalLookup(id: string, slug: string) {
-  if (!id.startsWith("scento-")) return undefined;
-  try {
-    return decodeURIComponent(slug);
-  } catch {
-    return slug;
-  }
-}
 export function fragrancePath(fragrance: Fragrance) {
-  const lookup =
-    fragrance.externalLookup ||
-    storedExternalLookup(fragrance.id, fragrance.slug);
-  return lookup
+  return fragrance.externalLookup
     ? "/discover/" +
-        encodeURIComponent(lookup) +
+        encodeURIComponent(fragrance.externalLookup) +
         "?" +
         new URLSearchParams({
           name: fragrance.name,

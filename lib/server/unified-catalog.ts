@@ -2,10 +2,16 @@ import { getOpenCatalog } from "./open-catalog";
 import { browseSourceCatalog } from "./source-browse";
 import { catalogSourceQuery } from "@/lib/catalog-filters";
 import type { Filters } from "@/lib/discovery";
-import { getCatalog } from "./catalog";
+import { getCatalog, saveFragrance } from "./catalog";
+import { databaseConfigured } from "./configuration";
 import { getLiveFragrance, searchLiveFragrances } from "./scento";
 import { searchCatalog, correctQuery } from "@/lib/discovery";
-import { catalogFamily, sameFragrance, mergeFragrances } from "@/lib/catalog";
+import {
+  catalogFamily,
+  matchingCatalogEdition,
+  sameFragrance,
+  mergeFragrances,
+} from "@/lib/catalog";
 import {
   seasons,
   slugify,
@@ -32,6 +38,20 @@ export async function searchUnifiedCatalog(
   if (!q || newest) {
     try {
       const source = await browseSourceCatalog(criteria, continuation);
+      if (databaseConfigured()) {
+        const sourceProfiles = source.results.filter(
+          (candidate) =>
+            !saved.some((existing) =>
+              matchingCatalogEdition(existing, candidate),
+            ),
+        );
+        for (let start = 0; start < sourceProfiles.length; start += 3)
+          await Promise.all(
+            sourceProfiles.slice(start, start + 3).map((candidate) =>
+              saveFragrance(candidate, false).catch(() => undefined),
+            ),
+          );
+      }
       return {
         ...source,
         notice:

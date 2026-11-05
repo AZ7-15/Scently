@@ -72,9 +72,23 @@ export default async function Page({
   )
     profile = null;
   if (!profile && expectedIdentity) {
-    const saved = (await getCatalog().catch(() => curatedCatalog)).find(
-      (candidate) => matchingCatalogEdition(expectedIdentity, candidate),
-    );
+    const savedCatalog = await getCatalog().catch(() => curatedCatalog);
+    const decodeLookup = (value: string) => {
+      try {
+        return decodeURIComponent(value);
+      } catch {
+        return value;
+      }
+    };
+    const saved =
+      savedCatalog.find(
+        (candidate) =>
+          decodeLookup(candidate.slug) === decodeLookup(lookup) &&
+          matchingCatalogEdition(expectedIdentity, candidate),
+      ) ||
+      savedCatalog.find((candidate) =>
+        matchingCatalogEdition(expectedIdentity, candidate),
+      );
     if (saved) redirect(fragrancePath(saved));
 
     const indexed = (await getOpenCatalog()).find((candidate) =>
