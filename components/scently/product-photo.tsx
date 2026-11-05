@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { BottleIllustration } from "./bottle-illustration";
+import { ImageOff } from "lucide-react";
 import type { ProductPhotoResult } from "@/lib/product-photos";
 export function ProductPhoto({
   name,
@@ -23,7 +23,6 @@ export function ProductPhoto({
     imageUrl ? { images: [{ url: imageUrl, sourceUrl }] } : null,
   );
   const [index, setIndex] = useState(0);
-  const [photoLoaded, setPhotoLoaded] = useState(false);
   const [photoFailed, setPhotoFailed] = useState(false);
   const [providedBroken, setProvidedBroken] = useState(false);
   const [retry, setRetry] = useState(0);
@@ -114,22 +113,13 @@ export function ProductPhoto({
       cancelled = true;
     };
   }, [photo?.url]);
-  useEffect(() => {
-    setPhotoLoaded(false);
-    setPhotoFailed(false);
-  }, [photo?.url]);
+  useEffect(() => setPhotoFailed(false), [photo?.url]);
   return (
     <div
       ref={container}
       className={"product-photo" + (isTransparentCutout ? " photo-cutout" : "")}
       aria-busy={result === null}
     >
-      <div
-        className={"photo-illustration-wrap" + (photoLoaded ? " photo-hidden" : "")}
-        aria-hidden={photoLoaded}
-      >
-        <BottleIllustration name={name} brand={brand} />
-      </div>
       {photo && imageSrc && !photoFailed ? (
         <>
           {/* Source-matched product images use ordinary image fallback handling. */}
@@ -139,9 +129,7 @@ export function ProductPhoto({
             src={imageSrc}
             alt={`${brand} ${name} bottle`}
             loading={large ? "eager" : "lazy"}
-            onLoad={() => setPhotoLoaded(true)}
             onError={() => {
-              setPhotoLoaded(false);
               setPhotoFailed(true);
               failedUrls.current.add(photo.url);
               if (index + 1 < (result?.images.length || 0))
@@ -168,20 +156,26 @@ export function ProductPhoto({
           )}
         </>
       ) : null}
-      {result !== null && !photo && (
-        <button
-          type="button"
-          className="photo-retry"
-          onClick={() => {
-            setIndex(0);
-            setResult(null);
-            failedUrls.current.clear();
-            setExcludedImages([]);
-            setRetry((n) => n + 1);
-          }}
-        >
-          Retry product photo
-        </button>
+      {result !== null && (!photo || photoFailed) && (
+        <div className="photo-unavailable" aria-label={`${brand} ${name} product photo unavailable`}>
+          <ImageOff aria-hidden="true" size={large ? 22 : 16} strokeWidth={1.5} />
+          {large && <span>Product photo unavailable</span>}
+          {large && (
+            <button
+              type="button"
+              className="photo-retry"
+              onClick={() => {
+                setIndex(0);
+                setResult(null);
+                failedUrls.current.clear();
+                setExcludedImages([]);
+                setRetry((n) => n + 1);
+              }}
+            >
+              Try again
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
