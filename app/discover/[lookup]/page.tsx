@@ -149,6 +149,12 @@ export default async function Page({
   }
   if (!profile) return <ProfileFailure error={loadError} />;
   const f = await detailedProfile(profile);
+  const openPhoto = lookup.startsWith("open:")
+    ? (await getOpenCatalog()).find((item) => item.externalLookup === lookup)
+    : null;
+  const photoUrl = f.imageUrl || openPhoto?.imageUrl || null;
+  const photoSourceUrl =
+    f.imageSourceUrl || openPhoto?.imageSourceUrl || f.sourceUrl;
   const local = curatedCatalog.find(
     (item) => !!f.concentration && matchingCatalogEdition(item, f),
   );
@@ -161,6 +167,8 @@ export default async function Page({
       notes.push({ name, stage: "unclassified" });
   const record: Fragrance = {
     ...f,
+    imageUrl: photoUrl,
+    imageSourceUrl: photoSourceUrl,
     id: lookup.startsWith("open:")
       ? "open-" + lookup.slice(5)
       : "scento-" +
@@ -200,8 +208,8 @@ export default async function Page({
     <FragranceStory
       profile={{
         ...f,
-        imageUrl: f.imageUrl,
-        photoSourceUrl: f.imageSourceUrl || f.sourceUrl,
+        imageUrl: photoUrl,
+        photoSourceUrl,
         notes,
         sourceName: f.source,
       }}
