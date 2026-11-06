@@ -46,6 +46,8 @@ export function WearPerformance({
               ? `${community?.performanceVotes} community reports; median wear time.`
               : primary?.kind === "ai-research" && primary.longevity
                 ? "Gemini found explicit hour reports for this edition on the linked source. Wear varies by person and conditions."
+                : primary?.kind === "ai-research"
+                  ? "The matched Fragrantica page did not provide explicit longevity hours that Gemini could cite."
                 : "No matching source or wear reports provide an hour range for this fragrance."}
           </p>
         </div>
@@ -65,7 +67,7 @@ export function WearPerformance({
               ? community.projection
               : primary?.kind === "community" && primary.projectionScore
                 ? `${primary.projectionScore} / 5`
-              : primary?.kind === "ai-research"
+                : primary?.kind === "ai-research"
                 ? primary.projection || "Duration not reported"
               : primary?.projection || "Not yet established"}
           </strong>
@@ -76,6 +78,8 @@ export function WearPerformance({
                 ? "Perfume Picks community sillage score. Sillage is the scent trail, not a measured distance."
                 : primary?.kind === "ai-research" && primary.projection
                   ? "Gemini found explicit reports for how long noticeable projection lasted. Wear varies by person and conditions."
+                : primary?.kind === "ai-research"
+                  ? "The matched Fragrantica page did not provide explicit projection-duration hours that Gemini could cite."
                 : primary?.projectionScore
                 ? `${primary.projectionScore} / 5 ${primary.kind === "editorial" ? "editorial score" : "source score"}.`
                 : primary?.kind === "source-report"
