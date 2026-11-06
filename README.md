@@ -123,4 +123,4 @@ Catalog duplicate audit: run `npx tsx scripts/audit-catalog.ts` to check every s
 
 All profile routes use the same composition, seasons, wear, reviews, retailer and related-fragrance sections. Source-only records explain unavailable community features; matching starter profiles redirect to their canonical community page. Bottle images survive duplicate merging with separate source credits. Image lookup understands house and collection aliases, matched product-page metadata, explicit manufacturer/retailer CDN hosts and retryable transient capacity failures. Missing images can be retried.
 
-Scently shows longevity and sillage only when supplied by a fragrance source or reported by the community. Missing wear details are not guessed.
+Scently requests matching longevity and sillage scores from the free Perfume Picks community API on each fragrance detail page. Scores are shown out of five with source attribution; they are not converted to hours or a measured projection distance. The API does not supply vote totals, and unmatched fragrances remain without a score. Scently's own review reports remain separate.

@@ -10,6 +10,7 @@ import {
   FragranceSourceError,
 } from "@/lib/server/scento";
 import { detailedProfile } from "@/lib/server/fragrance-editorial";
+import { getCommunityPerformance } from "@/lib/server/community-performance";
 import { curatedCatalog } from "@/data/catalog";
 import photoSources from "@/data/photo-sources.json";
 import retailerPhotos from "@/data/retailer-photos.json";
@@ -173,6 +174,11 @@ export default async function Page({
     (item) => !!f.concentration && matchingCatalogEdition(item, f),
   );
   if (local) redirect("/fragrances/" + local.slug);
+  const wearEvidence = await getCommunityPerformance(
+    f.name,
+    f.brand,
+    f.concentration || "",
+  );
   const notes: Note[] = (["top", "heart", "base"] as const).flatMap((stage) =>
     f.pyramid[stage].map((name) => ({ name, stage })),
   );
@@ -226,6 +232,7 @@ export default async function Page({
         photoSourceUrl,
         notes,
         sourceName: f.source,
+        wearEvidence,
       }}
       actions={<CatalogDetailActions fragrance={record} />}
     >

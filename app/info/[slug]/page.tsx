@@ -46,7 +46,7 @@ const pages: Record<
       },
       {
         title: "Performance research",
-        text: "Detail pages distinguish source-reported wear information from Scently community reviews. Some product profiles include longevity and sillage categories from Scento product pages. Sillage describes scent trail, not a measured projection distance. Missing wear details are not guessed.",
+        text: "Detail pages check matching fragrance editions against Perfume Picks community performance scores and cite the source. Its longevity and sillage scores are relative ratings, not hours or measured distance, and the API does not supply vote totals. Missing or mismatched editions remain unavailable.",
       },
       {
         title: "Community evidence",
@@ -71,7 +71,7 @@ const pages: Record<
       },
       {
         title: "Why is performance sometimes missing?",
-        text: "We show matched editorial research, source-reported wear descriptions and community evidence separately. Not every fragrance or concentration has a supported assessment. Skin, application and environment change performance; missing figures stay unknown.",
+        text: "We only show performance when the fragrance name, brand and concentration match an available source record. Not every fragrance or concentration has a supported assessment. Skin, application and environment change performance; missing figures stay unknown.",
       },
       {
         title: "Can anyone wear these fragrances?",

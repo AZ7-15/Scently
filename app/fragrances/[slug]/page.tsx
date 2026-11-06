@@ -7,6 +7,7 @@ import { DetailActions, Prices } from "@/components/scently/detail";
 import { ReviewSection } from "@/components/scently/reviews";
 import photos from "@/data/photo-sources.json";
 import { fragrancePath } from "@/lib/domain";
+import { getCommunityPerformance } from "@/lib/server/community-performance";
 export const dynamic = "force-dynamic";
 function decodeSlug(value: string) {
   try {
@@ -43,14 +44,18 @@ export default async function Page({
     );
   if (!f) notFound();
   if (f.externalLookup) redirect(fragrancePath(f));
-  const user = await identity(),
-    reviews = await getReviews(user?.id, f.id);
+  const [user, wearEvidence] = await Promise.all([
+    identity(),
+    getCommunityPerformance(f.name, f.brand, f.concentration),
+  ]);
+  const reviews = await getReviews(user?.id, f.id);
   return (
     <FragranceStory
       profile={{
         ...f,
         seasons: f.editorialSeasons,
         photoSourceUrl: f.imageSourceUrl || f.sourceUrl,
+        wearEvidence,
       }}
       community
       photoCreditLabel={
