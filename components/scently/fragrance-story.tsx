@@ -166,7 +166,7 @@ export function FragranceStory({
                 (name === "fall" && f.seasons.includes("autumn"));
               return (
                 <div
-                  className={"season-story-card " + (active ? "suggested" : "")}
+                  className={`season-story-card season-${name}${active ? " suggested" : ""}`}
                   key={name}
                 >
                   <Icon size={25} strokeWidth={1.2} />

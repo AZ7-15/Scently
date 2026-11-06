@@ -2825,6 +2825,26 @@ a {
   border-color: #acbba1;
   box-shadow: 0 4px 12px #193c1c06;
 }
+.season-story-card.suggested.season-spring {
+  background: #eaf3e7;
+  color: #365244;
+  border-color: #bfd3b9;
+}
+.season-story-card.suggested.season-summer {
+  background: #fff4d2;
+  color: #685a2b;
+  border-color: #e8dba7;
+}
+.season-story-card.suggested.season-fall {
+  background: #f8e8d8;
+  color: #765334;
+  border-color: #e4c5a7;
+}
+.season-story-card.suggested.season-winter {
+  background: #e5eff8;
+  color: #36566f;
+  border-color: #bfd0e0;
+}
 .season-story-card strong {
   font-size: 12px;
   font-weight: 500;
