@@ -17,6 +17,9 @@ export default async function Page() {
       {user ? (
         <>
           <div className="detail-actions">
+            <Link className="text-link" href="/reviews?mine=1">
+              Manage your reviews
+            </Link>
             <form method="post" action="/api/auth">
               <input type="hidden" name="action" value="logout" />
               <button className="plain-button">Sign out</button>

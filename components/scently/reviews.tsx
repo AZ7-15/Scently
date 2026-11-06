@@ -14,11 +14,13 @@ export function ReviewSection({
   fragranceId,
   catalog = [],
   returnTo = "/reviews",
+  mineOnly = false,
 }: {
   initialReviews: Review[];
   fragranceId?: string;
   catalog?: Fragrance[];
   returnTo?: string;
+  mineOnly?: boolean;
 }) {
   const { user, notify } = useScently(),
     [reviews, setReviews] = useState(initialReviews),
@@ -57,11 +59,16 @@ export function ReviewSection({
         },
         type === "delete" ? "DELETE" : "PATCH",
       );
-      update(result.reviews, r.fragranceId);
+      update(
+        mineOnly ? result.reviews.filter((review) => review.userId === user.id) : result.reviews,
+        r.fragranceId,
+      );
       if (type === "report") {
         setReport(null);
         setReason("");
         notify("Your report is in the moderation queue.");
+      } else if (type === "delete") {
+        notify("Your review has been deleted.");
       }
     } catch (e) {
       setError((e as Error).message);
@@ -86,7 +93,10 @@ export function ReviewSection({
         season: d.get("season") || null,
         occasion: d.get("occasion") || null,
       });
-      update(result.reviews, id);
+      update(
+        mineOnly ? result.reviews.filter((review) => review.userId === user?.id) : result.reviews,
+        id,
+      );
       setEditing(null);
       form.reset();
       notify("Your experience has been saved. Thank you.");
