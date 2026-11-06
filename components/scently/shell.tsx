@@ -205,7 +205,6 @@ export function Shell({
   const links = [
     ["Discover", "/"],
     ["Fragrances", "/fragrances"],
-    ["Reviews", "/reviews"],
     ["AI Finder", "/finder"],
   ];
   return (
