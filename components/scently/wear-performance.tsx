@@ -1,4 +1,4 @@
-import { Clock, Wind, BookOpen } from "lucide-react";
+import { Clock, Wind } from "lucide-react";
 import type { WearEvidence } from "@/lib/wear-evidence";
 
 export function WearPerformance({
@@ -13,6 +13,7 @@ export function WearPerformance({
   };
 }) {
   const primary =
+    evidence.find((e) => e.kind === "ai-research") ||
     evidence.find((e) => e.kind === "community") ||
     evidence.find((e) => e.kind === "editorial") ||
     evidence[0];
@@ -36,24 +37,24 @@ export function WearPerformance({
             community?.longevity !== null &&
             community?.longevity !== undefined
               ? `${community.longevity} hours`
-              : primary?.kind === "community" && primary.longevityScore
-                ? `${primary.longevityScore} / 5`
-              : primary?.longevity || "Not yet established"}
+              : primary?.kind === "ai-research"
+                ? primary.longevity || "Hours not reported"
+              : "Hours not reported"}
           </strong>
           <p>
             {measuredLongevity
               ? `${community?.performanceVotes} community reports; median wear time.`
-              : primary?.kind === "community" && primary.longevityScore
-                ? "Perfume Picks community score. This is a relative rating, not a number of hours."
-              : primary?.longevityScore
-                ? `${primary.longevityScore} / 5 ${primary.kind === "editorial" ? "editorial score" : "source score"}. Not an hours measurement.`
-                : "How long the scent remains noticeable."}
+              : primary?.kind === "ai-research" && primary.longevity
+                ? "Gemini found explicit hour reports for this edition on the linked source. Wear varies by person and conditions."
+                : "No matching source or wear reports provide an hour range for this fragrance."}
           </p>
         </div>
         <div className="metric">
           <Wind size={24} />
           <h3>
-            {!measuredProjection && primary?.kind === "community"
+            {!measuredProjection && primary?.kind === "ai-research" && primary.projection
+              ? "Projection duration"
+              : !measuredProjection && primary?.kind === "community"
               ? "Sillage / projection"
               : !measuredProjection && primary?.kind === "source-report"
               ? "Scent trail"
@@ -64,6 +65,8 @@ export function WearPerformance({
               ? community.projection
               : primary?.kind === "community" && primary.projectionScore
                 ? `${primary.projectionScore} / 5`
+              : primary?.kind === "ai-research"
+                ? primary.projection || "Duration not reported"
               : primary?.projection || "Not yet established"}
           </strong>
           <p>
@@ -71,33 +74,13 @@ export function WearPerformance({
               ? "Most common published Scently community response."
               : primary?.kind === "community" && primary.projectionScore
                 ? "Perfume Picks community sillage score. Sillage is the scent trail, not a measured distance."
-              : primary?.projectionScore
+                : primary?.kind === "ai-research" && primary.projection
+                  ? "Gemini found explicit reports for how long noticeable projection lasted. Wear varies by person and conditions."
+                : primary?.projectionScore
                 ? `${primary.projectionScore} / 5 ${primary.kind === "editorial" ? "editorial score" : "source score"}.`
                 : primary?.kind === "source-report"
                   ? "The source reports sillage: the trail left by a scent, rather than a measured projection distance."
-                  : "How far the fragrance is perceived around you."}
-          </p>
-        </div>
-        <div className="metric">
-          <BookOpen size={24} />
-          <h3>Research & evidence</h3>
-          <strong>
-            {measured
-              ? "Community wear reports"
-              : primary?.kind === "community"
-                ? "Community performance scores"
-              : primary
-                ? "Published source guidance"
-                : "Evidence still needed"}
-          </strong>
-          <p>
-            {measured
-              ? `${community?.performanceVotes} Scently wear reports. Research sources are listed separately below.`
-                : primary?.kind === "community"
-                  ? "Scores are attributed to their source. Vote totals are not provided."
-              : primary
-                ? "Attributed by fragrance and edition. Missing figures stay unknown."
-                : "The checked sources do not establish performance for this edition. No value is inferred from notes, brand or concentration."}
+                  : "How far the fragrance is noticed around you. Projection is about distance; longevity is about hours."}
           </p>
         </div>
       </div>
@@ -109,7 +92,9 @@ export function WearPerformance({
                 {e.source}
               </a>
               <p>
-                  {e.kind === "community"
+                  {e.kind === "ai-research"
+                    ? "Gemini summary of Fragrantica user reports"
+                    : e.kind === "community"
                     ? "Community performance scores"
                     : e.kind === "editorial"
                   ? "Editorial assessment"
@@ -119,7 +104,9 @@ export function WearPerformance({
               </p>
               <small>
                 Checked {e.checkedAt.slice(0, 10)}.{" "}
-                {e.kind === "community"
+                {e.kind === "ai-research"
+                  ? "Hour ranges are summarized from explicit user reports on the matched edition; this is not a controlled wear test."
+                  : e.kind === "community"
                   ? "Longevity and sillage are relative community scores, not guaranteed hours or distance."
                   : e.kind === "editorial"
                   ? "Scores use the publisher’s 1–5 scale; they are not Scently community votes."
