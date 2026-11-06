@@ -1,7 +1,7 @@
 import { sameFragrance } from "@/lib/catalog";
 import type { WearEvidence } from "@/lib/wear-evidence";
 import { memoryLimit } from "./memory-limits";
-import { getGeminiWearPerformance } from "./gemini-wear-performance";
+import { getScentoWearPerformance } from "./scento-performance";
 
 const endpoint = "https://jdkwlwyysgofljkobpmr.supabase.co/functions/v1/mcp";
 const cache = new Map<string, { evidence: WearEvidence[]; expires: number }>();
@@ -147,10 +147,13 @@ export async function getCommunityPerformance(
   name: string,
   brand: string,
   concentration: string,
+  sourcedWearEvidence?: WearEvidence[],
 ): Promise<WearEvidence[]> {
-  const [gemini, perfumePicks] = await Promise.all([
-    getGeminiWearPerformance(name, brand, concentration),
+  const [scento, perfumePicks] = await Promise.all([
+    sourcedWearEvidence === undefined
+      ? getScentoWearPerformance(name, brand, concentration)
+      : Promise.resolve(sourcedWearEvidence),
     getPerfumePicksPerformance(name, brand, concentration),
   ]);
-  return [...gemini, ...perfumePicks];
+  return [...scento, ...perfumePicks];
 }

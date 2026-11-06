@@ -13,7 +13,7 @@ export function WearPerformance({
   };
 }) {
   const primary =
-    evidence.find((e) => e.kind === "ai-research") ||
+    evidence.find((e) => e.kind === "source-report") ||
     evidence.find((e) => e.kind === "community") ||
     evidence.find((e) => e.kind === "editorial") ||
     evidence[0];
@@ -37,29 +37,25 @@ export function WearPerformance({
             community?.longevity !== null &&
             community?.longevity !== undefined
               ? `${community.longevity} hours`
-              : primary?.kind === "ai-research"
-                ? primary.longevity || "Hours not reported"
+              : primary?.kind === "source-report"
+                ? primary.longevity || "Not reported"
               : "Hours not reported"}
           </strong>
           <p>
             {measuredLongevity
               ? `${community?.performanceVotes} community reports; median wear time.`
-              : primary?.kind === "ai-research" && primary.longevity
-                ? "Gemini found explicit hour reports for this edition on the linked source. Wear varies by person and conditions."
-                : primary?.kind === "ai-research"
-                  ? "The matched Fragrantica page did not provide explicit longevity hours that Gemini could cite."
+              : primary?.kind === "source-report" && primary.longevity
+                ? "Scento's most common wearer-reported longevity band. Your result can vary with skin, weather and application."
                 : "No matching source or wear reports provide an hour range for this fragrance."}
           </p>
         </div>
         <div className="metric">
           <Wind size={24} />
           <h3>
-            {!measuredProjection && primary?.kind === "ai-research" && primary.projection
-              ? "Projection duration"
-              : !measuredProjection && primary?.kind === "community"
+            {!measuredProjection && primary?.kind === "community"
               ? "Sillage / projection"
               : !measuredProjection && primary?.kind === "source-report"
-              ? "Scent trail"
+              ? "Projection / sillage"
               : "Projection"}
           </h3>
           <strong>
@@ -67,8 +63,6 @@ export function WearPerformance({
               ? community.projection
               : primary?.kind === "community" && primary.projectionScore
                 ? `${primary.projectionScore} / 5`
-                : primary?.kind === "ai-research"
-                ? primary.projection || "Duration not reported"
               : primary?.projection || "Not yet established"}
           </strong>
           <p>
@@ -76,10 +70,6 @@ export function WearPerformance({
               ? "Most common published Scently community response."
               : primary?.kind === "community" && primary.projectionScore
                 ? "Perfume Picks community sillage score. Sillage is the scent trail, not a measured distance."
-                : primary?.kind === "ai-research" && primary.projection
-                  ? "Gemini found explicit reports for how long noticeable projection lasted. Wear varies by person and conditions."
-                : primary?.kind === "ai-research"
-                  ? "The matched Fragrantica page did not provide explicit projection-duration hours that Gemini could cite."
                 : primary?.projectionScore
                 ? `${primary.projectionScore} / 5 ${primary.kind === "editorial" ? "editorial score" : "source score"}.`
                 : primary?.kind === "source-report"
@@ -96,9 +86,7 @@ export function WearPerformance({
                 {e.source}
               </a>
               <p>
-                  {e.kind === "ai-research"
-                    ? "Gemini summary of Fragrantica user reports"
-                    : e.kind === "community"
+                  {e.kind === "community"
                     ? "Community performance scores"
                     : e.kind === "editorial"
                   ? "Editorial assessment"
@@ -108,13 +96,11 @@ export function WearPerformance({
               </p>
               <small>
                 Checked {e.checkedAt.slice(0, 10)}.{" "}
-                {e.kind === "ai-research"
-                  ? "Hour ranges are summarized from explicit user reports on the matched edition; this is not a controlled wear test."
-                  : e.kind === "community"
+                {e.kind === "community"
                   ? "Longevity and sillage are relative community scores, not guaranteed hours or distance."
                   : e.kind === "editorial"
                   ? "Scores use the publisher’s 1–5 scale; they are not Scently community votes."
-                  : "Supplier-reported categories; underlying review counts are not imported."}
+                  : "Longevity hours follow Scento's documented bands; projection reflects its sillage category."}
               </small>
             </div>
           ))}

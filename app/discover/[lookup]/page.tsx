@@ -174,11 +174,13 @@ export default async function Page({
     (item) => !!f.concentration && matchingCatalogEdition(item, f),
   );
   if (local) redirect("/fragrances/" + local.slug);
-  const wearEvidence = await getCommunityPerformance(
+  const communityEvidence = await getCommunityPerformance(
     f.name,
     f.brand,
     f.concentration || "",
+    f.wearEvidence,
   );
+  const wearEvidence = [...(f.wearEvidence || []), ...communityEvidence];
   const notes: Note[] = (["top", "heart", "base"] as const).flatMap((stage) =>
     f.pyramid[stage].map((name) => ({ name, stage })),
   );

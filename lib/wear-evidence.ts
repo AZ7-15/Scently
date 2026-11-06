@@ -2,7 +2,7 @@ export type WearEvidence = {
   source: string;
   sourceUrl: string;
   checkedAt: string;
-  kind: "editorial" | "source-report" | "community" | "ai-research";
+  kind: "editorial" | "source-report" | "community";
   longevity: string | null;
   projection: string | null;
   longevityScore?: number;
@@ -14,24 +14,26 @@ export function sourceWearEvidence(
   sourceUrl: string,
 ): WearEvidence[] {
   const longevity: Record<string, string> = {
-    very_weak: "Very short",
-    weak: "Short",
-    moderate: "Moderate",
-    long_lasting: "Long-lasting",
-    eternal: "Very long-lasting",
+    very_weak: "1–2 hours",
+    weak: "2–4 hours",
+    moderate: "4–6 hours",
+    long_lasting: "6–8 hours",
+    eternal: "8+ hours",
   };
   const trail: Record<string, string> = {
+    soft: "Soft",
     intimate: "Intimate",
     moderate: "Moderate",
     strong: "Strong",
-    enormous: "Very strong",
+    enormous: "Enormous",
   };
-  const wear =
-    typeof metadata.longevity === "string"
-      ? longevity[metadata.longevity]
-      : null;
+  const wear = typeof metadata.longevity === "string"
+    ? longevity[metadata.longevity.toLowerCase().replace(/[ -]+/g, "_")]
+    : null;
   const projection =
-    typeof metadata.sillage === "string" ? trail[metadata.sillage] : null;
+    typeof metadata.sillage === "string"
+      ? trail[metadata.sillage.toLowerCase()]
+      : null;
   return wear || projection
     ? [
         {
