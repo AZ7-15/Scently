@@ -2,6 +2,7 @@ import { sameFragrance } from "@/lib/catalog";
 import type { WearEvidence } from "@/lib/wear-evidence";
 import { memoryLimit } from "./memory-limits";
 import { getScentoWearPerformance } from "./scento-performance";
+import { getGroundedPerformance } from "./grounded-performance";
 
 const endpoint = "https://jdkwlwyysgofljkobpmr.supabase.co/functions/v1/mcp";
 const cache = new Map<string, { evidence: WearEvidence[]; expires: number }>();
@@ -155,5 +156,16 @@ export async function getCommunityPerformance(
       : Promise.resolve(sourcedWearEvidence),
     getPerfumePicksPerformance(name, brand, concentration),
   ]);
-  return [...scento, ...perfumePicks];
+  const needsLongevity = !scento.some((item) => !!item.longevity);
+  const needsProjection = !scento.some((item) => !!item.projection);
+  const grounded = needsLongevity || needsProjection
+    ? await getGroundedPerformance(
+        name,
+        brand,
+        concentration,
+        needsLongevity,
+        needsProjection,
+      )
+    : [];
+  return [...scento, ...grounded, ...perfumePicks];
 }
