@@ -13,22 +13,35 @@ import { ProductPhoto } from "@/components/scently/product-photo";
 import { NotePortrait } from "@/components/scently/note-portrait";
 import { SearchBox } from "@/components/scently/search";
 import { fragrancePath } from "@/lib/domain";
+import { mergeFragrances } from "@/lib/catalog";
 export const dynamic = "force-dynamic";
 export default async function Home() {
   const catalog = await getCatalog();
+  const powerfully = catalog.find(
+    (f) => f.id === "stronger-with-you-powerfully",
+  );
   const portrait =
-    catalog.find((f) => f.name === "Tobacco Vanille") || catalog[0];
-  let featured = catalog.slice(0, 6);
+    powerfully || catalog.find((f) => f.name === "Tobacco Vanille") || catalog[0];
+  const otherLocal = catalog.filter((f) => f.id !== powerfully?.id);
+  let featured = [
+    ...(powerfully ? [powerfully] : []),
+    ...otherLocal.slice(0, 5),
+  ];
   try {
     const source = (await searchUnifiedCatalog("")).results.filter(
       (f) => f.externalLookup,
     );
     if (source.length)
-      featured = [...catalog.slice(0, 3), ...source.slice(0, 3)];
+      featured = mergeFragrances([], [
+        ...(powerfully ? [powerfully] : []),
+        ...source.slice(0, 3),
+        ...otherLocal,
+      ]).slice(0, 6);
   } catch {
     /* The sourced starter selection remains available. */
   }
   const portraitNote =
+    portrait?.notes.find((n) => n.name.toLowerCase().includes("cherry"))?.name ||
     portrait?.notes.find((n) => n.name.toLowerCase() === "vanilla")?.name ||
     portrait?.notes[0]?.name;
   return (

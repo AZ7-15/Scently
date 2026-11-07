@@ -23,6 +23,8 @@ export async function ensureCatalog() {
           .bind(f.id)
           .first();
         if (!exists) await saveFragrance(f, false);
+        else if (f.id === "stronger-with-you-powerfully")
+          await saveFragrance(f, true);
         else if (f.imageUrl)
           await env.DB.prepare(
             "UPDATE fragrances SET image_url=? WHERE id=? AND image_url IS NULL",

@@ -1,5 +1,6 @@
 import { identityName } from "./catalog";
 const profiles: Record<string, [string, string]> = {
+  cherry: ["fruit", "A deep, juicy fruit note with a sweet, slightly tart edge."],
   lavender: ["aromatic", "A soft herbal breeze, with a clean, floral edge."],
   mint: ["green", "Cool green leaves and a bright, refreshing lift."],
   vanilla: ["sweet", "Creamy, comforting sweetness with a soft, warm glow."],
@@ -7,6 +8,9 @@ const profiles: Record<string, [string, string]> = {
     "sweet",
     "Warm almond-like sweetness, with a hay-like softness.",
   ],
+  chestnut: ["sweet", "Toasty, nutty warmth with a soft, gently sweet character."],
+  spices: ["spice", "A warm, aromatic blend that adds lift and depth."],
+  amberwood: ["woods", "Smooth woody warmth with a rich, amber-like finish."],
   benzoin: ["resin", "A balsamic resin with a warm, vanilla-like sweetness."],
   honey: ["sweet", "Golden, nectar-like sweetness with a rich floral warmth."],
   tobacco: [
@@ -113,6 +117,11 @@ const profiles: Record<string, [string, string]> = {
   ],
 };
 const aliases: Record<string, string> = {
+  "cherry accord": "cherry",
+  "diva lavender": "lavender",
+  "woody spice accord": "spices",
+  amberywood: "amberwood",
+  "sugared chestnut accord": "chestnut",
   tonka: "tonka bean",
   cedarwood: "cedar",
   "virginia cedar": "cedar",

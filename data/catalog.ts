@@ -171,15 +171,15 @@ const records: Omit<Fragrance, "imageUrl">[] = [
     color: "#8b2628",
     shape: "round",
     description:
-      "A sweet, smoky take on the Stronger With You signature, pairing cherry and mandarin with lavender, spice, sugared chestnut, vanilla, and amberywood.",
+      "Cherry and mandarin open over lavender and spices, settling into a warm base of chestnut, vanilla, and amberwood.",
     accords: ["Cherry", "Citrus", "Lavender", "Chestnut", "Vanilla", "Woody"],
     notes: [
-      ...notes("top", ["Cherry accord", "Mandarin", "Bergamot"]),
-      ...notes("heart", ["Diva lavender", "Woody spice accord"]),
-      ...notes("base", ["Vanilla", "Amberywood", "Sugared chestnut accord"]),
+      ...notes("top", ["Cherry", "Mandarin Orange"]),
+      ...notes("heart", ["Spices", "Lavender"]),
+      ...notes("base", ["Chestnut", "Vanilla", "Amberwood"]),
     ],
     editorialSeasons: ["fall", "winter"],
-    checkedAt: "2026-11-04T22:00:00.000Z",
+    checkedAt: "2026-11-06T22:00:00.000Z",
     sourceName: "Armani Beauty UK · official product information",
     sourceUrl:
       "https://www.armanibeauty.co.uk/perfume/mens-perfumes/stronger-with-you/emporio-armani-stronger-with-you-powerfully/3614274747058.html",

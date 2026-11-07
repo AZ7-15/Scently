@@ -149,6 +149,36 @@ export function Explorer({
     q: filters.q,
     region,
   });
+  if (
+    (!filters.sort || filters.sort === "popular") &&
+    !filters.q && !filters.brand && !filters.family && !filters.style &&
+    !filters.notes?.length && !filters.seasons?.length && !filters.budget &&
+    !filters.minHours && !filters.projection && !filters.occasion &&
+    !filters.minRating && !filters.concentration
+  ) {
+    const powerfully = result.find(
+      (fragrance) => fragrance.id === "stronger-with-you-powerfully",
+    );
+    const men = result.filter(
+      (fragrance) =>
+        fragrance.id !== "stronger-with-you-powerfully" &&
+        fragrance.style === "masculine",
+    );
+    const others = result.filter(
+      (fragrance) =>
+        fragrance.id !== "stronger-with-you-powerfully" &&
+        fragrance.style !== "masculine",
+    );
+    const popularMix = powerfully ? [powerfully] : [];
+    let menIndex = 0;
+    let othersIndex = 0;
+    while (menIndex < men.length || othersIndex < others.length) {
+      popularMix.push(...men.slice(menIndex, menIndex + 2));
+      menIndex += 2;
+      if (othersIndex < others.length) popularMix.push(others[othersIndex++]);
+    }
+    result.splice(0, result.length, ...popularMix);
+  }
   const select = (label: string, key: keyof Filters, values: string[]) => (
     <label className="field">
       <span>{label}</span>
