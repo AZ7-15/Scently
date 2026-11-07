@@ -25,7 +25,7 @@ test("known search opens its profile and note pyramid", async ({ page }) => {
   ).toBeVisible();
   await page.getByRole("link", { name: "Sauvage", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "Fragrance pyramid" }),
+    page.getByRole("heading", { name: "Fragrance composition" }),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "top notes", exact: true }),

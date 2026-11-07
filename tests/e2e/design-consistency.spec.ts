@@ -22,7 +22,7 @@ test("the new landing page leads into the same illustrated fragrance experience"
   await expect(page.locator(".fragrance-bottle-scene")).toBeVisible();
   await page.getByRole("link", { name: "Explore the composition" }).click();
   await expect(
-    page.getByRole("heading", { name: "Fragrance pyramid", exact: true }),
+    page.getByRole("heading", { name: "Fragrance composition", exact: true }),
   ).toBeVisible();
 });
 test("every community fragrance uses the shared story layout", async ({

@@ -18,7 +18,7 @@ test("a brand exposes its published flanker index beyond the storefront page", a
   ).toBeVisible();
   await expect(page.locator(".fragrance-story-hero")).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "Fragrance pyramid", exact: true }),
+    page.getByRole("heading", { name: "Fragrance composition", exact: true }),
   ).toBeVisible();
 });
 test("new-arrivals selection requests the live feed and preserves it in the URL", async ({

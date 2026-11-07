@@ -47,7 +47,7 @@ export function NotePyramid({
       <div className="composition-heading">
         <div>
           <span className="eyebrow">FRAGRANCE NOTES</span>
-          <h2>Fragrance pyramid</h2>
+          <h2>Fragrance composition</h2>
         </div>
       </div>
       <div className="illustrated-pyramid">
