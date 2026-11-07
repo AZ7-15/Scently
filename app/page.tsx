@@ -21,7 +21,7 @@ export default async function Home() {
     (f) => f.id === "stronger-with-you-powerfully",
   );
   const portrait =
-    powerfully || catalog.find((f) => f.name === "Tobacco Vanille") || catalog[0];
+    catalog.find((f) => f.name === "Tobacco Vanille") || powerfully || catalog[0];
   const otherLocal = catalog.filter((f) => f.id !== powerfully?.id);
   let featured = [
     ...(powerfully ? [powerfully] : []),
@@ -41,8 +41,8 @@ export default async function Home() {
     /* The sourced starter selection remains available. */
   }
   const portraitNote =
-    portrait?.notes.find((n) => n.name.toLowerCase().includes("cherry"))?.name ||
     portrait?.notes.find((n) => n.name.toLowerCase() === "vanilla")?.name ||
+    portrait?.notes.find((n) => n.name.toLowerCase().includes("cherry"))?.name ||
     portrait?.notes[0]?.name;
   return (
     <main id="main" className="landing-story">
