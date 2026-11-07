@@ -13,14 +13,17 @@ export function WearPerformance({
   };
 }) {
   const primary =
+    evidence.find((item) => item.kind === "manual-research") ||
     evidence.find((item) => item.kind === "source-report") ||
     evidence.find((item) => item.kind === "community") ||
     evidence.find((item) => item.kind === "editorial") ||
     evidence[0];
   const longevitySource =
+    evidence.find((item) => item.kind === "manual-research" && item.longevity) ||
     evidence.find((item) => item.kind === "source-report" && item.longevity) ||
     evidence.find((item) => item.kind === "grounded-research" && item.longevity);
   const projectionSource =
+    evidence.find((item) => item.kind === "manual-research" && item.projection) ||
     evidence.find((item) => item.kind === "source-report" && item.projection) ||
     evidence.find((item) => item.kind === "grounded-research" && item.projection);
   const measured = (community?.performanceVotes || 0) > 0;
@@ -52,7 +55,7 @@ export function WearPerformance({
               : longevitySource?.kind === "source-report"
                 ? "A common wearer-reported range. Your result can vary with skin, weather and application."
                 : longevitySource
-                  ? "A range summarized from published wear reports. Results vary from person to person."
+                  ? "A practical estimate from published wear reports. Results vary from person to person."
                   : "No published hour range is available for this fragrance."}
           </p>
         </div>
@@ -81,7 +84,9 @@ export function WearPerformance({
               : projectionIsDuration
                 ? "How long reports say noticeable projection lasts. Wear varies by person and conditions."
                 : projectionSource
-                  ? "Projection strength describes how far people report that the scent carries."
+                  ? projectionSource.kind === "manual-research"
+                    ? "Wear reports suggest a more noticeable opening that settles over time. Projection varies by person and setting."
+                    : "Projection strength describes how far people report that the scent carries."
                   : primary?.kind === "community" && primary.projectionScore
                     ? "Community sillage score. Sillage is the scent trail, not a measured distance."
                     : primary?.projectionScore

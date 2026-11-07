@@ -3,6 +3,7 @@ import type { WearEvidence } from "@/lib/wear-evidence";
 import { memoryLimit } from "./memory-limits";
 import { getScentoWearPerformance } from "./scento-performance";
 import { getGroundedPerformance } from "./grounded-performance";
+import { getManualPerformance } from "./manual-performance";
 
 const endpoint = "https://jdkwlwyysgofljkobpmr.supabase.co/functions/v1/mcp";
 const cache = new Map<string, { evidence: WearEvidence[]; expires: number }>();
@@ -150,6 +151,9 @@ export async function getCommunityPerformance(
   concentration: string,
   sourcedWearEvidence?: WearEvidence[],
 ): Promise<WearEvidence[]> {
+  const manual = getManualPerformance(name, brand, concentration);
+  if (manual.length) return manual;
+
   const [scento, perfumePicks] = await Promise.all([
     sourcedWearEvidence === undefined
       ? getScentoWearPerformance(name, brand, concentration)

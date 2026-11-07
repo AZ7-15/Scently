@@ -2,7 +2,7 @@ export type WearEvidence = {
   source: string;
   sourceUrl: string;
   checkedAt: string;
-  kind: "editorial" | "source-report" | "community" | "grounded-research";
+  kind: "editorial" | "source-report" | "community" | "grounded-research" | "manual-research";
   longevity: string | null;
   projection: string | null;
   longevityScore?: number;
