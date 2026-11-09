@@ -25,6 +25,8 @@ The app now runs on **Next.js / Node.js**. Render production uses an external **
 5. Deploy. `/api/health` initializes and checks database migrations. Starter records insert only when missing. Existing edits are preserved.
 6. Create a Scently account and visit `/api/me` while signed in. Add `user.id` to Render's `ADMIN_USER_IDS`, then restart/redeploy to access `/admin`. Empty denies all admin access.
 
+Set a long, random `ACCOUNT_RECOVERY_KEY` in Render to enable `/account/recover` if a user forgets their password. Keep it private; it allows password resets for accounts when paired with the account email. A reset invalidates all active sessions for that account. For local development, use a private random value in `.env.local`.
+
 ### Enable Gemini AI
 
 1. Create a Gemini API key in [Google AI Studio](https://aistudio.google.com/api-keys). Restrict it to the Gemini API.

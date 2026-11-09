@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { createHash, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { env } from "@/db/runtime";
 import {
@@ -36,7 +37,13 @@ export async function POST(request: Request) {
       : Object.fromEntries(await request.formData());
     const body = z
       .object({
-        action: z.enum(["register", "login", "logout", "change-password"]),
+        action: z.enum([
+          "register",
+          "login",
+          "logout",
+          "change-password",
+          "recover-password",
+        ]),
         email: z
           .string()
           .trim()
@@ -47,6 +54,7 @@ export async function POST(request: Request) {
         password: z.string().min(1).max(128).optional(),
         currentPassword: z.string().min(1).max(128).optional(),
         newPassword: z.string().min(12).max(128).optional(),
+        recoveryKey: z.string().min(1).max(256).optional(),
         name: z.string().trim().min(2).max(60).optional(),
         returnTo: z.string().max(2000).optional(),
       })
@@ -115,6 +123,48 @@ export async function POST(request: Request) {
       ]);
       return NextResponse.json(
         { ok: true },
+        { headers: { "Cache-Control": "no-store" } },
+      );
+    }
+    if (body.action === "recover-password") {
+      const configuredKey = process.env.ACCOUNT_RECOVERY_KEY;
+      if (!configuredKey)
+        throw new HttpError(
+          503,
+          "Password recovery is not configured. Contact the site owner.",
+        );
+      if (!body.email || !body.newPassword || !body.recoveryKey)
+        throw new HttpError(400, "Complete all recovery fields.");
+      const ip =
+        process.env.RENDER === "true"
+          ? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+            "unknown"
+          : "local";
+      await limited("auth:recover:ip:" + tokenHash(ip), 8, 900);
+      const submitted = createHash("sha256")
+        .update(body.recoveryKey)
+        .digest();
+      const configured = createHash("sha256").update(configuredKey).digest();
+      if (!timingSafeEqual(submitted, configured))
+        throw new HttpError(401, "The recovery key is incorrect.");
+      await limited("auth:recover:email:" + tokenHash(body.email), 5, 900);
+      const credential = await env.DB.prepare(
+        "SELECT user_id FROM credentials WHERE email=?",
+      )
+        .bind(body.email)
+        .first<{ user_id: string }>();
+      if (credential) {
+        await env.DB.batch([
+          env.DB.prepare(
+            "UPDATE credentials SET password_hash=? WHERE user_id=?",
+          ).bind(await hashPassword(body.newPassword), credential.user_id),
+          env.DB.prepare("DELETE FROM sessions WHERE user_id=?").bind(
+            credential.user_id,
+          ),
+        ]);
+      }
+      return NextResponse.json(
+        { ok: true, message: "If the account exists, its password was reset. You can now sign in." },
         { headers: { "Cache-Control": "no-store" } },
       );
     }
