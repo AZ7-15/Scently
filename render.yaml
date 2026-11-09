@@ -19,8 +19,6 @@ services:
         sync: false
       - key: ADMIN_USER_IDS
         sync: false
-      - key: ACCOUNT_RECOVERY_KEY
-        sync: false
       - key: CONTACT_EMAIL
         sync: false
       - key: GEMINI_API_KEY

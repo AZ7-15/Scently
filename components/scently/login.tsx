@@ -1,7 +1,6 @@
 "use client";
 import { useState, type FormEvent } from "react";
 import { api } from "./shell";
-import Link from "./site-link";
 export function Login({ returnTo }: { returnTo: string }) {
   const [register, setRegister] = useState(false),
     [busy, setBusy] = useState(false),
@@ -88,11 +87,6 @@ export function Login({ returnTo }: { returnTo: string }) {
           ? "Already have an account? Sign in"
           : "New to Scently? Create an account"}
       </button>
-      {!register && (
-        <Link className="text-link auth-switch" href="/account/recover">
-          Forgot your password?
-        </Link>
-      )}
     </section>
   );
 }
