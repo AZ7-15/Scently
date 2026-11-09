@@ -3,6 +3,7 @@ import { identity } from "@/lib/server/security";
 import { getCatalog } from "@/lib/server/catalog";
 import { Collection } from "@/components/scently/collection";
 import { databaseConfigured } from "@/lib/server/configuration";
+import { ChangePassword } from "@/components/scently/change-password";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Your personal shelf" };
 export default async function Page() {
@@ -31,6 +32,7 @@ export default async function Page() {
             )}
           </div>
           <Collection catalog={await getCatalog()} />
+          <ChangePassword />
         </>
       ) : (
         <div className="empty-state">

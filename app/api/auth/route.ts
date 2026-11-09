@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       : Object.fromEntries(await request.formData());
     const body = z
       .object({
-        action: z.enum(["register", "login", "logout"]),
+        action: z.enum(["register", "login", "logout", "change-password"]),
         email: z
           .string()
           .trim()
@@ -45,6 +45,8 @@ export async function POST(request: Request) {
           .transform((v) => v.toLowerCase())
           .optional(),
         password: z.string().min(1).max(128).optional(),
+        currentPassword: z.string().min(1).max(128).optional(),
+        newPassword: z.string().min(12).max(128).optional(),
         name: z.string().trim().min(2).max(60).optional(),
         returnTo: z.string().max(2000).optional(),
       })
@@ -69,6 +71,52 @@ export async function POST(request: Request) {
         maxAge: 0,
       });
       return response;
+    }
+    if (body.action === "change-password") {
+      const token = (await cookies()).get(sessionCookie)?.value;
+      if (!token) throw new HttpError(401, "Sign in to change your password.");
+      if (!body.currentPassword || !body.newPassword)
+        throw new HttpError(400, "Enter your current and new passwords.");
+      const session = await env.DB.prepare(
+        "SELECT user_id FROM sessions WHERE token_hash=? AND expires>?",
+      )
+        .bind(tokenHash(token), Date.now())
+        .first<{ user_id: string }>();
+      if (!session)
+        throw new HttpError(401, "Your session expired. Sign in again.");
+      await limited("auth:password-change:" + session.user_id, 5, 900);
+      const credential = await env.DB.prepare(
+        "SELECT password_hash FROM credentials WHERE user_id=?",
+      )
+        .bind(session.user_id)
+        .first<{ password_hash: string }>();
+      if (
+        !credential ||
+        !(await verifyPassword(
+          body.currentPassword,
+          credential.password_hash,
+        ))
+      )
+        throw new HttpError(401, "Your current password is incorrect.");
+      if (body.newPassword.length < 12)
+        throw new HttpError(
+          400,
+          "Your new password must be at least 12 characters.",
+        );
+      await env.DB.batch([
+        env.DB.prepare(
+          "UPDATE credentials SET password_hash=? WHERE user_id=?",
+        )
+          .bind(await hashPassword(body.newPassword), session.user_id),
+        env.DB.prepare(
+          "DELETE FROM sessions WHERE user_id=? AND token_hash<>?",
+        )
+          .bind(session.user_id, tokenHash(token)),
+      ]);
+      return NextResponse.json(
+        { ok: true },
+        { headers: { "Cache-Control": "no-store" } },
+      );
     }
     if (!body.email || !body.password)
       throw new HttpError(400, "Enter your email address and password.");
