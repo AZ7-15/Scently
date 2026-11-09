@@ -3,7 +3,6 @@ import { identity } from "@/lib/server/security";
 import { getCatalog } from "@/lib/server/catalog";
 import { Collection } from "@/components/scently/collection";
 import { databaseConfigured } from "@/lib/server/configuration";
-import { ChangePassword } from "@/components/scently/change-password";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Your personal shelf" };
 export default async function Page() {
@@ -21,9 +20,12 @@ export default async function Page() {
             <Link className="text-link" href="/reviews?mine=1">
               Manage your reviews
             </Link>
+            <Link className="text-link" href="/account/password">
+              Change password
+            </Link>
             <form method="post" action="/api/auth">
               <input type="hidden" name="action" value="logout" />
-              <button className="plain-button">Sign out</button>
+              <button className="plain-button text-link">Sign out</button>
             </form>
             {user.admin && (
               <Link className="text-link" href="/admin">
@@ -32,7 +34,6 @@ export default async function Page() {
             )}
           </div>
           <Collection catalog={await getCatalog()} />
-          <ChangePassword />
         </>
       ) : (
         <div className="empty-state">
